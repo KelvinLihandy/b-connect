@@ -1,13 +1,19 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import './App.css';
+import SignUp from './views/sign_up/SignUp';
 
 const App = () => {
   return (
     <>
-    <header className="App-header">
-      <p>THIS IS B-CONNECT</p> 
-    </header>
+    <Router>
+      <Routes>
+        <Route path='/' element={<SignUp />} />
+        {/* <Route path='/support' element={<Support />} />
+        <Route path='/support/:id' element={<Ticket />} /> */}
+      </Routes>
+    </Router>
     </>
   )
 }
