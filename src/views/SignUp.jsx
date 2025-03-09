@@ -1,11 +1,11 @@
 import React, {useState} from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import password_hide from "../../assets/eye_off.svg"
-import password_show from "../../assets/eye_on.svg"
-import facebook from "../../assets/facebook_logo.svg"
-import google from "../../assets/google_logo.svg"
-import apple from "../../assets/apple_logo.svg"
+import password_hide from "../assets/eye_off.svg"
+import password_show from "../assets/eye_on.svg"
+import facebook from "../assets/facebook_logo.svg"
+import google from "../assets/google_logo.svg"
+import apple from "../assets/apple_logo.svg"
 
 const SignUp = () => {
     const [showPass, setShowPass] = useState(false)
@@ -17,7 +17,7 @@ const SignUp = () => {
     return (
         <div className='container'>
             <div className='title'>
-                <p>Create an Account</p>
+                <p className=''>Create an Account</p>
                 <p>Already have an account? <Link to="SignUp">Log in</Link></p>
             </div>
             <div className='form'>
