@@ -1,4 +1,15 @@
 @import "tailwindcss";
+
+/* @font-face{
+  font-family: Poppins;
+  src: url("../src/assets/fonts/Poppins/Poppins_regular.ttf")
+} */
+@theme {
+  --font-poppins: "Poppins", sans-serif; 
+}
+@theme {
+  --font-nunito: "Nunito", sans-serif; 
+}
 /* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
