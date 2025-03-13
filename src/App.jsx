@@ -8,13 +8,13 @@ import SignIn from './views/sign_in/SignIn';
 const App = () => {
   return (
     <>
-    <Router>
-      <Routes>
-      <Route path='/' element={<Navigate to="/sign-in" />} />
-      <Route path='/sign-in' element={<SignIn />} />
-        <Route path='/sign-up' element={<SignUp />} />
-      </Routes>
-    </Router>
+      <Router>
+        <Routes>
+          <Route path='/' element={<Navigate to="/sign-in" />} />
+          <Route path='/sign-in' element={<SignIn />} />
+          <Route path='/sign-up' element={<SignUp />} />
+        </Routes>
+      </Router>
     </>
   )
 }
