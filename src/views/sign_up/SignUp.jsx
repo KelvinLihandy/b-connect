@@ -1,34 +1,54 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import "./SignUp.css"
 import password_hide from "../../assets/eye_off.svg"
 import password_show from "../../assets/eye_on.svg"
-import facebook from "../../assets/facebook_logo.svg"
+// import facebook from "../../assets/facebook_logo.svg"
 import google from "../../assets/google_logo.svg"
-import apple from "../../assets/apple_logo.svg"
+// import apple from "../../assets/apple_logo.svg"
 import bg_left from "../../assets/bg_image_left.svg"
 import bg_right from "../../assets/bg_image_right.svg"
 import bg_dots from "../../assets/bg_dots.svg"
+import { authAPI } from "../../constants/APIRoutes"
+import axios from 'axios'
 
 const SignUp = () => {
 	const [showPass, setShowPass] = useState(false)
 	const [name, setName] = useState("")
 	const [email, setEmail] = useState("")
-	const [password, setPassword] = useState("")//encrypt not implemented
+	const [password, setPassword] = useState("")
 	const switchEye = () => {
 		setShowPass((showPass) => !showPass)
 	}
+
+	const register = () => {
+		console.log(name);
+		console.log(email);
+		console.log(password);
+		axios.post(`${authAPI}/register`, {
+			name: name,
+			email: email,
+			password: password
+		})
+			.then(response => {
+				console.log(response.data);
+			})
+			.catch(error => {
+				console.error('Error register:', error);
+			});
+	}
+
 
 	return (
 		<div>
 			<div className='absolute -z-[100] w-screen'>
 				<img
-					className='fixed w-[300px] h-[200px] top-[250px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%]'
+					className='fixed opacity-70 w-[300px] h-[200px] top-[250px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%]'
 					src={bg_left}
 				/>
 				<img
-					className='fixed w-[300px] h-[200px] top-[75px] right-0 sm:right-[25.%] md:right-[5%] lg:right-[10%]'
+					className='fixed opacity-70 w-[300px] h-[200px] top-[75px] right-0 sm:right-[25.%] md:right-[5%] lg:right-[10%]'
 					src={bg_right}
 				/>
 				<img
@@ -105,21 +125,21 @@ const SignUp = () => {
 						.
 					</label>
 					<button className='bg-[#111111]/25 text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-12 transition cursor-pointer hover:text-black hover:opacity-90'
-						onClick={() => console.log("submit")}>
+						onClick={() => register()}>
 						Create an account
 					</button>
 				</div>
 
-				<div className='flex flex-col gap-1 font-nunito min-w-140 max-w-170 '>
+				<div className='flex flex-col gap-1 font-nunito min-w-140 max-w-170 items-center'>
 					<label className='text-[#666666]'>OR Continue with</label>
 					<div className='flex flex-row justify-between'>
-						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
+						{/* <button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
 							onClick={() => console.log("facebook")}>
 							<img
 								className='h-5 self-center'
 								src={facebook} />
 							<div className=''>Facebook</div>
-						</button>
+						</button> */}
 						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
 							onClick={() => console.log("google")}>
 							<img
@@ -127,13 +147,13 @@ const SignUp = () => {
 								src={google} />
 							<p>Google</p>
 						</button>
-						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
+						{/* <button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
 							onClick={() => console.log("apple")}>
 							<img
 								className='h-5 self-center'
 								src={apple} />
 							<p>Apple</p>
-						</button>
+						</button> */}
 					</div>
 				</div>
 			</div>
