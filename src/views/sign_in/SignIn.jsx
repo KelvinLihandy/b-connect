@@ -6,12 +6,14 @@ import { Divider } from '../../components/Divider'
 import "./SignIn.css"
 import password_hide from "../../assets/eye_off.svg"
 import password_show from "../../assets/eye_on.svg"
-import facebook from "../../assets/facebook_logo.svg"
+// import facebook from "../../assets/facebook_logo.svg"
 import google from "../../assets/google_logo.svg"
-import apple from "../../assets/apple_logo.svg"
+// import apple from "../../assets/apple_logo.svg"
 import bg_left from "../../assets/bg_image_left.svg"
 import bg_right from "../../assets/bg_image_right.svg"
 import bg_dots from "../../assets/bg_dots.svg"
+import { authAPI } from "../../constants/APIRoutes"
+import axios from 'axios'
 
 const SignIn = () => {
 	const [showPass, setShowPass] = useState(false)
@@ -25,7 +27,20 @@ const SignIn = () => {
 		setShowPass((showPass) => !showPass)
 	}
 
-	const navigate = useNavigate();
+	const login = () => {
+		console.log(email);
+		console.log(password);
+		axios.post(`${authAPI}/login`, {
+			email: email,
+			password: password
+		})
+			.then(response => {
+				console.log(response.data);
+			})
+			.catch(error => {
+				console.error('Error login:', error);
+			});
+	}
 
 	return (
 		<div className='flex flex-col items-center justify-center min-h-screen justify-items-center '>
@@ -38,14 +53,14 @@ const SignIn = () => {
 					<img className='h-5 self-center' src={google} alt="" />
 					<div>Continue with Google</div>
 				</button>
-				<button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
+				{/* <button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
 					<img className='h-5 self-center' src={facebook} alt="" />
 					<div>Continue with Facebook</div>
 				</button>
 				<button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
 					<img className='h-5 self-center' src={apple} alt="" />
 					<div>Continue with Apple</div>
-				</button>
+				</button> */}
 			</div>
 
 			<Divider
@@ -91,14 +106,11 @@ const SignIn = () => {
 				</div>
 
 				<div className=''>
-					<p className='text-[#333333] text-2xl font-medium'>Don't have an account?</p>
+					<p className='text-[#333333] text-2xl font-medium'
+						onClick={() => login}>
+						Don't have an account?</p>
 				</div>
-				<button
-					className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50'
-					onClick={() => navigate("/sign-up")}
-				>
-					Sign Up
-				</button>
+				<button className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50' onClick={() => console.log("submit")}>Sign Up</button>
 			</div>
 
 			{/* Background Decor */}
