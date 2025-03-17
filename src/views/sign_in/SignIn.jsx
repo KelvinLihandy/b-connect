@@ -25,6 +25,8 @@ const SignIn = () => {
 		setShowPass((showPass) => !showPass)
 	}
 
+	const navigate = useNavigate();
+
 	return (
 		<div className='flex flex-col items-center justify-center min-h-screen justify-items-center '>
 			<div className='font-poppins relative text-center gap-4 item-center mt-5 mb-5'>
@@ -91,7 +93,12 @@ const SignIn = () => {
 				<div className=''>
 					<p className='text-[#333333] text-2xl font-medium'>Don't have an account?</p>
 				</div>
-				<button className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50' onClick={() => console.log("submit")}>Sign Up</button>
+				<button
+					className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50'
+					onClick={() => navigate("/sign-up")}
+				>
+					Sign Up
+				</button>
 			</div>
 
 			{/* Background Decor */}

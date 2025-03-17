@@ -66,7 +66,7 @@ const SignUp = () => {
 						<p className='text-2xl font-semibold'>Create an Account</p>
 						<p className='text-xs'>Already have an account?
 							<span> </span>
-							<Link to=""><span className='underline'>Log in</span></Link>
+							<Link to="/sign-in" ><span className='underline'>Log in</span></Link>
 						</p>
 					</div>
 
