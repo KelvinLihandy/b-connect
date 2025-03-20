@@ -18,8 +18,10 @@ import axios from 'axios'
 const SignIn = () => {
 	const [showPass, setShowPass] = useState(false)
 	const [email, setEmail] = useState("")
-	const [password, setPassword] = useState("")//encrypt not implemented
+	const [password, setPassword] = useState("")
 	const [isChecked, setIsChecked] = useState(false)
+	const navigate = useNavigate();
+
 	const handleCheckboxChange = () => {
 		setIsChecked(!isChecked);
 	}
@@ -36,14 +38,16 @@ const SignIn = () => {
 		})
 			.then(response => {
 				console.log(response.data);
+				console.log("ambabidi")
 			})
 			.catch(error => {
 				console.error('Error login:', error);
+				console.log("oh sit");
 			});
 	}
 
 	return (
-		<div className='flex flex-col items-center justify-center min-h-screen justify-items-center '>
+		<div className='flex flex-col items-center justify-center justify-items-center '>
 			<div className='font-poppins relative text-center gap-4 item-center mt-5 mb-5'>
 				<p className='text-3xl font-semibold'>Log in</p>
 			</div>
@@ -71,19 +75,42 @@ const SignIn = () => {
 			{/* Bagian Textbox */}
 			<div className='font-poppins inline-flex flex-col gap-4 items-center mb-8'>
 				<div className='flex flex-col gap-1'>
-					<label className='text-[#666666] text-base'>Email address or user name</label>
-					<input className='form-input text-xs min-h-10 max-h-12 min-w-140 max-w-170 px-5' type='text' placeholder='' onChange={(event) => setEmail(event.target.value)} />
+					<label className='text-[#666666] text-lg'>
+						Email address
+					</label>
+					<input className='form-input text-base h-12 min-w-140 max-w-170 px-5'
+						type='text'
+						placeholder=''
+						onChange={(event) => setEmail(event.target.value)}
+					/>
 				</div>
 				<div className='flex flex-col gap-1'>
 					<div className='flex flex-row justify-between min-w-140 max-w-170'>
-						<label className='text-[#666666] text-base'>Create a password</label>
-						<div className='flex flex-row gap-2 cursor-pointer' onClick={switchEye}>
-							<img className='h-5 self-center opacity-80' src={showPass ? password_show : password_hide} />
-							<p className='text-[#666666] text-lg'>Hide</p>
+						<label className='text-[#666666] text-lg'>
+							Password
+						</label>
+						<div className='flex flex-row gap-2 cursor-pointer'
+							onClick={switchEye}
+						>
+							<img className='h-5 self-center opacity-80'
+								src={showPass ? password_show : password_hide}
+							/>
+							<p className='text-[#666666] text-lg'>
+								Hide
+							</p>
 						</div>
 					</div>
-					<input className='form-input text-xs min-h-10 max-h-12 min-w-140 max-w-170 px-5' type={showPass ? "text" : "password"} placeholder='' onChange={(event) => setPassword(event.target.value)}></input>
-					<Link to=""><span className='flex w-full text-[#111111] text-base font-normal underline justify-end text-right '>Forget your password</span></Link>
+					<input className='form-input text-base h-12 min-w-140 max-w-170 px-5'
+						type={showPass ? "text" : "password"}
+						placeholder=''
+						onChange={(event) => setPassword(event.target.value)}
+					>
+					</input>
+					<Link to="">
+						<span className='flex w-full text-[#111111] text-base font-normal underline justify-end text-right '>
+							Forget your password
+						</span>
+					</Link>
 
 					<label className="flex items-center space-x-3">
 						<input
@@ -92,13 +119,19 @@ const SignIn = () => {
 							onChange={handleCheckboxChange}
 							className="w-5 h-5 accent-black border-gray-300 rounded focus:ring-black"
 						/>
-						<span className="text-[#666666] font-medium text-base">Remember me</span>
+						<span className="text-[#666666] font-medium text-base">
+							Remember me
+						</span>
 					</label>
 				</div>
 
 				{/* Button Login */}
 				<div className='mt-3 mb-3'>
-					<button className='bg-[#111111]/25 text-xl text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90' onClick={() => console.log("submit")}>Log in</button>
+					<button className='bg-[#111111]/25 text-xl text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90'
+						onClick={() => login()}
+					>
+						Log in
+					</button>
 				</div>
 
 				<div className="mt-5 mb-5 flex w-[560px] items-center relative flex-[0_0_auto]">
@@ -106,11 +139,14 @@ const SignIn = () => {
 				</div>
 
 				<div className=''>
-					<p className='text-[#333333] text-2xl font-medium'
-						onClick={() => login}>
+					<p className='text-[#333333] text-2xl font-medium'>
 						Don't have an account?</p>
 				</div>
-				<button className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50' onClick={() => console.log("submit")}>Sign Up</button>
+				<button
+					className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50'
+					onClick={() => navigate("/sign-up")}>
+					Sign Up
+				</button>
 			</div>
 
 			{/* Background Decor */}
