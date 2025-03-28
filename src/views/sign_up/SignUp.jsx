@@ -44,7 +44,7 @@ const SignUp = () => {
 	}
 
 	return (
-		<div>
+		<div className='flex flex-col justify-center items-center min-h-screen'>
 			<div className='absolute -z-[100] w-screen'>
 				<img
 					className='fixed opacity-70 w-[300px] h-[200px] top-[250px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%]'
@@ -64,7 +64,7 @@ const SignUp = () => {
 				/>
 			</div>
 
-			<div className='flex flex-col justify-center items-center'>
+			<div className='py-5 flex flex-col justify-center items-center'>
 				<div className='font-poppins flex flex-col gap-4 items-center'>
 					<div className='flex flex-col gap-2 items-center mb-5'>
 						<p className='text-4xl font-semibold'>

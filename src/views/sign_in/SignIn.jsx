@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { Divider } from '../../components/Divider'
+import { Divider } from '../../components/divider/Divider'
 
 import "./SignIn.css"
 import password_hide from "../../assets/eye_off.svg"
