@@ -22,7 +22,7 @@ export const Footer = () => {
           </p>
         </div>
         <div className='w-full h-[1px] bg-black' />
-        <p className='text-3xl text-wrap text-center p-2'>
+        <p className='text-3xl text-wrap text-center p-2 text-wrap'>
           Find the perfect freelancer for your project—fast and easy.
         </p>
       </div>
@@ -40,7 +40,7 @@ export const Footer = () => {
       <div className='h-full bg-black w-[1px]' />
       <div className='flex flex-col justify-between px-5 pb-10'>
         <div className='flex flex-col gap-6'>
-          <div className='text-3xl font-bold flex flex-col gap-4'>
+          <div className='text-3xl font-bold flex flex-col gap-4 text-wrap'>
             <p>Looking for the right freelancer for your project?</p>
             <p>Let's Find skilled professionals today!</p>
           </div>
