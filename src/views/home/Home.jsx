@@ -355,8 +355,8 @@ const Home = () => {
             B-Connect?
           </span>
         </p>
-        <div className='flex flex-row justify-around mt-7'>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+        <div className='flex flex-row justify-between mt-7 px-25'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={talent_pool}
               alt="talent pool"
             />
@@ -368,7 +368,7 @@ const Home = () => {
               yang terverifikasi dan siap membantu berbagai kebutuhan proyek Anda.
             </p>
           </div>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={efficient_matching}
               alt="efficient matching"
             />
@@ -379,7 +379,7 @@ const Home = () => {
               Gunakan fitur pencarian dan filter untuk menemukan freelancer yang tepat
               dan selesaikan proyek dengan hasil berkualitas.</p>
           </div>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={clear_fair_pricing}
               alt="clear face pricing" />
             <p className='font-extrabold text-2xl'>
@@ -390,7 +390,7 @@ const Home = () => {
               Pembayaran hanya dilakukan setelah pekerjaan disetujui.
             </p>
           </div>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={flexible_support}
               alt="flexible support" />
             <p className='font-extrabold text-2xl'>
