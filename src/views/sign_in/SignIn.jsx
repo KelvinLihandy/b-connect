@@ -38,16 +38,14 @@ const SignIn = () => {
 		})
 			.then(response => {
 				console.log(response.data);
-				console.log("ambabidi")
 			})
 			.catch(error => {
-				console.error('Error login:', error);
-				console.log("oh sit");
+				console.error('Error login:', error.response);
 			});
 	}
 
 	return (
-		<div className='flex flex-col items-center justify-center justify-items-center '>
+		<div className='flex flex-col items-center justify-center justify-items-center h-screen'>
 			<div className='font-poppins relative text-center gap-4 item-center mt-5 mb-5'>
 				<p className='text-3xl font-semibold'>Log in</p>
 			</div>
@@ -106,7 +104,7 @@ const SignIn = () => {
 						onChange={(event) => setPassword(event.target.value)}
 					>
 					</input>
-					<Link to="">
+					<Link to="/sign-in/forget">
 						<span className='flex w-full text-[#111111] text-base font-normal underline justify-end text-right '>
 							Forget your password
 						</span>
