@@ -25,6 +25,14 @@ const SignUp = () => {
 		setShowPass((showPass) => !showPass)
 	}
 
+	const validatePassword = (password) => {
+		const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+		if (!regex.test(password)) {
+			return false;
+		}
+		return true;
+	};
+
 	const register = () => {
 		console.log(name);
 		console.log(email);
@@ -36,10 +44,10 @@ const SignUp = () => {
 		})
 			.then(response => {
 				console.log(response.data);
-				navigate('/login', {replace: true});
+				navigate('/sign-in', { replace: true });
 			})
 			.catch(error => {
-				console.error('Error register:', error);
+				console.error('Error register:', error.response);
 			});
 	}
 
@@ -125,9 +133,9 @@ const SignUp = () => {
 								placeholder='Enter your password'
 								onChange={(event) => setPassword(event.target.value)}
 							/>
-							{password.length < 8 &&
-								<p className='text-[#666666] text-base'>
-									Use 8 or more characters with a mix of letters, numbers & symbols
+							{!validatePassword(password) &&
+								<p className='text-red-400 text-base text-wrap'>
+									Use 8 or more characters with a mix of upper & lowercase letters, numbers & symbols (@ $ ! % * ? &)
 								</p>
 							}
 						</div>

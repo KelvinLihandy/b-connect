@@ -22,7 +22,7 @@ export const Footer = () => {
           </p>
         </div>
         <div className='w-full h-[1px] bg-black' />
-        <p className='text-3xl text-wrap text-center p-2 text-wrap'>
+        <p className='text-3xl text-center p-2 text-wrap'>
           Find the perfect freelancer for your project—fast and easy.
         </p>
       </div>

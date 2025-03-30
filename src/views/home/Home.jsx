@@ -29,7 +29,7 @@ import phone from '../../assets/phone_stock.svg'
 import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 import { Link, useNavigate } from 'react-router-dom'
-import Footer from '../../components/Footer/Footer'
+import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import ServiceItem from '../../components/service_item/ServiceItem'
 
@@ -190,7 +190,7 @@ const Home = () => {
         <div className='flex flex-row items-center gap-8 text-white text-xl'>
 
           <p className='flex flex-row items-center gap-2'>Explore <span><img className='self-center' src={dropdown_tri} alt="" /></span></p>
-          <Link to="">About Us</Link>
+          <Link to="/about-us">About Us</Link>
           <button className='flex flex-row border rounded-xl py-4 px-6 gap-2 items-center'
             onClick={() => navigate('/sign-in')}
           >
@@ -204,7 +204,7 @@ const Home = () => {
         </div>
       </header>
 
-      <section className='bg-[#2E5077] h-[950px] max-h-[1000px] text-white flex flex-row relative px-40'>
+      <section className='bg-[#2E5077] h-[950px] text-white flex flex-wrap px-10 relative justify-center'>
         <img className='absolute left-0 top-25 blur-xs'
           src={circle}
           alt="circle"
@@ -221,55 +221,7 @@ const Home = () => {
           src={bg_spike_right}
           alt="bg spike"
         />
-        <img className='absolute right-41 top-50'
-          src={bg_image_right}
-          alt="bg right"
-        />
-        <img className='absolute right-190 top-45 size-15 rotate-50'
-          src={triangle_blunt}
-          alt="bg tri"
-        />
-        <img className='absolute right-50 bottom-15 size-15'
-          src={triangle_blunt}
-          alt="bg tri"
-        />
-        <img className='absolute bottom-60 right-195 size-15 rotate-15'
-          src={triangle_blunt}
-          alt="bg tri"
-        />
-        <img className='absolute bottom-68 right-202 size-15 rotate-75'
-          src={triangle_blunt}
-          alt="bg tir"
-        />
-        <img className='absolute right-163 top-75'
-          src={bg_dots_extended}
-          alt="bg dots"
-        />
-        <img className='absolute right-70 bottom-0 h-40'
-          src={squiggly}
-          alt="bg line"
-        />
-        <img className='absolute bottom-3 right-130 size-10'
-          src={circle_outline}
-          alt=""
-        />
-        <img className='absolute right-53 top-57'
-          src={circle_bg_right}
-          alt=""
-        />
-        <img className='absolute right-95 top-50'
-          src={trid_designer}
-          alt=""
-        />
-        <img className='absolute right-110 top-125'
-          src={fullstack_developer}
-          alt=""
-        />
-        <img className='absolute right-40 top-110'
-          src={graphic_designer}
-          alt=""
-        />
-        <div className='flex flex-col gap-7 font-poppin self-center w-2xl'>
+        <div className='flex flex-col gap-7 font-poppin self-center w-[800px] px-20'>
           <p className='text-8xl font-bold'>
             B-Connect
           </p>
@@ -298,7 +250,7 @@ const Home = () => {
             <p className='text-xl font-medium'>
               TRENDING SERVICES
             </p>
-            <div className='text-lg opacity-80 flex flex-row gap-5'>
+            <div className='text-lg opacity-80 flex flex-wrap gap-4'>
               <div className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/4  w-50 max-w-50'>
                 <p className='self-center'>
                   DESIGNER
@@ -325,7 +277,56 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div></div>
+        <div className='relative w-[800px] h-[950px]'>
+          <img className='absolute right-1 top-40'
+            src={bg_image_right}
+            alt="bg right"
+          />
+          <img className='absolute right-170 top-45 size-15 rotate-50'
+            src={triangle_blunt}
+            alt="bg tri"
+          />
+          <img className='absolute right-20 bottom-25 size-15'
+            src={triangle_blunt}
+            alt="bg tri"
+          />
+          <img className='absolute bottom-60 right-165 size-15 rotate-15'
+            src={triangle_blunt}
+            alt="bg tri"
+          />
+          <img className='absolute bottom-68 right-172 size-15 rotate-75'
+            src={triangle_blunt}
+            alt="bg tir"
+          />
+          <img className='absolute right-145 top-70'
+            src={bg_dots_extended}
+            alt="bg dots"
+          />
+          <img className='absolute right-40 bottom-2 h-40'
+            src={squiggly}
+            alt="bg line"
+          />
+          <img className='absolute bottom-10 right-100 size-10'
+            src={circle_outline}
+            alt=""
+          />
+          <img className='absolute right-13 top-57'
+            src={circle_bg_right}
+            alt=""
+          />
+          <img className='absolute right-75 top-40'
+            src={trid_designer}
+            alt=""
+          />
+          <img className='absolute right-75 top-115'
+            src={fullstack_developer}
+            alt=""
+          />
+          <img className='absolute right-0 top-100'
+            src={graphic_designer}
+            alt=""
+          />
+        </div>    
       </section>
 
       <section className='h-[500px] flex flex-col gap-10 p-8 font-Archivo'>
@@ -355,8 +356,8 @@ const Home = () => {
             B-Connect?
           </span>
         </p>
-        <div className='flex flex-row justify-around mt-7'>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+        <div className='flex flex-row justify-between mt-7 px-25'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={talent_pool}
               alt="talent pool"
             />
@@ -368,7 +369,7 @@ const Home = () => {
               yang terverifikasi dan siap membantu berbagai kebutuhan proyek Anda.
             </p>
           </div>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={efficient_matching}
               alt="efficient matching"
             />
@@ -379,7 +380,7 @@ const Home = () => {
               Gunakan fitur pencarian dan filter untuk menemukan freelancer yang tepat
               dan selesaikan proyek dengan hasil berkualitas.</p>
           </div>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={clear_fair_pricing}
               alt="clear face pricing" />
             <p className='font-extrabold text-2xl'>
@@ -390,7 +391,7 @@ const Home = () => {
               Pembayaran hanya dilakukan setelah pekerjaan disetujui.
             </p>
           </div>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={flexible_support}
               alt="flexible support" />
             <p className='font-extrabold text-2xl'>

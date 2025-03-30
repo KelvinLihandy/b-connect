@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import "./AboutUs.css"
 import bell from "../../assets/bell_icon.svg"
 import heart from "../../assets/heart_icon.svg"
 import message from "../../assets/message_icon.svg"
