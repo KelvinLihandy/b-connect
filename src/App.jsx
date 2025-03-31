@@ -6,6 +6,10 @@ import SignUp from './views/sign_up/SignUp';
 import SignIn from './views/sign_in/SignIn';
 import Home from "./views/home/Home";
 import Detail from "./views/detailpage/Detail";
+import AboutUs from './views/about_us/AboutUs';
+import ForgotPassword from './views/forgot_password/ForgotPassword';
+import InputOTP from './views/input_otp/InputOTP';
+import ChangePassword from './views/change_password/ChangePassword';
 
 const App = () => {
   return (
@@ -15,6 +19,10 @@ const App = () => {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/detailpage' element={<Detail />} /> 
+        <Route path='/about-us' element={<AboutUs />} />
+        <Route path='/sign-in/forget' element={<ForgotPassword />} />
+        <Route path='sign-in/verify-otp' element={<InputOTP />} />
+        <Route path='/sign-in/change-password' element={<ChangePassword/>} />
       </Routes>
     </>
   )
