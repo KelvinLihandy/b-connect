@@ -26,29 +26,70 @@ const USERS = [
         rating: 4.98,
         ratingCount: 202,
         image: Alex,
-      },
-      {
+        messages: [
+            { text: "Hai! perkenalkan saya Alex, terimakasih sudah memilih saya. Bisa kita mulai dari briefnya?", time: "15:41", date: "2025-07-23", sender: "Alex" },
+            { text: "Hai Alex, iya Jadi, saya ingin membuat UI/UX untuk ide mobile apps saya.", time: "15:42", date: "2025-07-23", sender: "User" },
+            { text: "Menarik! Boleh tahu app-nya tentang apa dan target penggunanya siapa?", time: "15:43", date: "2025-07-24", sender: "Alex" },
+        ],
+    },
+    {
         id: 2,
         name: "Salsabila",
         preview: "Siti : Perfect. Thanks!",
+        lastSeen: "2 days ago",
+        from: "North Korea",
+        joined: "Jan 2050",
+        rating: 3.64,
+        ratingCount: 24,
         image: Salsabila,
-      },
-      {
+        messages: [
+            { text: "Halo! Saya Salsabila, senang bisa bekerja sama dengan Anda. Ada yang ingin didiskusikan dulu sebelum mulai?", time: "10:05", date: "2025-07-20", sender: "Salsabila" },
+            { text: "Halo Salsabila! Iya, saya ingin mendesain website portofolio saya.", time: "10:06", date: "2025-07-20", sender: "User" },
+            { text: "Bagus sekali! Boleh dijelaskan konsep atau nuansa yang Anda inginkan untuk websitenya?", time: "10:07", date: "2025-07-20", sender: "Salsabila" },
+        ],
+    },
+    {
         id: 3,
         name: "Alex Lamar",
         preview: "Alex : Boleh. Saya mau tahu ...",
+        lastSeen: "5 hour ago",
+        from: "Prindavan",
+        joined: "Sep 1998",
+        rating: 4.56,
+        ratingCount: 425,
         image: AlexLamar,
-      },
-      {
+        messages: [
+        { text: "Hai! Perkenalkan saya Alex Lamar, terima kasih sudah memilih saya. Bisa kita mulai dari briefnya?", time: "15:41", date: "2025-07-23", sender: "Alex" },
+        { text: "Hai Alex, iya Jadi, saya ingin membuat UI/UX untuk ide mobile apps saya.", time: "15:42", date: "2025-07-23", sender: "User" },
+        { text: "Menarik! Boleh tahu app-nya tentang apa dan target penggunanya siapa?", time: "15:43", date: "2025-07-24", sender: "Alex" },
+        ],
+    },
+    {
         id: 4,
         name: "Nina Lenae",
         preview: "Siti : Terima kasih!",
+        lastSeen: "3 day ago",
+        from: "Bekasi",
+        joined: "Aug 1975",
+        rating: 4.28,
+        ratingCount: 461,
         image: Nina,
-      },
+        messages: [
+        { text: "Hai, saya Nina Lanae. Terima kasih sudah menghubungi! Apa yang ingin kita bahas pertama?", time: "08:30", date: "2025-07-22", sender: "Nina" },
+        { text: "Halo Nina! Saya ingin membuat branding kit untuk usaha kopi saya.", time: "08:31", date: "2025-07-22", sender: "User" },
+        { text: "Seru sekali! Boleh share sedikit tentang konsep atau nilai unik dari usaha kopinya?", time: "08:32", date: "2025-07-22", sender: "Nina" },
+        ],
+    },
 ];
 
+
+
 const Chat = () => {
-    const activeUser = USERS[0];
+    const [activeUser, setActiveUser] = useState(USERS[0]);
+
+    const handleUserClick = (user) => {
+        setActiveUser(user); 
+    };
     return (
         <div className=''>
             <Navbar />
@@ -69,9 +110,10 @@ const Chat = () => {
                             <div
                             key={chat.id}
                             className={`flex items-center space-x-2 p-2 hover:bg-gray-300 cursor-pointer 
-                                border-b border-gray-300 border-b-2 ${
-                                i === 0 ? "bg-gray-300" : "bg-[#F3F3F3]"
-                            }`}
+                                border-b border-gray-300 ${
+                                    activeUser.id === chat.id ? "bg-gray-300" : "bg-[#F3F3F3]"
+                                }`}
+                            onClick={() => handleUserClick(chat)} 
                             >
                             <div className="w-[65px] h-[65px">
                                 <img
@@ -129,27 +171,41 @@ const Chat = () => {
                         backgroundSize: "contain",
                     }}
                     >
-                        <div className="flex items-center justify-center -space-x-1">
-                            <div className="flex-1 h-[1px] max-w-[50px] bg-black"></div>
-                            <span className="px-3 text-gray-500">Jul 23, 2025</span>
-                            <div className="flex-1 h-[1px] max-w-[50px] bg-black"></div>
-                        </div>
+                        {/* Chat Content */}
+                        <div className="flex flex-col gap-2 text-[15px] space-y-4">
+                            {activeUser.messages.map((message, index) => {
+                                const showDate =
+                                    index === 0 || message.date !== activeUser.messages[index - 1].date;
 
-                        <div className="flex flex-col gap-2 mt-5 space-y-4">
-                            <div className="bg-white/60 p-4 rounded-lg shadow-md w-[45%]">
-                                <p>Hai! perkenalkan saya Alex, terimakasih sudah memilih saya. Bisa kita mulai dari briefnya?</p>
-                                <div className="text-right text-gray-400 text-xs">15:41</div>
-                            </div>
+                                return (
+                                    <React.Fragment key={index}>
+                                        {/* Chat Date */}
+                                        {showDate && (
+                                            <div className="flex items-center justify-center -space-x-1">
+                                                <div className="flex-1 h-[1px] max-w-[50px] bg-black"></div>
+                                                <span className="px-3 text-gray-500">
+                                                    {new Date(message.date).toLocaleDateString("en-US", {
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric",
+                                                    })}
+                                                </span>
+                                                <div className="flex-1 h-[1px] max-w-[50px] bg-black"></div>
+                                            </div>
+                                        )}
 
-                            <div className="bg-white/60 p-4 rounded-lg shadow-md w-[45%] self-end">
-                                <p>Hai Alex, iya Jadi, saya ingin membuat UI/UX untuk ide mobile apps saya.</p>
-                                <div className="text-right text-gray-400 text-xs">15:42</div>
-                            </div>
-
-                            <div className="bg-white/60 p-4 rounded-lg shadow-md w-[45%]">
-                                <p>Menarik! Boleh tahu app-nya tentang apa dan target penggunanya siapa?</p>
-                                <div className="text-right text-gray-400 text-xs">15:43</div>
-                            </div>
+                                        {/* Message */}
+                                        <div
+                                            className={`bg-white/60 p-4 rounded-lg shadow-md w-[45%] ${
+                                                message.sender === "User" ? "self-end" : ""
+                                            }`}
+                                        >
+                                            <p>{message.text}</p>
+                                            <div className="text-right text-gray-400 text-xs">{message.time}</div>
+                                        </div>
+                                    </React.Fragment>
+                                );
+                            })}
                         </div>
                     </div>
                     
@@ -171,7 +227,7 @@ const Chat = () => {
                             />
                         </div>
                         <button className="p-2">
-                            <img src={send} alt="Send" className="w-6 h-6" />
+                            <img src={send} alt="Send" className="w-6 h-6 cursor-pointer" />
                         </button>
                     </div>
                 </div>
