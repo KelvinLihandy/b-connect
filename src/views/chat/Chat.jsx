@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import EmojiPicker from 'emoji-picker-react';
 
 import upload from "../../assets/chat_upload.svg"
 import emote from "../../assets/chat_emote.svg"
 import send from "../../assets/chat_send.svg"
+import sendfrom from "../../assets/chat_uploadFromComp.svg"
+import file from "../../assets/chat_file.png"
 
 import Footer from '../../components/footer/Footer'
 import Navbar from '../../components/navbar/Navbar'
@@ -86,10 +89,137 @@ const USERS = [
 
 const Chat = () => {
     const [activeUser, setActiveUser] = useState(USERS[0]);
+    const [messageInput, setMessageInput] = useState("");
+    const [isUploadVisible, setIsUploadVisible] = useState(false); 
+    const [isEmoteSelectorVisible, setIsEmoteSelectorVisible] = useState(false);
+    const emoteSelectorRef = useRef(null);
 
-    const handleUserClick = (user) => {
-        setActiveUser(user); 
+    const toggleUpload = () => {
+        setIsUploadVisible(!isUploadVisible); 
     };
+    
+    const toggleEmoteSelector = () => {
+        setIsEmoteSelectorVisible(!isEmoteSelectorVisible); 
+    };
+
+    const handleEmoteClick = (emojiObject) => {
+        setMessageInput((prev) => prev + emojiObject.emoji); 
+        setIsEmoteSelectorVisible(false); 
+    };
+
+    const handleUserClick = async (user) => {
+        // const messages = await fetchMessagesFromBackend(user.id); 
+        // setActiveUser({ ...user, messages });
+
+        setActiveUser(user); // Locally set the active user
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                emoteSelectorRef.current &&
+                !emoteSelectorRef.current.contains(event.target)
+            ) {
+                setIsEmoteSelectorVisible(false);
+            }
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                setIsEmoteSelectorVisible(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
+    const handleSendMessage = () => {
+        if (messageInput.trim() === "") return;
+
+        const newMessage = {
+            text: messageInput,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toISOString().split("T")[0],
+            sender: "User",
+        };
+
+        const updatedMessages = [...activeUser.messages, newMessage];
+        setActiveUser({ ...activeUser, messages: updatedMessages });
+
+        const userIndex = USERS.findIndex((user) => user.id === activeUser.id);
+        if (userIndex !== -1) {
+            USERS[userIndex] = {
+                ...USERS[userIndex],
+                messages: updatedMessages,
+            };
+        }
+
+        sendMessageToBackend(newMessage);
+        setMessageInput("");
+    };
+
+    // const sendMessageToBackend = async (message) => {
+    //     try {
+    //         const response = await axios.post(`${authAPI}/messages`, {
+    //             userId: activeUser.id,
+    //             message,
+    //         });
+    //         console.log("Message sent to backend:", response.data);
+    //     } catch (error) {
+    //         console.error("Error sending message to backend:", error);
+    //     }
+    // };
+
+    const handleFileUpload = async (file) => {
+        const fileSize = (file.size / 1024).toFixed(1); // Convert size to KB
+        const fileType = file.type || "Unknown File Type";
+
+        const fileUrl = await uploadFileToBackend(file); // Upload file to backend
+        if (!fileUrl) return;
+
+        const newFileMessage = {
+            text: file.name,
+            size: `${fileSize}kb`,
+            type: fileType,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toISOString().split("T")[0],
+            sender: "User",
+            isFile: true,
+            fileUrl, // URL file for backend
+        };
+
+        const updatedMessages = [...activeUser.messages, newFileMessage];
+        setActiveUser({ ...activeUser, messages: updatedMessages });
+
+        const userIndex = USERS.findIndex((user) => user.id === activeUser.id);
+        if (userIndex !== -1) {
+            USERS[userIndex] = {
+                ...USERS[userIndex],
+                messages: updatedMessages,
+            };
+        }
+
+        setIsUploadVisible(false); 
+    };
+
+    // const fetchMessagesFromBackend = async (userId) => {
+    //     try {
+    //         const response = await axios.get(`${authAPI}/messages?userId=${userId}`);
+    //         return response.data.messages; // Riwayat pesan dari backend
+    //     } catch (error) {
+    //         console.error("Error fetching messages from backend:", error);
+    //         return [];
+    //     }
+    // };
+
+
+
     return (
         <div className=''>
             <Navbar />
@@ -157,7 +287,7 @@ const Chat = () => {
                         </div>
                         <div className="ml-4">
                             <div className="font-bold text-[32px]">{activeUser.name}</div>
-                            <div className="text-[#00000] text-[16px">Last seen: {activeUser.lastSeen}</div>
+                            <div className="text-[#00000] text-[16px]">Last seen: {activeUser.lastSeen}</div>
                         </div>
                     </div>
 
@@ -195,14 +325,39 @@ const Chat = () => {
                                         )}
 
                                         {/* Message */}
-                                        <div
-                                            className={`bg-white/60 p-4 rounded-lg shadow-md w-[45%] ${
-                                                message.sender === "User" ? "self-end" : ""
-                                            }`}
-                                        >
-                                            <p>{message.text}</p>
-                                            <div className="text-right text-gray-400 text-xs">{message.time}</div>
-                                        </div>
+                                        {message.isFile ? (
+                                            <a
+                                                href={message.fileUrl || "#"}
+                                                download={message.text}
+                                                className={`p-4 rounded-lg shadow-md max-w-[45%] bg-white flex items-center justify-between gap-3 ${
+                                                    message.sender === "User" ? "self-end" : ""
+                                                } no-underline`}
+                                                style={{
+                                                    textDecoration: "none",
+                                                }}
+                                            >
+                                                <img src={file} alt="File Icon" className="w-[28px] h-[32px]" />
+                                                <div className="flex-1">
+                                                    <p className="font-semibold">{message.text}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {message.size}, {message.type}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right text-gray-400 text-xs self-end">{message.time}</div>
+                                            </a>
+                                        ) : (
+                                            <div
+                                                className={`p-4 rounded-lg shadow-md max-w-[45%] ${
+                                                    message.sender === "User" ? "self-end" : ""
+                                                }`}
+                                                style={{
+                                                    backgroundColor: "rgb(255, 255, 255, 0.65)",
+                                                }}
+                                            >
+                                                <p>{message.text}</p>
+                                                <div className="text-right text-gray-400 text-xs">{message.time}</div>
+                                            </div>
+                                        )}
                                     </React.Fragment>
                                 );
                             })}
@@ -210,25 +365,73 @@ const Chat = () => {
                     </div>
                     
                     {/* Input Pesan */}
-                    <div className="flex items-center p-4 gap-2 bg-[#EBECEC]">
-                        <button className="p-2">
-                            <img src={upload} alt="Upload" className="w-6 h-6" />
+                    <div className="relative flex items-center p-4 gap-2 bg-[#EBECEC]">
+                        <button className="p-2" onClick={toggleUpload}>
+                            <img src={upload} alt="Upload" className="w-6 h-6 cursor-pointer" />
                         </button>
                         <div className="relative flex-1">
                             <input
                                 type="text"
                                 placeholder="Type a message..."
+                                value={messageInput}
+                                onChange={(e) => setMessageInput(e.target.value)} 
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        handleSendMessage(); 
+                                    }
+                                }}
                                 className="w-full p-2 pr-10 bg-white outline-none"
                             />
                             <img
                                 src={emote}
                                 alt="Emote"
                                 className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
+                                onClick={toggleEmoteSelector} // Tampilkan emote selector
                             />
                         </div>
-                        <button className="p-2">
+                        <button className="p-2" onClick={handleSendMessage}>
                             <img src={send} alt="Send" className="w-6 h-6 cursor-pointer" />
                         </button>
+
+                        {/* Emote Selector */}
+                        {isEmoteSelectorVisible && (
+                            <div
+                                ref={emoteSelectorRef} // Referensi untuk emote selector
+                                className="absolute bottom-[220px] right-12 bg-white shadow-lg rounded-lg "
+                                style={{
+                                    width: "300px",
+                                    height: "300px",
+                                }}
+                            >
+                                <EmojiPicker onEmojiClick={handleEmoteClick} />
+                            </div>
+                        )}
+
+                        {/* Floating Div */}
+                        {isUploadVisible && (
+                            <div
+                                className={`absolute bottom-[80px] left-5 rounded-[3px] shadow-lg bg-gray-300 transition-all duration-300 ease-in-out ${
+                                    isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                                }`}
+                                style={{
+                                    zIndex: 1000,
+                                }}
+                            >
+                                <label className="flex items-center gap-2 p-2 bg-gray-300 rounded-md hover:bg-gray-400 cursor-pointer">
+                                    <img src={sendfrom} alt="Upload Icon" className="w-5 h-5" />
+                                    <span className="text-[16px] font-medium">Upload from Computer</span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            if (e.target.files.length > 0) {
+                                                handleFileUpload(e.target.files[0]);
+                                            }
+                                        }}
+                                    />
+                                </label>
+                            </div>
+                        )}
                     </div>
                 </div>
 
