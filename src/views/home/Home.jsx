@@ -29,7 +29,6 @@ import phone from '../../assets/phone_stock.svg'
 import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 import { Link, useNavigate } from 'react-router-dom'
-import Footer from "../../components/footer/Footer";
 import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import ServiceItem from '../../components/service_item/ServiceItem'
@@ -37,6 +36,10 @@ import ServiceItem from '../../components/service_item/ServiceItem'
 const Home = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState(null);
+
+  const GetTrendingData = async () => {
+
+  }
   //data fetch api
   const [trendingData, setTrendingData] = useState([
     {
@@ -345,10 +348,10 @@ const Home = () => {
       </section>
 
       <section className='h-[500px] relative p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B]'>
-        <img className='absolute left-0 bottom-0 p-3'
+        <img className='absolute left-0 bottom-0 p-6'
           src={bg_dots_extended}
         />
-        <img className='absolute right-0 top-0 p-3'
+        <img className='absolute right-0 top-0 p-6'
           src={bg_dots_extended}
         />
         <p className='font-poppins text-5xl font-semibold mb-3'>
@@ -357,8 +360,8 @@ const Home = () => {
             B-Connect?
           </span>
         </p>
-        <div className='flex flex-row justify-between mt-7'>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+        <div className='flex flex-row justify-center mt-7 gap-20'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={talent_pool}
               alt="talent pool"
             />

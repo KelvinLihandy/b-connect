@@ -24,7 +24,7 @@ const Detail = () => {
         pic4,
         pic5
     ];
-    
+
     const [currentImage, setCurrentImage] = useState(0);
     const [direction, setDirection] = useState(0); // -1 for left, 1 for right
     const [isAutoplay, setIsAutoplay] = useState(true);
@@ -32,7 +32,7 @@ const Detail = () => {
     const [activeTab, setActiveTab] = useState("basic");
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showZoomOverlay, setShowZoomOverlay] = useState(false);
-    
+
     // Pricing data for tabs
     const pricingData = {
         basic: {
@@ -58,7 +58,7 @@ const Detail = () => {
             features: ["3 Konsep Logo", "File Resolusi Tinggi", "Hak Penggunaan Komersial", "Konsultasi Revisi", "File Source", "Mockup Preview", "Brand Guidelines Basic"]
         }
     };
-    
+
     // Autoplay functionality
     useEffect(() => {
         let interval;
@@ -70,26 +70,26 @@ const Detail = () => {
         }
         return () => clearInterval(interval);
     }, [isAutoplay, thumbnails.length, isFullscreen]);
-    
+
     // Pause autoplay on hover
     const handleMouseEnter = () => setIsAutoplay(false);
     const handleMouseLeave = () => setIsAutoplay(true);
-    
+
     const nextImage = () => {
         setDirection(1);
         setCurrentImage((prev) => (prev + 1) % thumbnails.length);
     };
-    
+
     const prevImage = () => {
         setDirection(-1);
         setCurrentImage((prev) => (prev === 0 ? thumbnails.length - 1 : prev - 1));
     };
-    
+
     // Toggle between cover and contain modes for images
     const toggleImageMode = () => {
         setImageMode(prev => prev === "cover" ? "contain" : "cover");
     };
-    
+
     // Toggle fullscreen mode for the carousel
     const toggleFullscreen = () => {
         setIsFullscreen(prev => !prev);
@@ -111,22 +111,22 @@ const Detail = () => {
             opacity: 0
         })
     };
-    
+
     // Zoom animation for fullscreen mode
     const fullscreenVariants = {
         hidden: { opacity: 0, scale: 0.8 },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             scale: 1,
             transition: { duration: 0.3 }
         },
-        exit: { 
-            opacity: 0, 
+        exit: {
+            opacity: 0,
             scale: 0.8,
             transition: { duration: 0.2 }
         }
     };
-    
+
     // Transition settings for smooth animation
     const transition = {
         x: { type: "spring", stiffness: 300, damping: 30 },
@@ -160,7 +160,7 @@ const Detail = () => {
 
     // Function to get reviewer profile image based on id
     const getReviewerImage = (id) => {
-        switch(id) {
+        switch (id) {
             case 1: return profileReview1;
             case 2: return profileReview2;
             case 3: return profileReview3;
@@ -179,11 +179,10 @@ const Detail = () => {
                             setDirection(index > currentImage ? 1 : -1);
                             setCurrentImage(index);
                         }}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                            index === current 
-                                ? "w-8 bg-blue-500" 
-                                : "w-2 bg-white bg-opacity-60 hover:bg-opacity-100"
-                        }`}
+                        className={`h-2 rounded-full transition-all duration-300 ${index === current
+                            ? "w-8 bg-blue-500"
+                            : "w-2 bg-white bg-opacity-60 hover:bg-opacity-100"
+                            }`}
                         aria-label={`Go to slide ${index + 1}`}
                     />
                 ))}
@@ -194,9 +193,9 @@ const Detail = () => {
     // Fullscreen image view component
     const FullscreenView = () => {
         if (!isFullscreen) return null;
-        
+
         return (
-            <motion.div 
+            <motion.div
                 className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
                 initial="hidden"
                 animate="visible"
@@ -205,7 +204,7 @@ const Detail = () => {
                 onClick={toggleFullscreen}
             >
                 <div className="relative w-full h-full max-w-6xl max-h-screen p-8" onClick={e => e.stopPropagation()}>
-                    <button 
+                    <button
                         className="absolute top-4 right-4 bg-white rounded-full p-2 z-10"
                         onClick={toggleFullscreen}
                     >
@@ -214,13 +213,13 @@ const Detail = () => {
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
-                    
+
                     <div className="relative h-full flex items-center justify-center">
                         <AnimatePresence initial={false} custom={direction}>
-                            <motion.img 
+                            <motion.img
                                 key={currentImage}
-                                src={thumbnails[currentImage]} 
-                                alt={`Logo Design Preview ${currentImage + 1}`} 
+                                src={thumbnails[currentImage]}
+                                alt={`Logo Design Preview ${currentImage + 1}`}
                                 className="max-w-full max-h-full object-contain"
                                 custom={direction}
                                 variants={slideVariants}
@@ -230,8 +229,8 @@ const Detail = () => {
                                 transition={transition}
                             />
                         </AnimatePresence>
-                        
-                        <button 
+
+                        <button
                             className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 opacity-80 hover:opacity-100"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -240,7 +239,7 @@ const Detail = () => {
                         >
                             <ChevronLeft size={24} />
                         </button>
-                        <button 
+                        <button
                             className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 opacity-80 hover:opacity-100"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -249,7 +248,7 @@ const Detail = () => {
                         >
                             <ChevronRight size={24} />
                         </button>
-                        
+
                         <div className="absolute bottom-4 left-0 right-0">
                             <ProgressIndicator current={currentImage} total={thumbnails.length} />
                         </div>
@@ -262,7 +261,7 @@ const Detail = () => {
     return (
         <div>
             <Navbar />
-            
+
             {/* Main content area */}
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -280,10 +279,10 @@ const Detail = () => {
                             <span className="text-yellow-500 ml-1">4.9</span>
                             <span className="text-gray-500 ml-1">(902)</span>
                         </div>
-                        
+
                         {/* Enhanced Animated Carousel */}
-                        <div 
-                            className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-96 shadow-lg"
+                        <div
+                            className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-96 shadow-lg "
                             onMouseEnter={() => {
                                 handleMouseEnter();
                                 setShowZoomOverlay(true);
@@ -304,20 +303,20 @@ const Detail = () => {
                                     exit="exit"
                                     transition={transition}
                                 >
-                                    <img 
-                                        src={thumbnails[currentImage]} 
-                                        alt={`Logo Design Preview ${currentImage + 1}`} 
+                                    <img
+                                        src={thumbnails[currentImage]}
+                                        alt={`Logo Design Preview ${currentImage + 1}`}
                                         className={`w-full h-full object-${imageMode} transition-all duration-300`}
-                                        style={{ 
-                                            backgroundColor: '#f9fafb', 
+                                        style={{
+                                            backgroundColor: '#f9fafb',
                                             objectPosition: 'center'
                                         }}
                                     />
                                 </motion.div>
                             </AnimatePresence>
-                            
+
                             {/* Navigation buttons with hover effects */}
-                            <motion.button 
+                            <motion.button
                                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 hover:scale-110 transition-all z-10"
                                 onClick={prevImage}
                                 whileHover={{ scale: 1.1 }}
@@ -325,7 +324,7 @@ const Detail = () => {
                             >
                                 <ChevronLeft size={24} />
                             </motion.button>
-                            <motion.button 
+                            <motion.button
                                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 hover:scale-110 transition-all z-10"
                                 onClick={nextImage}
                                 whileHover={{ scale: 1.1 }}
@@ -333,7 +332,7 @@ const Detail = () => {
                             >
                                 <ChevronRight size={24} />
                             </motion.button>
-                            
+
                             {/* Control buttons */}
                             <div className="absolute top-4 right-4 flex space-x-2">
                                 <motion.button
@@ -359,10 +358,10 @@ const Detail = () => {
                                     <Maximize2 size={18} />
                                 </motion.button>
                             </div>
-                            
+
                             {/* Zoom overlay */}
                             {showZoomOverlay && (
-                                <div 
+                                <div
                                     className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
                                     onClick={toggleFullscreen}
                                 >
@@ -371,21 +370,20 @@ const Detail = () => {
                                     </div>
                                 </div>
                             )}
-                            
+
                             {/* Progress indicator dots */}
                             <ProgressIndicator current={currentImage} total={thumbnails.length} />
                         </div>
-                        
+
                         {/* Thumbnail Images with active state */}
                         <div className="flex space-x-2 mb-8 overflow-x-auto pb-2">
                             {thumbnails.map((thumb, index) => (
-                                <motion.div 
+                                <motion.div
                                     key={index}
-                                    className={`border-2 rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${
-                                        index === currentImage 
-                                            ? 'border-blue-500 shadow-md' 
-                                            : 'border-gray-200 hover:border-blue-300'
-                                    }`}
+                                    className={`border-2 rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${index === currentImage
+                                        ? 'border-blue-500 shadow-md'
+                                        : 'border-gray-200 hover:border-blue-300'
+                                        }`}
                                     onClick={() => {
                                         setDirection(index > currentImage ? 1 : -1);
                                         setCurrentImage(index);
@@ -393,17 +391,16 @@ const Detail = () => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
-                                    <img 
-                                        src={thumb} 
-                                        alt={`Thumbnail ${index + 1}`} 
-                                        className={`w-24 h-16 object-cover ${
-                                            index !== currentImage ? 'opacity-70 hover:opacity-100' : ''
-                                        } transition-opacity`}
+                                    <img
+                                        src={thumb}
+                                        alt={`Thumbnail ${index + 1}`}
+                                        className={`w-24 h-16 object-cover ${index !== currentImage ? 'opacity-70 hover:opacity-100' : ''
+                                            } transition-opacity`}
                                     />
                                 </motion.div>
                             ))}
                         </div>
-                        
+
                         {/* Description Section */}
                         <div className="border-t pt-6">
                             <h2 className="text-xl font-bold mb-4">Description</h2>
@@ -417,7 +414,7 @@ const Detail = () => {
                                 bisnis Anda dari kompetitor
                             </p>
                         </div>
-                        
+
                         {/* Workflow Section */}
                         <div className="border-t pt-6 mt-6">
                             <h2 className="text-xl font-bold mb-4">Workflow Overview</h2>
@@ -426,26 +423,26 @@ const Detail = () => {
                                     <h3 className="font-medium">1. Konsultasi & Perencanaan</h3>
                                     <p className="text-gray-600">Diskusi awal untuk memahami kebutuhan, preferensi, dan tujuan proyek.</p>
                                 </div>
-                                
+
                                 <div className="border-l-4 border-blue-500 pl-4">
                                     <h3 className="font-medium">2. Proses Eksekusi & Revisi</h3>
                                     <p className="text-gray-600">Pengerjaan proyek berdasarkan kesepakatan awal, dengan kesempatan revisi jika diperlukan.</p>
                                 </div>
-                                
+
                                 <div className="border-l-4 border-blue-500 pl-4">
                                     <h3 className="font-medium">3. Finalisasi & Pengiriman</h3>
                                     <p className="text-gray-600">Setelah disetujui, hasil akhir dikirim dalam format yang sesuai dan siap digunakan.</p>
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Freelancer Profile Section */}
                         <div className="border-t pt-6 mt-6">
                             <h2 className="text-xl font-bold mb-4">Freelancer Profile</h2>
                             <div className="flex items-start space-x-4">
-                                <img 
-                                    src={profileMain} 
-                                    alt="Adam Warlok" 
+                                <img
+                                    src={profileMain}
+                                    alt="Adam Warlok"
                                     className="w-16 h-16 rounded-full object-cover"
                                 />
                                 <div>
@@ -472,7 +469,7 @@ const Detail = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Reviews Section */}
                         <div className="border-t pt-6 mt-6">
                             <div className="flex items-center justify-between mb-4">
@@ -486,14 +483,14 @@ const Detail = () => {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {reviews.map((review) => (
                                     <div key={review.id} className="bg-gray-100 rounded-lg p-4">
                                         <div className="flex items-center space-x-2">
-                                            <img 
-                                                src={getReviewerImage(review.id)} 
-                                                alt={review.name} 
+                                            <img
+                                                src={getReviewerImage(review.id)}
+                                                alt={review.name}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />
                                             <div>
@@ -513,7 +510,7 @@ const Detail = () => {
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Right column - takes 4/12 of the grid on large screens */}
                     <div className="lg:col-span-4">
                         <div className="sticky top-4">
@@ -521,30 +518,28 @@ const Detail = () => {
                             <div className="border rounded-lg shadow-sm overflow-hidden">
                                 {/* Tab Navigation */}
                                 <div className="flex">
-                                    <motion.button 
-                                        className={`flex-1 py-3 text-center font-medium transition-colors duration-300 ${
-                                            activeTab === "basic" 
-                                                ? "border-b-2 border-blue-600 text-blue-600" 
-                                                : "text-gray-600 hover:text-blue-500"
-                                        }`}
+                                    <motion.button
+                                        className={`flex-1 py-3 text-center font-medium transition-colors duration-300 ${activeTab === "basic"
+                                            ? "border-b-2 border-blue-600 text-blue-600"
+                                            : "text-gray-600 hover:text-blue-500"
+                                            }`}
                                         onClick={() => setActiveTab("basic")}
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         Basic
                                     </motion.button>
-                                    <motion.button 
-                                        className={`flex-1 py-3 text-center font-medium transition-colors duration-300 ${
-                                            activeTab === "standard" 
-                                                ? "border-b-2 border-blue-600 text-blue-600" 
-                                                : "text-gray-600 hover:text-blue-500"
-                                        }`}
+                                    <motion.button
+                                        className={`flex-1 py-3 text-center font-medium transition-colors duration-300 ${activeTab === "standard"
+                                            ? "border-b-2 border-blue-600 text-blue-600"
+                                            : "text-gray-600 hover:text-blue-500"
+                                            }`}
                                         onClick={() => setActiveTab("standard")}
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         Standard
                                     </motion.button>
                                 </div>
-                                
+
                                 {/* Pricing Content */}
                                 <div className="p-6">
                                     <AnimatePresence mode="wait">
@@ -557,13 +552,13 @@ const Detail = () => {
                                         >
                                             <h3 className="font-medium uppercase">{pricingData[activeTab].title}</h3>
                                             <p className="text-xl font-bold mt-1">{pricingData[activeTab].price}</p>
-                                            
+
                                             <div className="text-gray-600 text-sm mt-3">
                                                 {pricingData[activeTab].description.map((desc, idx) => (
                                                     <p key={idx} className={idx > 0 ? "mt-1" : ""}>{desc}</p>
                                                 ))}
                                             </div>
-                                            
+
                                             <div className="flex flex-wrap mt-4 gap-4">
                                                 <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                                                     <Clock size={16} />
@@ -574,7 +569,7 @@ const Detail = () => {
                                                     {pricingData[activeTab].revisions}
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Feature List */}
                                             <ul className="space-y-2 text-gray-700 mt-4">
                                                 {pricingData[activeTab].features.map((feature, index) => (
@@ -586,9 +581,9 @@ const Detail = () => {
                                             </ul>
                                         </motion.div>
                                     </AnimatePresence>
-                                    
+
                                     {/* Buttons */}
-                                    <motion.button 
+                                    <motion.button
                                         className="w-full mt-6 bg-blue-700 hover:bg-blue-800 text-white py-3 px-4 rounded-md font-medium flex items-center justify-center"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
@@ -596,8 +591,8 @@ const Detail = () => {
                                         Continue
                                         <ChevronRight size={18} className="ml-1" />
                                     </motion.button>
-                                    
-                                    <motion.button 
+
+                                    <motion.button
                                         className="w-full mt-3 border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-4 rounded-md font-medium"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
@@ -610,9 +605,9 @@ const Detail = () => {
                     </div>
                 </div>
             </div>
-            
+
             <Footer />
-            
+
             {/* Fullscreen view modal */}
             <AnimatePresence>
                 {isFullscreen && <FullscreenView />}

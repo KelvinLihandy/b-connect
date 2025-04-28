@@ -33,11 +33,11 @@ const SignUp = () => {
 		return true;
 	};
 
-	const register = () => {
+	const register = async () => {
 		console.log(name);
 		console.log(email);
 		console.log(password);
-		axios.post(`${authAPI}/register`, {
+		await axios.post(`${authAPI}/register`, {
 			name: name,
 			email: email,
 			password: password

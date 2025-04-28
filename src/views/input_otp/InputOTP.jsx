@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Link, replace, useNavigate, useSearchParams } from 'react-router-dom'
 import bg_left from "../../assets/bg_image_left.svg"
 import bg_right from "../../assets/bg_image_right.svg"
 import bg_dots from "../../assets/bg_dots.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
+import { EmailContext } from '../../contexts/EmailContext'
 
 const InputOTP = () => {
   const [params] = useSearchParams();
@@ -12,11 +13,12 @@ const InputOTP = () => {
   const [isLoading, setIsLoading] = useState(false);
   const token = params.get("token");
   const navigate = useNavigate();
+  const { email, setEmail } = useContext(EmailContext);
   const storedExpiry = localStorage.getItem("otpExpiry");
   const storedInterval = localStorage.getItem("otpInterval");
   const initialTimeOtpLeft = storedExpiry ? Math.max(0, Math.floor((+storedExpiry - Date.now()) / 1000)) : 5 * 60;
   const initialTimeReqLeft = storedInterval ? Math.max(0, Math.floor((+storedInterval - Date.now()) / 1000)) : 10;
-
+  const [errorMessage, setErrorMessage] = useState("");
   const [timeOtpLeft, setTimeOtpLeft] = useState(initialTimeOtpLeft);
   const [timeReqLeft, setTimeReqLeft] = useState(initialTimeReqLeft);
 
@@ -54,7 +56,7 @@ const InputOTP = () => {
 
     return () => {
       window.removeEventListener("beforeunload", removeStorageItems);
-      removeStorageItems(); // Also remove when component unmounts
+      removeStorageItems();
     };
   }, []);
 
@@ -78,13 +80,14 @@ const InputOTP = () => {
     setIsLoading(true);
     await axios.post(`${authAPI}/resend-otp`, {
       token: token,
-      email: localStorage.getItem("email")
+      email: email
     })
       .then(response => {
         console.log(response.data);
       })
       .catch(error => {
         console.error('Error resend otp:', error.response);
+        setErrorMessage(error.response.data.error);
       });
     setIsLoading(false);
   }
@@ -92,7 +95,6 @@ const InputOTP = () => {
   const verifyOTP = async (token) => {
     const otpParse = parseInt(OTPinput.join(""));
     if (OTPinput.includes(null) || OTPinput.includes("")) {
-      console.log('lmao');
       console.log(otpParse);
       return;
     }
@@ -103,15 +105,17 @@ const InputOTP = () => {
     })
       .then(response => {
         console.log(response.data);
-        // localStorage.removeItem("email");
+        localStorage.setItem('otpToken', response.data.otp);
         navigate('/sign-in/change-password', { replace: true });
       })
       .catch(error => {
         console.error('Error verify otp:', error.response);
+        setErrorMessage(error.response.data.error);
         console.log(otpParse);
       });
     setIsLoading(false);
   }
+
   return (
     <div className='min-h-screen bg-white flex items-center justify-center relative'>
       <img
@@ -137,7 +141,7 @@ const InputOTP = () => {
             Verify Email
           </h1>
           <p className='text-[#333333] font-Archivo text-2xl'>
-            We have sent an OTP code to your email {localStorage.getItem("email")}
+            We have sent an OTP code to your email {email}
           </p>
           <p className='text-[#333333] font-Archivo text-2xl pt-3'>
             {formatTime(timeOtpLeft)}
