@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
 
 export const Footer = () => {
   return (
-    <footer className='bg-[#F8F9FA] h-[450px] flex flex-row pt-13 font-jost pl-25 relative'>
+    <footer className='bg-[#F8F9FA] h-[450px] flex flex-row pt-13 font-jost relative justify-center'>
       <div className='max-w-[460px]'>
         <div className='flex flex-row items-center px-5'>
           <img src={logo}></img>
@@ -29,7 +29,7 @@ export const Footer = () => {
       <div className='h-full bg-black w-[1px]' />
       <div className='flex flex-col min-w-[360px]'>
         <div className='flex flex-col p-5 text-2xl gap-10'>
-          <Link to=''>About</Link>
+          <Link to="/about-us">About</Link>
           <Link to=''>FAQ</Link>
           <Link to=''>Services</Link>
           <Link to=''>Tournaments</Link>

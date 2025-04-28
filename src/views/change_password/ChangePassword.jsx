@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import bg_left from "../../assets/bg_image_left.svg"
 import bg_right from "../../assets/bg_image_right.svg"
@@ -7,12 +7,15 @@ import password_hide from "../../assets/eye_off.svg"
 import password_show from "../../assets/eye_on.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
+import { EmailContext } from '../../contexts/EmailContext'
 
 const ChangePassword = () => {
   const [showPass, setShowPass] = useState(false)
   const [password, setPassword] = useState("");
   const [passwordComf, setPasswordConf] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { email, setEmail } = useContext(EmailContext);
+  const otpToken = localStorage.getItem('otpToken');
   const navigate = useNavigate();
 
   const switchEye = () => {
@@ -31,14 +34,19 @@ const ChangePassword = () => {
     if (password !== passwordComf) return;
     setIsLoading(true);
     await axios.post(`${authAPI}/change-password`, {
-      email: localStorage.getItem("email"),
+      email: email,
       password: password,
       passwordConf: passwordComf
-    })
+    },
+      {
+        headers: {
+          Authorization: `Bearer ${otpToken}`
+        }
+      })
       .then(response => {
         console.log(response.data);
         navigate('/sign-in', { replace: true });
-        localStorage.removeItemItem("email", email);
+        localStorage.removeItem('otpToken');
       })
       .catch(error => {
         console.error('Error change password:', error.response);
@@ -132,11 +140,6 @@ const ChangePassword = () => {
           >
             Change Password
           </button>
-          {/* <div className='text-center'>
-            <Link className='text-xl font-poppins text-[#004B90] hover:text-[#0073E6]' to='/sign-in'>
-              Back To Login
-            </Link>
-          </div> */}
         </div>
       </div>
     </div>
