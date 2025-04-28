@@ -15,6 +15,7 @@ import about_us_image from "../../assets/about_us_img.svg"
 import cantfind from "../../assets/yuppies_managing.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
+import Navbar from '../../components/navbar/Navbar'
 
 const AboutUs = () => {
     const [expandedItems, setExpandedItems] = useState([]);
@@ -29,57 +30,7 @@ const AboutUs = () => {
 
     return (
         <div>
-            <nav className="font-poppins absolute top-0 left-0 w-full bg-[#2F5379] z-50 backdrop-blur-xs p-4 flex flex-row justify-between items-center px-10 h-[100px]">
-                {/* Logo */}
-                <img src={logo} alt="Logo" className="w-[114px] h-[80px]" />
-
-                {/* Search Bar */}
-                <div className="relative flex items-center w-[550px] h-[50px] bg-[#FFFFFF] rounded-[14px] overflow-visible">
-                    <input
-                        type="text"
-                        placeholder="Search For Freelancers Or Services"
-                        className="relative left-3 w-full h-[40px] px-4 rounded-[14px] border-black outline-none text-black text-sm"
-                    />
-                    <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
-                        <img src={search} alt="Search" className=" w-[83px] h-[64px]" />
-                    </button>
-                </div>
-
-                {/* Icons and Buttons */}
-                <div className="flex items-center gap-6 text-white">
-                    {/* Notification Icon */}
-                    <div className="relative">
-                        <img src={bell} alt="Notifications" className="w-7 h-7" />
-                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </div>
-
-                    {/* Heart Icon */}
-                    <img src={heart} alt="Favorites" className="w-7 h-7" />
-
-                    {/* Group Icon */}
-                    <img src={people} alt="Group" className="w-9 h-9" />
-
-                    {/* Chat Icon */}
-                    <img src={message} alt="Chat" className="w-7 h-7" />
-
-                    {/* Order Button */}
-                    <button className="flex border border-white rounded-[14px] px-4 py-2 text-sm justify-center items-center gap-2">
-                        <img src={order} alt="" className='w-6 h-6'/>
-                        Order
-                    </button>
-
-                    {/* Role Button */}
-                    <button className="flex items-center gap-2 bg-white text-black px-4 py-1 rounded-[29px]">
-                        <div className="relative -left-2 w-8 h-8 bg-blue-500 rounded-full"></div>
-                        <span className="font-medium">User</span>
-                    </button>
-
-                    {/* Profile Picture */}
-                    <div className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center">
-                        <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
-                    </div>
-                </div>
-            </nav>
+            <Navbar/>
 
             <div className="block font-Archivo text-[#171A1F] mx-20 my-40">
                 <div className="flex flex-col lg:flex-row gap-10">

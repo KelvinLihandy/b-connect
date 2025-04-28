@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DynamicStars } from '../dynamic_stars/DynamicStars';
 import arrow_right from '../../assets/arrow_right.svg'
 import { AnimatePresence, motion } from 'framer-motion';
+import default_avatar from '../../assets/default-avatar.png'
 
-const CarouselTrending = ({ trendingData }) => {
+const CarouselTrending = ({ data }) => {
   const itemsPerPage = 3;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const totalIndex = Math.ceil(trendingData.length / itemsPerPage);
+  const totalIndex = Math.ceil(data.length / itemsPerPage);
 
   const handleIndexChange = (newIndex) => {
     const dir = newIndex > currentIndex ? 1 : -1;
@@ -30,11 +31,22 @@ const CarouselTrending = ({ trendingData }) => {
     })
   };
 
-  const currentItems = trendingData.slice(
+  const currentItems = data.slice(
     currentIndex * itemsPerPage,
     currentIndex * itemsPerPage + itemsPerPage
   );
 
+  useEffect(() => {
+    if (data.length === 0) return;
+    let interval;
+    interval = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % totalIndex);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [data.length]);
+  
+  console.log(currentIndex)
   return (
     <>
       <div className='flex flex-row gap-5 h-64'>
@@ -56,21 +68,22 @@ const CarouselTrending = ({ trendingData }) => {
               >
                 <div className='flex flex-col gap-3'>
                   <div>
-                    <p className='text-4xl font-semibold'>{partner.firstName}</p>
-                    <p className='text-4xl font-semibold'>{partner.lastName}</p>
+                    <p className='text-4xl font-semibold'>{partner.name.split(/ (.+)/)[0]}</p>
+                    <p className='text-4xl font-semibold'>{partner.name.split(/ (.+)/)[1] ? partner.name.split(/ (.+)/)[1] : "\u00A0"}</p>
+                    <p>{console.log(partner.name.split(' '))}</p>
                   </div>
                   <div className='flex flex-col'>
                     <DynamicStars number={partner.rating} />
                     <p className='text-xl font-inter mx-1'>{partner.rating}</p>
-                    <p className='text-xl font-inter'>({partner.raters})</p>
+                    <p className='text-xl font-inter'>({partner.reviews})</p>
                   </div>
                   <div className='flex flex-row font-inter gap-2'>
-                    <p className='text-lg'>{partner.role}</p>
+                    <p className='text-lg'>{partner.type}</p>
                     <img src={arrow_right} alt="arrow right" />
                   </div>
                 </div>
-                <div className='max-w-60 ml-auto'>
-                  <img className='max-50 max-w-60' src={partner.picture} alt="picture" />
+                <div className='w-50 h-50 ml-auto bg-white flex items-center justify-center'>
+                  <img className='max-h-full max-w-full' src={partner.picture === "temp" ? default_avatar : partner.picture} alt="picture" />
                 </div>
               </div>
             ))}
@@ -89,44 +102,6 @@ const CarouselTrending = ({ trendingData }) => {
           ))
         )}
       </div>
-      {/* {trendingData.slice(currentIndex * itemsPerPage, currentIndex * itemsPerPage + itemsPerPage).map((partner) => (
-          <div className='w-md flex flex-row justify-around items-center p-4 bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] rounded-2xl shadow-[7px_8px_10px_rgba(0,0,0,0.25)]'
-            key={partner.id || index}
-          >
-            <div className='flex flex-col gap-3'>
-              <div>
-                <p className='text-4xl font-semibold'>
-                  {partner.firstName}
-                </p>
-                <p className='text-4xl font-semibold'>
-                  {partner.lastName}
-                </p>
-              </div>
-              <div className='flex flex-col'>
-                <DynamicStars number={partner.rating} />
-                <p className='text-xl font-inter mx-1'>
-                  {partner.rating}
-                </p>
-                <p className='text-xl font-inter'>
-                  ({partner.raters})
-                </p>
-              </div>
-              <div className='flex flex-row font-inter gap-2'>
-                <p className='text-lg'>
-                  {partner.role}
-                </p>
-                <img src={arrow_right}
-                  alt="arrow right"
-                />
-              </div>
-            </div>
-            <div className='max-w-60 ml-auto'>
-              <img className='max-50 max-w-60'
-                src={partner.picture}
-                alt="picture" />
-            </div>
-          </div>
-        ))}*/}
     </>
   )
 }
