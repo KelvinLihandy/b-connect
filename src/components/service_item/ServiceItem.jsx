@@ -11,6 +11,7 @@ const ServiceItem = ({ data }) => {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         });
+        //perlu update jadi range lowest package price sampe highest package price
 
         return (
           <div key={serv.id} className="w-sm h-110 font-inter">
@@ -19,7 +20,7 @@ const ServiceItem = ({ data }) => {
             </div>
             <div className="p-3 flex flex-col gap-3">
               <div className="flex flex-row gap-10">
-                <p className="text-wrap font-Archivo font-bold text-xl">{serv.title}</p>
+                <p className="text-wrap font-Archivo font-bold text-xl">{serv.name}</p>
                 <img className="self-start" src={heart} alt="like" />
               </div>
               <p className="font-bold font-inter text-xl">Rp. {formattedPrice}</p>
