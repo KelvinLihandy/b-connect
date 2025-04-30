@@ -29,11 +29,7 @@ import phone from '../../assets/phone_stock.svg'
 import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 import { Link, useNavigate } from 'react-router-dom'
-<<<<<<< HEAD
-import Footer from "../../components/footer/Footer";
-=======
 import Footer from '../../components/footer/Footer'
->>>>>>> 255e92e4373ae2c470aba244d9de7e81717426ee
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import ServiceItem from '../../components/service_item/ServiceItem'
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
