@@ -53,15 +53,15 @@ export default function Navbar() {
           checked={enabled}
           onChange={setEnabled}
           className={`${
-            enabled ? "bg-blue-600" : "bg-gray-400"
-          } relative inline-flex h-13 w-35 items-center rounded-full p-1`}
+            enabled ? "bg-blue-600" : "bg-[#212861]"
+          } relative inline-flex h-13 w-40 items-center rounded-full p-1`}
         >
-          <span className="absolute inset-0 flex items-center justify-center text-lg font-medium text-white">
+          <span className={`absolute inset-0 flex items-center ${enabled ? "justify-end pr-6" : "justify-center"} text-lg font-medium text-white`}>
             {enabled ? "Freelancer" : "User"}
           </span>
           <span
             className={`${
-              enabled ? "translate-x-[4px]" : "translate-x-23"
+              enabled ? "translate-x-[4px]" : "translate-x-28"
             } inline-block h-8 w-8 transform bg-white rounded-full transition`}
           />
         </Switch>
