@@ -29,15 +29,16 @@ const SignIn = () => {
 		setShowPass((showPass) => !showPass)
 	}
 
-	const login = () => {
+	const login = async () => {
 		console.log(email);
 		console.log(password);
-		axios.post(`${authAPI}/login`, {
+		await axios.post(`${authAPI}/login`, {
 			email: email,
 			password: password
 		})
 			.then(response => {
 				console.log(response.data);
+				navigate('/home', { replace: true });
 			})
 			.catch(error => {
 				console.error('Error login:', error.response);

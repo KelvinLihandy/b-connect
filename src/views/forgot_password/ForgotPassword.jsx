@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import bg_left from "../../assets/bg_image_left.svg"
 import bg_right from "../../assets/bg_image_right.svg"
 import bg_dots from "../../assets/bg_dots.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
+import { EmailContext } from '../../contexts/EmailContext'
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
+  const { email, setEmail } = useContext(EmailContext);
   const [emailMessage, setEmailMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,13 +26,12 @@ const ForgotPassword = () => {
       })
         .then(response => {
           console.log(response.data);
-          navigate(response.data.redirectUrl, { replace: true });
+          navigate(response.data.redirectUrl, { replace: true }); //go to InputOTP.jsx
         })
         .catch(error => {
           console.error('Error send otp:', error.response);
         });
       setIsLoading(false);
-      localStorage.setItem("email", email);
     }
     console.log("send = ", email);
   }
@@ -61,7 +61,7 @@ const ForgotPassword = () => {
             Forget your password?
           </h1>
           <p className='text-[#333333] font-Archivo text-2xl'>
-            Please enter the email address you'd like your password reset information sent to
+            Please enter the email address you'd like your password to be reset
           </p>
         </div>
 

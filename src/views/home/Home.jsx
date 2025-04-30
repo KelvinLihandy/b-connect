@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import logo from '../../assets/logo.svg'
 import login_logo from '../../assets/login_logo.svg'
 import dropdown_tri from '../../assets/dropdown_tri.svg'
@@ -29,107 +29,22 @@ import phone from '../../assets/phone_stock.svg'
 import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 import { Link, useNavigate } from 'react-router-dom'
+<<<<<<< HEAD
 import Footer from "../../components/footer/Footer";
+=======
+import Footer from '../../components/footer/Footer'
+>>>>>>> 255e92e4373ae2c470aba244d9de7e81717426ee
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import ServiceItem from '../../components/service_item/ServiceItem'
+import { gigAPI, userAPI } from '../../constants/APIRoutes'
+import axios from 'axios'
+import { debounce } from 'lodash';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState(null);
-  //data fetch api
-  const [trendingData, setTrendingData] = useState([
-    {
-      id: 1,
-      firstName: "Aarav",
-      lastName: "Andeep",
-      picture: aarav_andeep,
-      rating: 1.3,
-      raters: 69,
-      role: "UI/UX Designer",
-    },
-    {
-      id: 2,
-      firstName: "Hrithik",
-      lastName: "Tawarin",
-      picture: hrithik_tiwarin,
-      rating: 2.3,
-      raters: 69,
-      role: "Animator 2D",
-    },
-    {
-      id: 3,
-      firstName: "Shivam",
-      lastName: "Pranay",
-      picture: shivam_pranay,
-      rating: 3.3,
-      raters: 69,
-      role: "Data Scientist",
-    },
-    {
-      id: 4,
-      firstName: "Aarav",
-      lastName: "Andeep",
-      picture: aarav_andeep,
-      rating: 4.3,
-      raters: 69,
-      role: "UI/UX Designer",
-    },
-    {
-      id: 5,
-      firstName: "Aarav",
-      lastName: "Aarav",
-      picture: hrithik_tiwarin,
-      rating: 5.0,
-      raters: 69,
-      role: "Animator 2D",
-    },
-    {
-      id: 6,
-      firstName: "Aarav",
-      lastName: "Aarav",
-      picture: shivam_pranay,
-      rating: 4.3,
-      raters: 69,
-      role: "Data Scientist",
-    },
-    {
-      id: 7,
-      firstName: "Hrithik",
-      lastName: "Hrithik",
-      picture: aarav_andeep,
-      rating: 4.3,
-      raters: 69,
-      role: "UI/UX Designer",
-    },
-    {
-      id: 8,
-      firstName: "Hrithik",
-      lastName: "Hrithik",
-      picture: hrithik_tiwarin,
-      rating: 4.3,
-      raters: 69,
-      role: "Animator 2D",
-    },
-    {
-      id: 9,
-      firstName: "Hrithik",
-      lastName: "Hrithik",
-      picture: shivam_pranay,
-      rating: 4.3,
-      raters: 69,
-      role: "Data Scientist",
-    },
-    {
-      id: 9,
-      firstName: "asda",
-      lastName: "Hrithik",
-      picture: shivam_pranay,
-      rating: 4.3,
-      raters: 69,
-      role: "Data Scientist",
-    },
-  ]);
-  const [services, setServices] = useState([
+  const [searchQuery, setSearchQuery] = useState("");
+  const [trendingUsers, setTrendingUsers] = useState([]);
+  const [gigs, setGigs] = useState([
     {
       id: 1,
       image: computer,
@@ -180,8 +95,49 @@ const Home = () => {
     }
   ]);
   const [selectedServiceType, setSelectedServiceType] = useState("Data Scientist");
-
   console.log(searchQuery)
+
+  useEffect(() => {
+    const getTrendingUsers = async () => {
+      await axios.get(`${userAPI}/get-trending-users`)
+        .then(response => {
+          const res = response.data.topUsers;
+          console.log(res);
+          setTrendingUsers(res);
+        })
+        .catch(error => {
+          console.error('Error fetch top user:', error.response);
+        });
+    }
+
+    getTrendingUsers();
+  }, []);
+
+  const debouncedSearch = useCallback(
+    debounce(async (query) => {
+      await axios.post(`${gigAPI}/get-gig`, {
+        name: query
+      })
+        .then(response => {
+          const res = response.data.filteredGigs;
+          console.log(res);
+          setGigs(res);
+        })
+        .catch(error => {
+          console.error('Error fetch gig:', error.response);
+        });
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    const handleSearch = (query) => {
+      if (query.length == 0) return
+      console.log("Debouncing reset w from query", query);
+      debouncedSearch(query);
+    };
+    handleSearch(searchQuery);
+  }, [searchQuery])
 
   return (
     <div>
@@ -326,7 +282,7 @@ const Home = () => {
             src={graphic_designer}
             alt=""
           />
-        </div>    
+        </div>
       </section>
 
       <section className='h-[500px] flex flex-col gap-10 p-8 font-Archivo'>
@@ -338,16 +294,16 @@ const Home = () => {
         </p>
         <div className='flex flex-col items-center text-white'>
           <CarouselTrending
-            trendingData={trendingData}
+            data={trendingUsers}
           />
         </div>
       </section>
 
       <section className='h-[500px] relative p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B]'>
-        <img className='absolute left-0 bottom-0 p-3'
+        <img className='absolute left-0 bottom-0 p-6'
           src={bg_dots_extended}
         />
-        <img className='absolute right-0 top-0 p-3'
+        <img className='absolute right-0 top-0 p-6'
           src={bg_dots_extended}
         />
         <p className='font-poppins text-5xl font-semibold mb-3'>
@@ -356,8 +312,8 @@ const Home = () => {
             B-Connect?
           </span>
         </p>
-        <div className='flex flex-row justify-between mt-7'>
-          <div className='w-[15vw] flex flex-col items-center gap-3'>
+        <div className='flex flex-row justify-center mt-7 gap-20'>
+          <div className='w-[300px] flex flex-col items-center gap-3'>
             <img src={talent_pool}
               alt="talent pool"
             />
@@ -471,7 +427,7 @@ const Home = () => {
             </button>
           </div>
           <ServiceItem
-            data={services}
+            data={gigs}
           />
         </div>
       </section>

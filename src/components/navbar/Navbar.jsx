@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { Bell, Heart, Users, MessageCircle, ShoppingBag, Search } from "lucide-react";
 import { Switch } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
+import bell from "../../assets/bell_icon.svg";
+import heart from "../../assets/heart_icon.svg";
+import message from "../../assets/message_icon.svg";
+import people from "../../assets/people_icon.svg";
+import order from "../../assets/order_icon.svg";
+import search from "../../assets/search_btn.svg";
+import logo from "../../assets/logo.svg";
 import Logo from "../../assets/logo.svg";
 
 export default function Navbar() {
   const [enabled, setEnabled] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <nav
@@ -17,22 +26,23 @@ export default function Navbar() {
       </div>
 
       {/* Search Bar */}
-      <div className="flex items-center bg-white rounded-lg px-4 py-2 w-1/3">
+      <div className="relative flex items-center w-[550px] h-[50px] bg-[#FFFFFF] rounded-[14px] overflow-visible">
         <input
           type="text"
           placeholder="Search For Freelancers Or Services"
-          className="w-full outline-none text-black"
+          className="relative left-3 w-full h-[40px] px-4 rounded-[14px] border-black outline-none text-black text-sm"
         />
-        <Search className="text-blue-500" />
+        <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
+          <img src={search} alt="Search" className="w-[83px] h-[64px]" />
+        </button>
       </div>
 
-      {/* Icons */}
-      <div className="flex items-center space-x-4">
-        <Bell className="w-6 h-6 text-white relative" />
-        <Heart className="w-6 h-6 text-white" />
-        <Users className="w-6 h-6 text-white" />
-        <MessageCircle className="w-6 h-6 text-white" />
-      </div>
+      {/* Icons and Buttons */}
+      <div className="flex items-center gap-6 text-white">
+        <div className="relative cursor-pointer">
+          <img src={bell} alt="Notifications" className="w-7 h-7" />
+          <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+        </div>
 
       {/* Order Button */}
       <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold">Order</button>
@@ -57,10 +67,9 @@ export default function Navbar() {
         </Switch>
       </div>
 
-      {/* Profile Avatar */}
-      <div className="relative">
-        <div className="w-10 h-10 bg-black rounded-full mr-10" />
-        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-white mr-10"></span>
+        <div className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer">
+          <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+        </div>
       </div>
     </nav>
   );
