@@ -2,16 +2,19 @@ import React from 'react'
 import heart from '../../assets/heart.svg'
 import { DynamicStars } from '../dynamic_stars/DynamicStars';
 
-const ServiceItem = ({ data }) => {
+const GigItem = ({ data }) => {
   return (
     <>
     {data?.length > 0 &&
       data.map((serv) => {
-        const formattedPrice = (serv.price ?? 0).toLocaleString("id-ID", {
+        const formattedMinPrice = (serv.minPrice ?? 0).toLocaleString("id-ID", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         });
-        //perlu update jadi range lowest package price sampe highest package price
+        const formattedMaxPrice = (serv.maxPrice ?? 0).toLocaleString("id-ID", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
 
         return (
           <div key={serv.id} className="w-sm h-110 font-inter">
@@ -23,7 +26,12 @@ const ServiceItem = ({ data }) => {
                 <p className="text-wrap font-Archivo font-bold text-xl">{serv.name}</p>
                 <img className="self-start" src={heart} alt="like" />
               </div>
-              <p className="font-bold font-inter text-xl">Rp. {formattedPrice}</p>
+              <div className='flex flex-row justify-between'>
+              <p className="font-bold font-inter text-xl">Rp. {formattedMinPrice}</p>
+              <p className="font-bold font-inter text-xl">-</p>
+              <p className="font-bold font-inter text-xl">Rp. {formattedMaxPrice}</p>
+
+              </div>
               <div className="flex flex-row justify-between">
                 <DynamicStars number={serv.rating} type="service" />
                 <p className="font-inter text-xs self-center">{serv.sold} items sold</p>
@@ -36,4 +44,4 @@ const ServiceItem = ({ data }) => {
   )
 }
 
-export default ServiceItem
+export default GigItem
