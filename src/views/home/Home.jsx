@@ -30,7 +30,6 @@ import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 import { Link, useNavigate } from 'react-router-dom'
 import Footer from "../../components/footer/Footer";
-import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import ServiceItem from '../../components/service_item/ServiceItem'
 

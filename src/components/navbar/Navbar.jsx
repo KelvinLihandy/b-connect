@@ -3,12 +3,14 @@ import { Bell, Heart, Users, MessageCircle, ShoppingBag, Search } from "lucide-r
 import { Switch } from "@headlessui/react";
 import Logo from "../../assets/logo.svg";
 
-
 export default function Navbar() {
   const [enabled, setEnabled] = useState(false);
 
   return (
-    <nav className="flex items-center justify-between bg-blue-900 text-white p-4 shadow-md">
+    <nav
+      className="flex items-center justify-between text-white p-4 shadow-md"
+      style={{ backgroundColor: "#2f5379" }}
+    >
       {/* Logo */}
       <div className="flex items-center ml-15">
         <img src={Logo} alt="Logo" className="w-25 h-15" />
@@ -35,18 +37,22 @@ export default function Navbar() {
       {/* Order Button */}
       <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold">Order</button>
 
- {/* User Toggle */}
- <div className="flex items-center space-x-2">
+      {/* User Toggle */}
+      <div className="flex items-center space-x-2">
         <Switch
           checked={enabled}
           onChange={setEnabled}
-          className={`${enabled ? "bg-blue-600" : "bg-gray-400"} relative inline-flex h-13 w-35 items-center rounded-full p-1`}
+          className={`${
+            enabled ? "bg-blue-600" : "bg-gray-400"
+          } relative inline-flex h-13 w-35 items-center rounded-full p-1`}
         >
           <span className="absolute inset-0 flex items-center justify-center text-lg font-medium text-white">
             {enabled ? "Freelancer" : "User"}
           </span>
           <span
-            className={`${enabled ? "translate-x-[4px]" : "translate-x-23"} inline-block h-8 w-8 transform bg-white rounded-full transition`}
+            className={`${
+              enabled ? "translate-x-[4px]" : "translate-x-23"
+            } inline-block h-8 w-8 transform bg-white rounded-full transition`}
           />
         </Switch>
       </div>

@@ -1,0 +1,814 @@
+import React, { useState, useEffect } from "react";
+import Navbar from "../../components/navbar/Navbar";
+import Footer from "../../components/footer/Footer";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  RefreshCw,
+  Check,
+  Maximize2,
+  ZoomIn,
+  Star,
+  Heart,
+  ChevronDown,
+  Search,
+  Filter,
+  ShoppingCart,
+  ChevronUp
+} from "lucide-react";
+import { motion } from "framer-motion";
+
+// Direct imports for vector decorative elements (these exist in your assets folder)
+import Vector from "../../assets/Vector.png";
+import Vector1 from "../../assets/vector-1.png";
+import Vector2 from "../../assets/Vector-2.png";
+import Vector3 from "../../assets/Vector-3.png";
+import Vector4 from "../../assets/Vector-4.png";
+import Vector5 from "../../assets/Vector-5.png";
+
+import fireworks from "../../assets/fireworks.png";
+
+// Particel dot dot
+import particle from "../../assets/Group 14582649.png";
+
+// gambar untuk product
+import product1 from "../../assets/image 35.png";
+import product2 from "../../assets/image.png";
+
+// Direct imports for service images
+import WebDevImage from "../../assets/webdev.png";
+import DesignGraphicsImage from "../../assets/designgraph.png";
+import VideographerImage from "../../assets/videographer.jpg";
+
+const CatalogPager = () => {
+  // Sample product data
+  const products = Array(9)
+    .fill()
+    .map((_, index) => ({
+      id: index + 1,
+      title: `I will design UI/UX for mobile app with figma for low`,
+      price: "Rp 210.000",
+      dollarPrice: "$75.00",
+      reviews: "4.5",
+      reviewCount: "240 Reviews sold",
+      isFeatured: index % 3 === 0,
+      // Alternate between product1 and product2 images
+      image: index % 2 === 0 ? product1 : product2,
+    }));
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 11;
+  const [showFilters, setShowFilters] = useState(true);
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("UI/UX Design");
+  const [priceValue, setPriceValue] = useState(300);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Function to toggle favorite
+  const toggleFavorite = (productId) => {
+    if (favoriteProducts.includes(productId)) {
+      setFavoriteProducts(favoriteProducts.filter(id => id !== productId));
+    } else {
+      setFavoriteProducts([...favoriteProducts, productId]);
+    }
+  };
+
+  // Animation variants
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    })
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const serviceCardVariants = {
+    hover: {
+      y: -10,
+      boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
+      transition: { duration: 0.3 }
+    }
+  };
+
+  // Filter toggle effect
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, "...", totalPages - 1, totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, 2, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      
+      {/* Hero Section with Animated Services */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="w-full py-20 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #2D4F76 0%, #217A9D 50%, #1E9CB7 100%)",
+        }}
+      >
+        {/* Animated particle effects */}
+        <motion.img 
+          className="absolute right-0 top-0 p-3" 
+          src={particle} 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.7 }}
+          transition={{ delay: 0.5, duration: 1 }}
+        />
+        <motion.img 
+          className="absolute -left-5 bottom-0 p-2" 
+          src={particle}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.7 }}
+          transition={{ delay: 0.7, duration: 1 }}
+        />
+        <motion.img 
+          className="absolute left-30 -top-13" 
+          src={particle}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.7 }}
+          transition={{ delay: 0.9, duration: 1 }}
+        />
+
+        {/* Lightning decorative elements with animations */}
+        <motion.img 
+          className="absolute top-30 left-57" 
+          src={Vector1}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        />
+        <motion.img 
+          className="absolute top-30 left-65" 
+          src={Vector2}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        />
+        <motion.img 
+          className="absolute top-30 left-50" 
+          src={Vector4}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        />
+        <motion.img 
+          className="absolute top-30 right-267" 
+          src={Vector}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        />
+        <motion.img 
+          className="absolute top-30 right-257" 
+          src={Vector3}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        />
+        <motion.img 
+          className="absolute top-30 right-250" 
+          src={Vector5}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
+        />
+
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center">
+            {/* Left side - Title with animated text */}
+            <motion.div 
+              className="flex flex-col gap-3 font-poppin self-center w-full md:w-[800px] px-4 md:px-20 text-center mb-12 md:mb-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <motion.h2 
+                className="text-white text-4xl md:text-6xl font-bold"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+              >Our Popular</motion.h2>
+              <motion.div 
+                className="flex justify-center items-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.8 }}
+              >
+                <motion.img 
+                  className="mr-2 md:mr-6 w-8 md:w-auto" 
+                  src={fireworks}
+                  animate={{ 
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    repeatType: "reverse", 
+                    duration: 3 
+                  }}
+                />
+                <span className="text-yellow-300 text-4xl md:text-6xl font-bold">Services</span>
+                <motion.img 
+                  className="ml-2 md:ml-6 w-8 md:w-auto" 
+                  src={fireworks}
+                  animate={{ 
+                    rotate: [0, -10, 10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    repeatType: "reverse", 
+                    duration: 3,
+                    delay: 0.5
+                  }}
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* Right side - Animated Service Cards */}
+            <div className="w-full md:w-2/3 relative h-[350px]">
+              {/* Design Graphics - Top */}
+              <motion.div 
+                className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-64 z-20"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                whileHover="hover"
+                variants={serviceCardVariants}
+              >
+                <div
+                  className="p-2 bg-white shadow-lg overflow-hidden 
+                  rounded-tl-[0px] rounded-tr-[0px] rounded-bl-[70px] rounded-br-[70px] relative
+                  transition-all duration-300 hover:shadow-xl"
+                >
+                  <div className="relative w-full h-60 overflow-hidden">
+                    <motion.img
+                      src={DesignGraphicsImage}
+                      className="w-full h-full object-cover object-center 
+                      rounded-tl-[0px] rounded-tr-[0px] rounded-bl-[70px] rounded-br-[70px]"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <motion.div 
+                      className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-6 py-2 rounded-full"
+                      whileHover={{ y: -5 }}
+                    >
+                      <p className="text-white font-medium text-center">GRAPHICS</p>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Web Developer - Bottom Left */}
+              <motion.div 
+                className="absolute bottom-0 left-10 w-64 z-10"
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                whileHover="hover"
+                variants={serviceCardVariants}
+              >
+                <div
+                  className="p-2 bg-white shadow-lg overflow-hidden  
+                  rounded-tl-[35px] rounded-tr-[55px] rounded-bl-[70px] relative
+                  transition-all duration-300 hover:shadow-xl"
+                >
+                  <div className="relative w-full h-60 overflow-hidden">
+                    <motion.img
+                      src={WebDevImage}
+                      className="w-full h-full object-cover object-center 
+                      rounded-tl-[35px] rounded-tr-[55px] rounded-bl-[70px]"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <motion.div 
+                      className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-6 py-2 rounded-full"
+                      whileHover={{ y: -5 }}
+                    >
+                      <p className="text-white font-medium text-center">WEB DEVELOPER</p>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Videographer - Bottom Right */}
+              <motion.div 
+                className="absolute bottom-0 right-10 w-64 z-10"
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                whileHover="hover"
+                variants={serviceCardVariants}
+              >
+                <div
+                  className="p-2 bg-white shadow-lg overflow-hidden  
+                  rounded-tl-[35px] rounded-tr-[55px] rounded-br-[70px] relative
+                  transition-all duration-300 hover:shadow-xl"
+                >
+                  <div className="relative w-full h-60 overflow-hidden">
+                    <motion.img
+                      src={VideographerImage}
+                      className="w-full h-full object-cover object-center 
+                      rounded-tl-[35px] rounded-tr-[55px] rounded-br-[70px]"
+                      alt="Videographer"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <motion.div 
+                      className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-6 py-2 rounded-full"
+                      whileHover={{ y: -5 }}
+                    >
+                      <p className="text-white font-medium text-center">VIDEOGRAPHER</p>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        {/* Greeting, Search and Product Count */}
+        <motion.div 
+          className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div>
+            <h2 className="text-2xl font-semibold">Hey patty👋</h2>
+            <motion.p 
+              className="text-gray-600"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+              >
+                1,001
+              </motion.span> products
+            </motion.p>
+          </div>
+          
+          {/* Search box */}
+          <div className="mt-4 md:mt-0 w-full md:w-1/3 relative">
+            <div className={`flex items-center border ${isSearchFocused ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-300'} rounded-lg overflow-hidden bg-white transition-all duration-200`}>
+              <input
+                type="text"
+                placeholder="Search for services..."
+                className="w-full py-2 px-4 outline-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+              />
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 transition-colors duration-200">
+                <Search size={20} />
+              </button>
+            </div>
+            
+            {/* Search suggestions - show when search is focused and has text */}
+            {isSearchFocused && searchQuery && (
+              <motion.div 
+                className="absolute top-full left-0 right-0 bg-white mt-1 rounded-lg shadow-lg z-50 py-2"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">UI/UX Design Services</div>
+                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Mobile App Design</div>
+                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Figma Designs</div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Mobile Filter Toggle Button (only visible on mobile) */}
+        <motion.div 
+          className="md:hidden mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <button 
+            onClick={toggleFilters}
+            className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg py-3 px-4 text-gray-700 font-medium"
+          >
+            <Filter size={18} />
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+        </motion.div>
+
+        {/* Filters and Products */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar with Filters - With animation for mobile */}
+          <motion.div 
+            className={`w-full lg:w-1/4 self-start ${showFilters ? 'block' : 'hidden md:block'}`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              {/* Categories Filter */}
+              <div className="p-5 border-b flex justify-between items-center bg-gray-50">
+                <h3 className="font-semibold text-gray-800">Kategorisasi</h3>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                </button>
+              </div>
+              <div className="p-5 space-y-3">
+                {["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"].map((category) => (
+                  <motion.div 
+                    key={category} 
+                    className="flex items-center group cursor-pointer"
+                    whileHover={{ x: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className={`w-5 h-5 rounded mr-3 border flex items-center justify-center ${selectedCategory === category ? 'bg-blue-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-400'}`}>
+                      {selectedCategory === category && (
+                        <Check size={14} className="text-white" />
+                      )}
+                    </div>
+                    <label className={`text-sm cursor-pointer ${selectedCategory === category ? 'font-medium text-blue-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                      {category}
+                    </label>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Pricing Filter */}
+              <div className="p-5 border-t flex justify-between items-center bg-gray-50">
+                <h3 className="font-semibold text-gray-800">Harga ($)</h3>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                </button>
+              </div>
+              <div className="p-5">
+                <div className="flex justify-between text-sm mb-4">
+                  <div className="flex items-center">
+                    <span className="mr-2 text-gray-600">Max</span>
+                    <input
+                      type="text"
+                      className="w-20 p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200"
+                      value={priceValue}
+                      onChange={(e) => setPriceValue(e.target.value)}
+                    />
+                  </div>
+                  <div className="text-blue-600 font-medium">${priceValue}</div>
+                </div>
+                <div className="mt-6">
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="1000" 
+                    value={priceValue} 
+                    onChange={(e) => setPriceValue(e.target.value)}
+                    className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-600"
+                  />
+                </div>
+              </div>
+
+              {/* Reviews Filter */}
+              <div className="p-5 border-t flex justify-between items-center bg-gray-50">
+                <h3 className="font-semibold text-gray-800">Reviews</h3>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                </button>
+              </div>
+              <div className="p-5 space-y-3">
+                {[5, 4, 3, 2, 1].map((stars, index) => (
+                  <motion.div 
+                    key={stars} 
+                    className="flex items-center cursor-pointer"
+                    whileHover={{ x: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <input
+                      type="radio"
+                      id={`star${stars}`}
+                      name="rating"
+                      className="mr-3 accent-blue-600 h-4 w-4"
+                      defaultChecked={index === 1}
+                    />
+                    <label htmlFor={`star${stars}`} className="flex items-center cursor-pointer">
+                      {Array(5)
+                        .fill()
+                        .map((_, i) => (
+                          <Star
+                            key={i}
+                            className="w-4 h-4"
+                            fill={i < stars ? "#FFD700" : "none"}
+                            stroke={i < stars ? "#FFD700" : "#CBD5E0"}
+                          />
+                        ))}
+                      <span className="ml-2 text-sm text-gray-600">{stars}+ stars</span>
+                    </label>
+                  </motion.div>
+                ))}
+              </div>
+              
+              {/* Apply Filters Button */}
+              <div className="p-5 border-t">
+                <motion.button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Terapkan Filter
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Products Grid with Animation */}
+          <motion.div 
+            className="w-full lg:w-3/4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {products.map((product, i) => (
+                <motion.div
+                  key={product.id}
+                  className="bg-white rounded-xl shadow-sm overflow-hidden relative group border border-gray-100 hover:shadow-md transition-all duration-300"
+                  variants={cardVariants}
+                  custom={i}
+                  whileHover={{ y: -5 }}
+                >
+                  {/* Product Image with hover effect */}
+                  <div className="relative overflow-hidden">
+                    <motion.img
+                      src={product.image}
+                      alt={product.title}
+                      className="w-full h-48 object-cover"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <motion.button 
+                      className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md z-10"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => toggleFavorite(product.id)}
+                    >
+                      <Heart 
+                        className={`w-5 h-5 ${favoriteProducts.includes(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
+                      />
+                    </motion.button>
+                    
+                    {/* Quick view overlay - appears on hover */}
+                    <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                      <motion.button 
+                        className="bg-white text-gray-800 font-medium px-4 py-2 rounded-lg flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <ZoomIn size={18} />
+                        Quick View
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-5">
+                    <h3 className="text-sm font-medium mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-200">{product.title}</h3>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-semibold text-blue-600">{product.price}</p>
+                      <p className="text-xs text-gray-500">{product.dollarPrice}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs">
+                        {Array(5)
+                          .fill()
+                          .map((_, i) => (
+                            <Star key={i} className="w-3 h-3" fill="#FFD700" stroke="#FFD700" />
+                          ))}
+                        <span className="ml-1 text-gray-500">360 items sold</span>
+                      </div>
+                    </div>
+                    
+                    {/* Add to cart button - appears on hover */}
+                    <motion.button 
+                      className="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+                      whileHover={{ backgroundColor: "#2563EB" }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <ShoppingCart size={16} />
+                      Add to Cart
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Pagination with Animation */}
+            <motion.div 
+              className="flex justify-center mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <div className="flex items-center gap-2">
+                <motion.button 
+                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </motion.button>
+
+                {getPageNumbers().map((page, index) => (
+                  <motion.button
+                    key={index}
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+                      page === currentPage 
+                        ? "bg-blue-600 text-white" 
+                        : "border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600"
+                    } transition-colors duration-200`}
+                    whileHover={{ scale: page !== "..." ? 1.05 : 1 }}
+                    whileTap={{ scale: page !== "..." ? 0.95 : 1 }}
+                    onClick={() => page !== "..." && setCurrentPage(page)}
+                  >
+                    {page}
+                  </motion.button>
+                ))}
+
+                <motion.button 
+                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </motion.div>
+            
+            {/* "Back to top" button - appears when scrolled down */}
+            <motion.button
+              className="fixed bottom-8 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors duration-200"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <ChevronUp size={24} />
+            </motion.button>
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Featured Categories Section */}
+      <motion.div 
+        className="bg-gray-50 py-16"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold text-gray-800">Featured Categories</h2>
+            <p className="text-gray-600 mt-2">Explore our most popular service categories</p>
+          </motion.div>
+          
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-4 gap-5"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {[
+              { name: "UI/UX Design", icon: "🎨", count: "1,201 services" },
+              { name: "Web Development", icon: "💻", count: "842 services" },
+              { name: "Mobile Apps", icon: "📱", count: "633 services" },
+              { name: "Logo Design", icon: "✏️", count: "921 services" },
+            ].map((category, i) => (
+              <motion.div
+                key={category.name}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center hover:shadow-md transition-all duration-300"
+                variants={cardVariants}
+                custom={i}
+                whileHover={{ y: -5 }}
+              >
+                <span className="text-4xl mb-4">{category.icon}</span>
+                <h3 className="font-medium text-gray-800 mb-2">{category.name}</h3>
+                <p className="text-sm text-gray-500">{category.count}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </motion.div>
+      
+      {/* Newsletter Subscription */}
+      <motion.div 
+        className="bg-blue-600 py-16"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <motion.h2 
+              className="text-3xl font-bold text-white mb-4"
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              Join Our Newsletter
+            </motion.h2>
+            <motion.p 
+              className="text-blue-100 mb-8"
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              Get the latest updates on new services and special offers!
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              />
+              <motion.button 
+                className="px-6 py-3 bg-yellow-400 text-blue-900 font-medium rounded-lg hover:bg-yellow-300 transition-colors duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Subscribe
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default CatalogPager;
