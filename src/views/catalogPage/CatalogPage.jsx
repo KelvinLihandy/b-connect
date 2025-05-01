@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import {
@@ -43,24 +43,10 @@ import VideographerImage from "../../assets/videographer.jpg";
 import { debounce } from "lodash";
 import axios from "axios";
 import { gigAPI } from "../../constants/APIRoutes";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const CatalogPager = () => {
-  // Sample product data
-  // const products = Array(10)
-  //   .fill()
-  //   .map((_, index) => ({
-  //     id: index + 1,
-  //     title: `I will design UI/UX for mobile app with figma for low`,
-  //     price: "Rp 210.000",
-  //     dollarPrice: "$75.00",
-  //     reviews: "4.5",
-  //     reviewCount: "240 Reviews sold",
-  //     isFeatured: index % 3 === 0,
-  //     // Alternate between product1 and product2 images
-  //     image: index % 2 === 0 ? product1 : product2,
-  //   }));
-
-  // Pagination state
+  const { auth, setAuth } = useContext(AuthContext);
   const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
@@ -73,10 +59,13 @@ const CatalogPager = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [gigs, setGigs] = useState([]);
   const [totalGigs, setTotalGigs] = useState(0);
-  const [totalPages, setTotalPages] = useState(totalGigs / itemsPerPage == 0 ?? 1);
+  const [totalPages, setTotalPages] = useState(1);
   const [userName, setUserName] = useState("");
   const [appliedFilter, setAppliedFilter] = useState(false);
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(itemsPerPage-1);
 
+  console.log("user", auth);
   const toggleFavorite = (gigId) => {
     if (favoriteGigs.includes(gigId)) {
       setFavoriteGigs(favoriteGigs.filter(_id => _id !== gigId));
@@ -157,8 +146,8 @@ const CatalogPager = () => {
       const response = await axios.post(`${gigAPI}/get-gig`, { name, category, minPrice, maxPrice, rating });
       const res = response.data.filteredGigs;
       setGigs(res);
-      setTotalGigs(gigs.length)
-      setTotalPages(totalGigs / itemsPerPage == 0 ?? 1)
+      setTotalGigs(res.length)
+      setTotalPages(Math.max(1, Math.ceil(res.length / itemsPerPage)));
       console.log("gig fetched", res);
     } catch (error) {
       console.error('Error fetching gigs:', error.response || error);
@@ -191,7 +180,7 @@ const CatalogPager = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar search />
 
       {/* Hero Section with Animated Services */}
       <motion.div
@@ -532,15 +521,6 @@ const CatalogPager = () => {
               </div>
               <div className="p-5">
                 <div className="flex justify-between text-sm mb-4">
-                  <div className="">
-                    <span className="mr-2 text-gray-600">Min</span>
-                    <input
-                      type="text"
-                      className="w-20 p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                    />
-                  </div>
                   <div>
                     <span className="mr-2 text-gray-600">Max</span>
                     <input
@@ -552,14 +532,6 @@ const CatalogPager = () => {
                   </div>
                 </div>
                 <div className="mt-6">
-                  <input
-                    type="range"
-                    min="0"
-                    max="2000"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-600"
-                  />
                   <input
                     type="range"
                     min="0"
@@ -632,7 +604,7 @@ const CatalogPager = () => {
             animate="visible"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {gigs.map((gig, i) => (
+              {gigs.slice(start, end).map((gig, i) => (
                 <motion.div
                   key={gig._id}
                   className="bg-white rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
@@ -702,7 +674,11 @@ const CatalogPager = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() => {
+                    setCurrentPage(prev => Math.max(prev - 1, 1));
+                    setStart(prev => Math.max(0, (prev - itemsPerPage)*itemsPerPage));
+                    setEnd(prev => Math.max(itemsPerPage, prev - itemsPerPage));
+                  }}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </motion.button>
@@ -716,7 +692,13 @@ const CatalogPager = () => {
                       } transition-colors duration-200`}
                     whileHover={{ scale: page !== "..." ? 1.05 : 1 }}
                     whileTap={{ scale: page !== "..." ? 0.95 : 1 }}
-                    onClick={() => page !== "..." && setCurrentPage(page)}
+                    onClick={() => {
+                      if (page !== "...") {
+                        setCurrentPage(page);
+                        setStart((page - 1) * itemsPerPage);
+                        setEnd(page * itemsPerPage);
+                      }
+                    }}
                   >
                     {page}
                   </motion.button>
@@ -727,7 +709,14 @@ const CatalogPager = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  // onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() => {
+                    if (currentPage < totalPages) {
+                      setCurrentPage(prev => prev + 1);
+                      setStart(prev => Math.min(prev + itemsPerPage, totalGigs));
+                      setEnd(prev => Math.min(prev + itemsPerPage, totalGigs));
+                    }
+                  }}                  
                 >
                   <ChevronRight className="w-5 h-5" />
                 </motion.button>
@@ -799,7 +788,7 @@ const CatalogPager = () => {
       </motion.div>
 
       {/* Newsletter Subscription */}
-      <motion.div
+      {/* <motion.div
         className="bg-blue-600 py-16"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -849,7 +838,7 @@ const CatalogPager = () => {
             </motion.div>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
 
       <Footer />
     </div>
