@@ -112,56 +112,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [trendingUsers, setTrendingUsers] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [gigs, setGigs] = useState([
-    {
-      id: 1,
-      image: computer,
-      name: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 2,
-      image: phone,
-      name: "I will design UI UX for mobile app with figma for ios",
-      price: 220000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 3,
-      image: computer,
-      name: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 4,
-      image: phone,
-      name: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 5,
-      image: computer,
-      name: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 6,
-      image: phone,
-      name: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    }
-  ]);
+  const [gigs, setGigs] = useState();
   const categoryList = ["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"];
   const [currentCategory, setCurrentCategory] = useState(categoryList[0]);
 
@@ -244,7 +195,7 @@ const Home = () => {
           whileHover={{ scale: 1.05 }}
           transition={{ type: 'spring', stiffness: 300 }}
           className="cursor-pointer"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}//perlu dibuat pake authcontext 
         />
         <div className='flex flex-row items-center gap-8 text-white text-xl'>
           <motion.p
@@ -327,7 +278,7 @@ const Home = () => {
             <input
               className={`absolute w-[95%] bg-white h-18 self-center rounded-3xl px-5 py-4 transition-all duration-300 shadow-lg ${isSearchFocused ? 'shadow-blue-400' : ''}`}
               type="text"
-              placeholder='Search to "Find Our Gigs"'
+              placeholder='Search to Find Our Services'
               onChange={(event) => setSearchQuery(event.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}

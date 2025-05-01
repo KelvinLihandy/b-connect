@@ -10,7 +10,7 @@ import AboutUs from './views/about_us/AboutUs';
 import ForgotPassword from './views/forgot_password/ForgotPassword';
 import InputOTP from './views/input_otp/InputOTP';
 import ChangePassword from './views/change_password/ChangePassword';
-import CatalogPager from './views/catalogPage/CatalogPager';
+import CatalogPage from './views/catalogPage/CatalogPage';
 import Chat from './views/chat/Chat';
 
 const App = () => {
@@ -25,7 +25,8 @@ const App = () => {
         <Route path='/sign-in/forget' element={<ForgotPassword />} />
         <Route path='sign-in/verify-otp' element={<InputOTP />} />
         <Route path='/sign-in/change-password' element={<ChangePassword/>} />
-        <Route path='/catalogPage' element={<CatalogPager />} />
+        {/* restrcted auth*/}
+        <Route path='/catalog' element={<CatalogPage />} /> 
         <Route path='/chat' element={<Chat />} />
         </Routes>
     </>
