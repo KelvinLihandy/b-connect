@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import {
@@ -40,41 +40,58 @@ import product2 from "../../assets/image.png";
 import WebDevImage from "../../assets/webdev.png";
 import DesignGraphicsImage from "../../assets/designgraph.png";
 import VideographerImage from "../../assets/videographer.jpg";
+import { debounce } from "lodash";
+import axios from "axios";
+import { gigAPI } from "../../constants/APIRoutes";
 
 const CatalogPager = () => {
   // Sample product data
-  const products = Array(9)
-    .fill()
-    .map((_, index) => ({
-      id: index + 1,
-      title: `I will design UI/UX for mobile app with figma for low`,
-      price: "Rp 210.000",
-      dollarPrice: "$75.00",
-      reviews: "4.5",
-      reviewCount: "240 Reviews sold",
-      isFeatured: index % 3 === 0,
-      // Alternate between product1 and product2 images
-      image: index % 2 === 0 ? product1 : product2,
-    }));
+  // const products = Array(10)
+  //   .fill()
+  //   .map((_, index) => ({
+  //     id: index + 1,
+  //     title: `I will design UI/UX for mobile app with figma for low`,
+  //     price: "Rp 210.000",
+  //     dollarPrice: "$75.00",
+  //     reviews: "4.5",
+  //     reviewCount: "240 Reviews sold",
+  //     isFeatured: index % 3 === 0,
+  //     // Alternate between product1 and product2 images
+  //     image: index % 2 === 0 ? product1 : product2,
+  //   }));
 
   // Pagination state
+  const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 11;
   const [showFilters, setShowFilters] = useState(true);
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("UI/UX Design");
-  const [priceValue, setPriceValue] = useState(300);
+  const [favoriteGigs, setFavoriteGigs] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(2000);
+  const [selectedRating, setSelectedRating] = useState();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [gigs, setGigs] = useState([]);
+  const [totalGigs, setTotalGigs] = useState(0);
+  const [totalPages, setTotalPages] = useState(totalGigs / itemsPerPage == 0 ?? 1);
+  const [userName, setUserName] = useState("");
+  const [appliedFilter, setAppliedFilter] = useState(false);
 
-  // Function to toggle favorite
-  const toggleFavorite = (productId) => {
-    if (favoriteProducts.includes(productId)) {
-      setFavoriteProducts(favoriteProducts.filter(id => id !== productId));
+  const toggleFavorite = (gigId) => {
+    if (favoriteGigs.includes(gigId)) {
+      setFavoriteGigs(favoriteGigs.filter(_id => _id !== gigId));
     } else {
-      setFavoriteProducts([...favoriteProducts, productId]);
+      setFavoriteGigs([...favoriteGigs, gigId]);
     }
   };
+
+  const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
+    return (price ?? 0).toLocaleString(locale, {
+      minimumFractionDigits: minFraction,
+      maximumFractionDigits: maxFraction,
+    });
+  };
+
 
   // Animation variants
   const cardVariants = {
@@ -132,10 +149,50 @@ const CatalogPager = () => {
     return pages;
   };
 
+  const getGig = async (name, category, minPrice, maxPrice, rating) => {
+    console.log({
+      name, category, minPrice, maxPrice, rating
+    })
+    try {
+      const response = await axios.post(`${gigAPI}/get-gig`, { name, category, minPrice, maxPrice, rating });
+      const res = response.data.filteredGigs;
+      setGigs(res);
+      setTotalGigs(gigs.length)
+      setTotalPages(totalGigs / itemsPerPage == 0 ?? 1)
+      console.log("gig fetched", res);
+    } catch (error) {
+      console.error('Error fetching gigs:', error.response || error);
+    }
+  }
+
+  const debouncedSearch = useCallback(
+    debounce(async (query, category, minPrice, maxPrice, rating) => {
+      const hasFilters = category || minPrice || maxPrice || rating;
+      if (!query.length && !hasFilters) return;
+      await getGig(query, category, minPrice, maxPrice, rating);
+    }, 500),
+    []
+  );
+
+
+  useEffect(() => {
+    const fetchGigs = async () => {
+      if (!searchQuery.length && !appliedFilter) {
+        await getGig("");
+      } else if (!appliedFilter) {
+        debouncedSearch(searchQuery);
+      } else {
+        debouncedSearch(searchQuery, selectedCategory, minPrice, maxPrice, selectedRating);
+      }
+    };
+
+    fetchGigs();
+  }, [searchQuery, debouncedSearch, appliedFilter]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       {/* Hero Section with Animated Services */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -147,22 +204,22 @@ const CatalogPager = () => {
         }}
       >
         {/* Animated particle effects */}
-        <motion.img 
-          className="absolute right-0 top-0 p-3" 
-          src={particle} 
+        <motion.img
+          className="absolute right-0 top-0 p-3"
+          src={particle}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.7 }}
           transition={{ delay: 0.5, duration: 1 }}
         />
-        <motion.img 
-          className="absolute -left-5 bottom-0 p-2" 
+        <motion.img
+          className="absolute -left-5 bottom-0 p-2"
           src={particle}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.7 }}
           transition={{ delay: 0.7, duration: 1 }}
         />
-        <motion.img 
-          className="absolute left-30 -top-13" 
+        <motion.img
+          className="absolute left-30 -top-13"
           src={particle}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.7 }}
@@ -170,43 +227,43 @@ const CatalogPager = () => {
         />
 
         {/* Lightning decorative elements with animations */}
-        <motion.img 
-          className="absolute top-30 left-57" 
+        <motion.img
+          className="absolute top-30 left-57"
           src={Vector1}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         />
-        <motion.img 
-          className="absolute top-30 left-65" 
+        <motion.img
+          className="absolute top-30 left-65"
           src={Vector2}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         />
-        <motion.img 
-          className="absolute top-30 left-50" 
+        <motion.img
+          className="absolute top-30 left-50"
           src={Vector4}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         />
-        <motion.img 
-          className="absolute top-30 right-267" 
+        <motion.img
+          className="absolute top-30 right-267"
           src={Vector}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         />
-        <motion.img 
-          className="absolute top-30 right-257" 
+        <motion.img
+          className="absolute top-30 right-257"
           src={Vector3}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
         />
-        <motion.img 
-          className="absolute top-30 right-250" 
+        <motion.img
+          className="absolute top-30 right-250"
           src={Vector5}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -216,48 +273,48 @@ const CatalogPager = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             {/* Left side - Title with animated text */}
-            <motion.div 
+            <motion.div
               className="flex flex-col gap-3 font-poppin self-center w-full md:w-[800px] px-4 md:px-20 text-center mb-12 md:mb-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <motion.h2 
+              <motion.h2
                 className="text-white text-4xl md:text-6xl font-bold"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8 }}
               >Our Popular</motion.h2>
-              <motion.div 
+              <motion.div
                 className="flex justify-center items-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.8 }}
               >
-                <motion.img 
-                  className="mr-2 md:mr-6 w-8 md:w-auto" 
+                <motion.img
+                  className="mr-2 md:mr-6 w-8 md:w-auto"
                   src={fireworks}
-                  animate={{ 
+                  animate={{
                     rotate: [0, 10, -10, 0],
                     scale: [1, 1.1, 1]
                   }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    repeatType: "reverse", 
-                    duration: 3 
+                  transition={{
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    duration: 3
                   }}
                 />
                 <span className="text-yellow-300 text-4xl md:text-6xl font-bold">Services</span>
-                <motion.img 
-                  className="ml-2 md:ml-6 w-8 md:w-auto" 
+                <motion.img
+                  className="ml-2 md:ml-6 w-8 md:w-auto"
                   src={fireworks}
-                  animate={{ 
+                  animate={{
                     rotate: [0, -10, 10, 0],
                     scale: [1, 1.1, 1]
                   }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    repeatType: "reverse", 
+                  transition={{
+                    repeat: Infinity,
+                    repeatType: "reverse",
                     duration: 3,
                     delay: 0.5
                   }}
@@ -268,7 +325,7 @@ const CatalogPager = () => {
             {/* Right side - Animated Service Cards */}
             <div className="w-full md:w-2/3 relative h-[350px]">
               {/* Design Graphics - Top */}
-              <motion.div 
+              <motion.div
                 className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-64 z-20"
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -289,7 +346,7 @@ const CatalogPager = () => {
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                     />
-                    <motion.div 
+                    <motion.div
                       className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-6 py-2 rounded-full"
                       whileHover={{ y: -5 }}
                     >
@@ -300,7 +357,7 @@ const CatalogPager = () => {
               </motion.div>
 
               {/* Web Developer - Bottom Left */}
-              <motion.div 
+              <motion.div
                 className="absolute bottom-0 left-10 w-64 z-10"
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -321,7 +378,7 @@ const CatalogPager = () => {
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                     />
-                    <motion.div 
+                    <motion.div
                       className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-6 py-2 rounded-full"
                       whileHover={{ y: -5 }}
                     >
@@ -332,7 +389,7 @@ const CatalogPager = () => {
               </motion.div>
 
               {/* Videographer - Bottom Right */}
-              <motion.div 
+              <motion.div
                 className="absolute bottom-0 right-10 w-64 z-10"
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -354,7 +411,7 @@ const CatalogPager = () => {
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                     />
-                    <motion.div 
+                    <motion.div
                       className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-6 py-2 rounded-full"
                       whileHover={{ y: -5 }}
                     >
@@ -371,15 +428,15 @@ const CatalogPager = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         {/* Greeting, Search and Product Count */}
-        <motion.div 
+        <motion.div
           className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <div>
-            <h2 className="text-2xl font-semibold">Hey patty👋</h2>
-            <motion.p 
+            <h2 className="text-2xl font-semibold">Hey {userName}👋</h2>
+            <motion.p
               className="text-gray-600"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -390,11 +447,11 @@ const CatalogPager = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.8 }}
               >
-                1,001
-              </motion.span> products
+                {totalGigs}
+              </motion.span> services
             </motion.p>
           </div>
-          
+
           {/* Search box */}
           <div className="mt-4 md:mt-0 w-full md:w-1/3 relative">
             <div className={`flex items-center border ${isSearchFocused ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-300'} rounded-lg overflow-hidden bg-white transition-all duration-200`}>
@@ -411,31 +468,17 @@ const CatalogPager = () => {
                 <Search size={20} />
               </button>
             </div>
-            
-            {/* Search suggestions - show when search is focused and has text */}
-            {isSearchFocused && searchQuery && (
-              <motion.div 
-                className="absolute top-full left-0 right-0 bg-white mt-1 rounded-lg shadow-lg z-50 py-2"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">UI/UX Design Services</div>
-                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Mobile App Design</div>
-                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Figma Designs</div>
-              </motion.div>
-            )}
           </div>
         </motion.div>
 
         {/* Mobile Filter Toggle Button (only visible on mobile) */}
-        <motion.div 
+        <motion.div
           className="md:hidden mb-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <button 
+          <button
             onClick={toggleFilters}
             className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg py-3 px-4 text-gray-700 font-medium"
           >
@@ -447,7 +490,7 @@ const CatalogPager = () => {
         {/* Filters and Products */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar with Filters - With animation for mobile */}
-          <motion.div 
+          <motion.div
             className={`w-full lg:w-1/4 self-start ${showFilters ? 'block' : 'hidden md:block'}`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -462,11 +505,12 @@ const CatalogPager = () => {
               </div>
               <div className="p-5 space-y-3">
                 {["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"].map((category) => (
-                  <motion.div 
-                    key={category} 
+                  <motion.div
+                    key={category}
                     className="flex items-center group cursor-pointer"
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
+                    onClick={() => setSelectedCategory(category)}
                   >
                     <div className={`w-5 h-5 rounded mr-3 border flex items-center justify-center ${selectedCategory === category ? 'bg-blue-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-400'}`}>
                       {selectedCategory === category && (
@@ -482,30 +526,46 @@ const CatalogPager = () => {
 
               {/* Pricing Filter */}
               <div className="p-5 border-t flex justify-between items-center bg-gray-50">
-                <h3 className="font-semibold text-gray-800">Harga ($)</h3>
+                <h3 className="font-semibold text-gray-800">Harga (Ribu Rupiah Rp)</h3>
                 <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
                 </button>
               </div>
               <div className="p-5">
                 <div className="flex justify-between text-sm mb-4">
-                  <div className="flex items-center">
+                  <div className="">
+                    <span className="mr-2 text-gray-600">Min</span>
+                    <input
+                      type="text"
+                      className="w-20 p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                    />
+                  </div>
+                  <div>
                     <span className="mr-2 text-gray-600">Max</span>
                     <input
                       type="text"
                       className="w-20 p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200"
-                      value={priceValue}
-                      onChange={(e) => setPriceValue(e.target.value)}
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
                     />
                   </div>
-                  <div className="text-blue-600 font-medium">${priceValue}</div>
                 </div>
                 <div className="mt-6">
-                  <input 
-                    type="range" 
-                    min="10" 
-                    max="1000" 
-                    value={priceValue} 
-                    onChange={(e) => setPriceValue(e.target.value)}
+                  <input
+                    type="range"
+                    min="0"
+                    max="2000"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="2000"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
                     className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-600"
                   />
                 </div>
@@ -519,8 +579,8 @@ const CatalogPager = () => {
               </div>
               <div className="p-5 space-y-3">
                 {[5, 4, 3, 2, 1].map((stars, index) => (
-                  <motion.div 
-                    key={stars} 
+                  <motion.div
+                    key={stars}
                     className="flex items-center cursor-pointer"
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
@@ -530,7 +590,8 @@ const CatalogPager = () => {
                       id={`star${stars}`}
                       name="rating"
                       className="mr-3 accent-blue-600 h-4 w-4"
-                      defaultChecked={index === 1}
+                      checked={selectedRating === stars}
+                      onClick={() => setSelectedRating(stars)}
                     />
                     <label htmlFor={`star${stars}`} className="flex items-center cursor-pointer">
                       {Array(5)
@@ -548,32 +609,33 @@ const CatalogPager = () => {
                   </motion.div>
                 ))}
               </div>
-              
+
               {/* Apply Filters Button */}
               <div className="p-5 border-t">
-                <motion.button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors duration-200"
+                <motion.button
+                  className={`w-full ${appliedFilter ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-600 hover:bg-blue-700"}  text-white font-medium py-3 rounded-lg transition-colors duration-200`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => setAppliedFilter(!appliedFilter)}
                 >
-                  Terapkan Filter
+                  {appliedFilter ? "Nonaktifkan Filter" : "Terapkan Filter"}
                 </motion.button>
               </div>
             </div>
           </motion.div>
 
           {/* Products Grid with Animation */}
-          <motion.div 
+          <motion.div
             className="w-full lg:w-3/4"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {products.map((product, i) => (
+              {gigs.map((gig, i) => (
                 <motion.div
-                  key={product.id}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden relative group border border-gray-100 hover:shadow-md transition-all duration-300"
+                  key={gig._id}
+                  className="bg-white rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
                   variants={cardVariants}
                   custom={i}
                   whileHover={{ y: -5 }}
@@ -581,77 +643,61 @@ const CatalogPager = () => {
                   {/* Product Image with hover effect */}
                   <div className="relative overflow-hidden">
                     <motion.img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-48 object-cover"
+                      src={gig.image[0]}
+                      alt={gig.name}
+                      className="w-full h-48 object-cover bg-blue-600"
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                     />
-                    <motion.button 
+                    <motion.button
                       className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md z-10"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => toggleFavorite(product.id)}
+                      onClick={() => toggleFavorite(gig._id)}
                     >
-                      <Heart 
-                        className={`w-5 h-5 ${favoriteProducts.includes(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
+                      {/* send to be add favorited by user id */}
+                      <Heart
+                        className={`w-5 h-5 ${favoriteGigs.includes(gig._id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
                       />
                     </motion.button>
-                    
-                    {/* Quick view overlay - appears on hover */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                      <motion.button 
-                        className="bg-white text-gray-800 font-medium px-4 py-2 rounded-lg flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <ZoomIn size={18} />
-                        Quick View
-                      </motion.button>
-                    </div>
                   </div>
 
                   {/* Product Info */}
                   <div className="p-5">
-                    <h3 className="text-sm font-medium mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-200">{product.title}</h3>
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="text-sm font-semibold text-blue-600">{product.price}</p>
-                      <p className="text-xs text-gray-500">{product.dollarPrice}</p>
+                    <h3 className="text-md font-medium mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-100">{gig.name}</h3>
+                    <div className="flex-col items-center mb-2">
+                      <p className="text-md font-semibold text-blue-600">Rp. {formattedPrice(gig.packages[0].price)}</p>
+                      <p className="text-md font-semibold text-blue-600">Rp. {formattedPrice(gig.packages[gig.packages.length - 1].price)}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center text-xs">
-                        {Array(5)
-                          .fill()
-                          .map((_, i) => (
-                            <Star key={i} className="w-3 h-3" fill="#FFD700" stroke="#FFD700" />
-                          ))}
-                        <span className="ml-1 text-gray-500">360 items sold</span>
+                      <div className="flex items-center text-md w-full justify-between">
+                        <div className="flex flex-row items-center gap-3 flex-wrap">
+                          <div className="flex flex-row">
+                            {Array(Math.floor(gig.rating))
+                              .fill()
+                              .map((_, i) => (
+                                <Star key={i} className="w-4 h-4" fill="#FFD700" stroke="#FFD700" />
+                              ))}
+                          </div>
+                          <div>{gig.rating}</div>
+                        </div>
+                        <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
                       </div>
                     </div>
-                    
-                    {/* Add to cart button - appears on hover */}
-                    <motion.button 
-                      className="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
-                      whileHover={{ backgroundColor: "#2563EB" }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <ShoppingCart size={16} />
-                      Add to Cart
-                    </motion.button>
                   </div>
                 </motion.div>
               ))}
             </div>
 
             {/* Pagination with Animation */}
-            <motion.div 
+            <motion.div
               className="flex justify-center mt-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
               <div className="flex items-center gap-2">
-                <motion.button 
+                <motion.button
                   className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -664,11 +710,10 @@ const CatalogPager = () => {
                 {getPageNumbers().map((page, index) => (
                   <motion.button
                     key={index}
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-                      page === currentPage 
-                        ? "bg-blue-600 text-white" 
-                        : "border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600"
-                    } transition-colors duration-200`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${page === currentPage
+                      ? "bg-blue-600 text-white"
+                      : "border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600"
+                      } transition-colors duration-200`}
                     whileHover={{ scale: page !== "..." ? 1.05 : 1 }}
                     whileTap={{ scale: page !== "..." ? 0.95 : 1 }}
                     onClick={() => page !== "..." && setCurrentPage(page)}
@@ -677,7 +722,7 @@ const CatalogPager = () => {
                   </motion.button>
                 ))}
 
-                <motion.button 
+                <motion.button
                   className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -688,7 +733,7 @@ const CatalogPager = () => {
                 </motion.button>
               </div>
             </motion.div>
-            
+
             {/* "Back to top" button - appears when scrolled down */}
             <motion.button
               className="fixed bottom-8 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors duration-200"
@@ -703,9 +748,9 @@ const CatalogPager = () => {
           </motion.div>
         </div>
       </div>
-      
+
       {/* Featured Categories Section */}
-      <motion.div 
+      <motion.div
         className="bg-gray-50 py-16"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -713,7 +758,7 @@ const CatalogPager = () => {
         viewport={{ once: true }}
       >
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -723,8 +768,8 @@ const CatalogPager = () => {
             <h2 className="text-3xl font-bold text-gray-800">Featured Categories</h2>
             <p className="text-gray-600 mt-2">Explore our most popular service categories</p>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-5"
             variants={containerVariants}
             initial="hidden"
@@ -752,9 +797,9 @@ const CatalogPager = () => {
           </motion.div>
         </div>
       </motion.div>
-      
+
       {/* Newsletter Subscription */}
-      <motion.div 
+      <motion.div
         className="bg-blue-600 py-16"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -763,7 +808,7 @@ const CatalogPager = () => {
       >
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold text-white mb-4"
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
@@ -772,7 +817,7 @@ const CatalogPager = () => {
             >
               Join Our Newsletter
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="text-blue-100 mb-8"
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
@@ -781,20 +826,20 @@ const CatalogPager = () => {
             >
               Get the latest updates on new services and special offers!
             </motion.p>
-            
-            <motion.div 
+
+            <motion.div
               className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
                 className="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
               />
-              <motion.button 
+              <motion.button
                 className="px-6 py-3 bg-yellow-400 text-blue-900 font-medium rounded-lg hover:bg-yellow-300 transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -805,7 +850,7 @@ const CatalogPager = () => {
           </div>
         </div>
       </motion.div>
-      
+
       <Footer />
     </div>
   );

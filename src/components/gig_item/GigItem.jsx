@@ -7,29 +7,27 @@ const GigItem = ({ data }) => {
     <>
     {data?.length > 0 &&
       data.map((serv) => {
-        const formattedMinPrice = (serv.minPrice ?? 0).toLocaleString("id-ID", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        const formattedMaxPrice = (serv.maxPrice ?? 0).toLocaleString("id-ID", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
+        const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
+          return (price ?? 0).toLocaleString(locale, {
+            minimumFractionDigits: minFraction,
+            maximumFractionDigits: maxFraction,
+          });
+        };
 
         return (
           <div key={serv.id} className="w-sm h-110 font-inter">
             <div className="overflow-hidden h-70">
-              <img className="w-full h-full object-cover" src={serv.image} alt="phone" />
+              <img className="w-full h-full object-cover bg-black" src={serv.image} alt="phone" />
             </div>
             <div className="p-3 flex flex-col gap-3">
-              <div className="flex flex-row gap-10">
-                <p className="text-wrap font-Archivo font-bold text-xl">{serv.name}</p>
-                <img className="self-start" src={heart} alt="like" />
+              <div className="flex flex-row justify-between">
+                <p className="text-wrap font-Archivo font-bold text-xl bg-red-200 max-w-80">{serv.name}</p>
+                <img className="self-end" src={heart} alt="like" />
               </div>
               <div className='flex flex-row justify-between'>
-              <p className="font-bold font-inter text-xl">Rp. {formattedMinPrice}</p>
+              <p className="font-bold font-inter text-xl">Rp. {formattedPrice(data.minPrice)}</p>
               <p className="font-bold font-inter text-xl">-</p>
-              <p className="font-bold font-inter text-xl">Rp. {formattedMaxPrice}</p>
+              <p className="font-bold font-inter text-xl">Rp. {formattedPrice(data.maxPrice)}</p>
 
               </div>
               <div className="flex flex-row justify-between">

@@ -13,7 +13,6 @@ import Logo from "../../assets/logo.svg";
 
 export default function Navbar() {
   const [enabled, setEnabled] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <nav
@@ -29,13 +28,14 @@ export default function Navbar() {
       <div className="relative flex items-center w-[550px] h-[50px] bg-[#FFFFFF] rounded-[14px] overflow-visible">
         <input
           type="text"
-          placeholder="Search For Freelancers Or Services"
+          placeholder="Search For Our Services"
           className="relative left-3 w-full h-[40px] px-4 rounded-[14px] border-black outline-none text-black text-sm"
         />
         <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
           <img src={search} alt="Search" className="w-[83px] h-[64px]" />
         </button>
       </div>
+      {/* redirect ke catalog (ini navbar buat auth)*/}
 
       {/* Icons and Buttons */}
       <div className="flex items-center gap-6 text-white">

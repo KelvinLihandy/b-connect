@@ -12,7 +12,7 @@ export const Footer = () => {
   return (
     <footer className='bg-[#F8F9FA] h-[450px] flex flex-row pt-13 font-jost relative justify-center'>
       <div className='max-w-[460px]'>
-        <div className='flex flex-row items-center px-5'>
+        <div className='flex flex-row items-center px-5 justify-between'>
           <img src={logo}></img>
           <p className='font-poppins text-[#404040] opacity-14 font-bold flex flex-row items-center text-4xl'>
             <span className='text-9xl self-center'>
