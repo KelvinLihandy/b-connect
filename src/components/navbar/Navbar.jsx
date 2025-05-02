@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Bell, Heart, Users, MessageCircle, ShoppingBag, Search } from "lucide-react";
 import { Switch } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
@@ -8,11 +8,15 @@ import message from "../../assets/message_icon.svg";
 import people from "../../assets/people_icon.svg";
 import order from "../../assets/order_icon.svg";
 import searchBtn from "../../assets/search_btn.svg";
+import default_avatar from "../../assets/default-avatar.png"
 import logo from "../../assets/logo.svg";
 import Logo from "../../assets/logo.svg";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const Navbar = ({ search = false }) => {
   const [enabled, setEnabled] = useState(false);
+  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   return (
     <nav
@@ -20,7 +24,9 @@ const Navbar = ({ search = false }) => {
       style={{ backgroundColor: "#2f5379" }}
     >
       {/* Logo */}
-      <div className="flex items-center ml-15">
+      <div className="flex items-center ml-15 cursor-pointer"
+        onClick={() => { auth ? navigate("/catalog") : navigate("/home") }}
+      >
         <img src={Logo} alt="Logo" className="w-25 h-15" />
       </div>
 
@@ -51,7 +57,7 @@ const Navbar = ({ search = false }) => {
         <div className="flex items-center space-x-2">
           <Switch
             checked={enabled}
-            onChange={setEnabled}
+            onChange={auth?.data?.auth?.access ? setEnabled : null}
             className={`${enabled ? "bg-blue-600" : "bg-[#212861]"
               } relative inline-flex h-13 w-40 items-center rounded-full p-1`}
           >
@@ -66,8 +72,22 @@ const Navbar = ({ search = false }) => {
         </div>
 
         <div className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer">
+          {auth?.data?.auth ? (
+            <img
+              src={auth.data.auth.picture === "temp" ? default_avatar : auth.data.auth.picture}
+              alt="profile"
+              className="w-full h-full object-cover rounded-full"
+            />
+          ) : (
+            <img
+              src={default_avatar}
+              alt="default profile"
+              className="w-full h-full object-cover rounded-full"
+            />
+          )}
           <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
         </div>
+
       </div>
     </nav>
   );

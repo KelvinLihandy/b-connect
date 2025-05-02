@@ -44,10 +44,10 @@ import { debounce } from "lodash";
 import axios from "axios";
 import { gigAPI } from "../../constants/APIRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const CatalogPager = () => {
-  const { auth, setAuth } = useContext(AuthContext);
-  const itemsPerPage = 9;
+const CatalogPage = () => {
+  const { auth } = useContext(AuthContext);9;
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
   const [favoriteGigs, setFavoriteGigs] = useState([]);
@@ -60,10 +60,14 @@ const CatalogPager = () => {
   const [gigs, setGigs] = useState([]);
   const [totalGigs, setTotalGigs] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [userName, setUserName] = useState("");
   const [appliedFilter, setAppliedFilter] = useState(false);
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(itemsPerPage-1);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(!auth) navigate("/sign-in")
+  }, [])
 
   console.log("user", auth);
   const toggleFavorite = (gigId) => {
@@ -424,7 +428,7 @@ const CatalogPager = () => {
           transition={{ duration: 0.5 }}
         >
           <div>
-            <h2 className="text-2xl font-semibold">Hey {userName}👋</h2>
+            <h2 className="text-2xl font-semibold">Hey {auth?.data?.auth?.name || ""}👋👋</h2>
             <motion.p
               className="text-gray-600"
               initial={{ opacity: 0 }}
@@ -845,4 +849,4 @@ const CatalogPager = () => {
   );
 };
 
-export default CatalogPager;
+export default CatalogPage;

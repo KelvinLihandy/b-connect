@@ -21,9 +21,7 @@ const SignIn = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isChecked, setIsChecked] = useState(false);
-	const { auth, loadAuth } = useContext(AuthContext);
-	const [pending, setPending] = useState(false);
-
+	const { auth, getAuth } = useContext(AuthContext);
 	const navigate = useNavigate();
 
 	const handleCheckboxChange = () => {
@@ -45,37 +43,12 @@ const SignIn = () => {
 			},
 				{ withCredentials: true }
 			);
-			console.log(response.data);
-			setPending(true);
-			// setTimeout(() => {
-			// const tokenCookie = document.cookie
-			// 	.split(';')
-			// 	.find(c => c.trim().startsWith('token='));
-
-			// if (tokenCookie) {
-			// 	const token = tokenCookie.split('=')[1];
-			// 	try {
-			// 		const decoded = jwtDecode(token);
-			// 		console.log("decoded", decoded);
-			// 		setAuth(decoded);
-			// 	} catch (err) {
-			// 		console.error('Invalid token:', err);
-			// 		setAuth(null);
-			// 	}
-			// }
-			// how to fkin cookie jwt
-			// }, 100);
+			console.log("login", response.data);
+			await getAuth();
 		} catch (error) {
-			console.error('Error login:', error.response);
+			console.error('Error login:', error);
 		}
 	};
-
-	useEffect(() => {
-		if (pending && auth) {
-			navigate('/catalog', { replace: true });
-		}
-		else console.log("eff fail")
-	}, [auth, pending]);
 
 	return (
 		<div className='flex flex-col items-center justify-center justify-items-center h-screen'>

@@ -1,38 +1,27 @@
 import { jwtDecode } from 'jwt-decode';
 import React, { useState, createContext, useEffect } from 'react'
+import { authAPI } from '../constants/APIRoutes';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState(null);
 
-  const loadAuth = () => {
-    const tokenCookie = document.cookie
-      .split(';')
-      .find(c => c.trim().startsWith('token='));
-
-    if (tokenCookie) {
-      const token = tokenCookie.split('=')[1];
-      try {
-        const decoded = jwtDecode(token);
-        console.log("decoded", decoded);
-        setAuth(decoded);
-      } catch (err) {
-        console.error('Invalid token:', err);
-        setAuth(null);
-      }
+  const getAuth = async () => {
+    try{
+      console.log("called")
+      const authResponse = await axios.get(`${authAPI}/auth`, { withCredentials: true });
+      setAuth(authResponse);
+    } catch (err){
+      console.log("error", err);
     }
-  };
+  }
 
-  useEffect(() => {
-    if (auth) {
-      console.log("auth changed:", auth);
-    }
-    loadAuth();
-  }, [auth]);
-
+  console.log(auth);
   return (
-    <AuthContext.Provider value={{ auth, setAuth, loadAuth }}>
+    <AuthContext.Provider value={{ auth, setAuth, getAuth }}>
       {children}
     </AuthContext.Provider>
   )
