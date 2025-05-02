@@ -26,7 +26,7 @@ const ForgotPassword = () => {
       })
         .then(response => {
           console.log(response.data);
-          navigate(response.data.redirectUrl, { replace: true }); //go to InputOTP.jsx
+          navigate(response.data.redirectUrl, { replace: true });
         })
         .catch(error => {
           console.error('Error send otp:', error.response);

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { debounce } from 'lodash'
@@ -39,6 +39,7 @@ import GigItem from '../../components/gig_item/GigItem'
 
 // API Routes
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
+import { AuthContext } from '../../contexts/AuthContext'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -115,7 +116,7 @@ const Home = () => {
   const [gigs, setGigs] = useState();
   const categoryList = ["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"];
   const [currentCategory, setCurrentCategory] = useState(categoryList[0]);
-
+  
   useEffect(() => {
     const getTrendingUsers = async () => {
       try {
