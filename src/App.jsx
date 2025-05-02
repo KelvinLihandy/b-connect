@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-
 import './App.css';
 import SignUp from './views/sign_up/SignUp';
 import SignIn from './views/sign_in/SignIn';
@@ -44,7 +43,6 @@ const App = () => {
         <Route path="/catalog" element={<AuthRouting component={CatalogPage} />} />
         <Route path="/detail/:gigId" element={<AuthRouting component={Detail} />} />
         <Route path="/chat" element={<AuthRouting component={Chat} />} />
-
       </Routes >
     </>
   )

@@ -47,8 +47,7 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const CatalogPage = () => {
-  const { auth } = useContext(AuthContext);
-  const itemsPerPage = 9;
+  const { auth } = useContext(AuthContext);9;
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
   const [favoriteGigs, setFavoriteGigs] = useState([]);
