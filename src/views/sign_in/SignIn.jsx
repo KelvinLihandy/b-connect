@@ -45,6 +45,7 @@ const SignIn = () => {
 			);
 			console.log("login", response.data);
 			await getAuth();
+			navigate("/catalog");
 		} catch (error) {
 			console.error('Error login:', error);
 		}

@@ -47,7 +47,8 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const CatalogPage = () => {
-  const { auth } = useContext(AuthContext);9;
+  const { auth } = useContext(AuthContext);
+  const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
   const [favoriteGigs, setFavoriteGigs] = useState([]);
@@ -191,7 +192,7 @@ const CatalogPage = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="w-full py-20 relative overflow-hidden"
+        className="w-full py-20 relative overflow-hidden mt-20"
         style={{
           background: "linear-gradient(135deg, #2D4F76 0%, #217A9D 50%, #1E9CB7 100%)",
         }}
