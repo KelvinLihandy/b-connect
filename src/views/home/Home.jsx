@@ -5,9 +5,6 @@ import { debounce } from 'lodash'
 import axios from 'axios'
 
 // Assets
-import logo from '../../assets/logo.svg'
-import login_logo from '../../assets/login_logo.svg'
-import dropdown_tri from '../../assets/dropdown_tri.svg'
 import bg_dots_extended from '../../assets/bg_dots_extended.svg'
 import talent_pool from '../../assets/talent_pool.svg'
 import efficient_matching from '../../assets/efficient_matching.svg'
@@ -40,6 +37,7 @@ import GigItem from '../../components/gig_item/GigItem'
 // API Routes
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
 import { AuthContext } from '../../contexts/AuthContext'
+import Navbar from '../../components/navbar/Navbar'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -185,42 +183,7 @@ const Home = () => {
   return (
     <div className="font-poppins overflow-x-hidden">
       {/* Header/Navigation */}
-      <motion.header
-        className="fixed top-0 left-0 w-full bg-white/10 z-50 backdrop-blur-md p-4 flex flex-row justify-between px-25 h-[100px] shadow-sm"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 100 }}
-      >
-        <motion.img
-          src={logo}
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className="cursor-pointer"
-          onClick={() => navigate('/home')}//perlu dibuat pake authcontext 
-        />
-        <div className='flex flex-row items-center gap-8 text-white text-xl'>
-          <motion.p
-            className='flex flex-row items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-300'
-            whileHover={{ scale: 1.05 }}
-          >
-            Explore <span><img className='self-center' src={dropdown_tri} alt="" /></span>
-          </motion.p>
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Link to="/about-us" className="hover:text-blue-300 transition-colors duration-300">About Us</Link>
-          </motion.div>
-          <motion.button
-            className='flex flex-row border border-white/30 rounded-xl py-4 px-6 gap-2 items-center hover:bg-white/20 transition-all duration-300'
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/sign-in')}
-          >
-            Login
-            <span>
-              <img className='h-5 self-center' src={login_logo} />
-            </span>
-          </motion.button>
-        </div>
-      </motion.header>
+      <Navbar/>
 
       {/* Hero Section */}
       <section className='bg-gradient-to-br from-[#2E5077] to-[#1d3f63] min-h-[950px] text-white flex flex-wrap px-10 relative justify-center pt-[100px]'>

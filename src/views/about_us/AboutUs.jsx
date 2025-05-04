@@ -30,7 +30,7 @@ const AboutUs = () => {
 
     return (
         <div>
-            <Navbar/>
+            <Navbar alt/>
 
             <div className="block font-Archivo text-[#171A1F] mx-20 my-40">
                 <div className="flex flex-col lg:flex-row gap-10">

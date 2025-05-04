@@ -1,5 +1,6 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import io from "socket.io-client";
 import './App.css';
 import SignUp from './views/sign_up/SignUp';
 import SignIn from './views/sign_in/SignIn';
@@ -13,26 +14,33 @@ import CatalogPage from './views/catalogPage/CatalogPage';
 import Chat from './views/chat/Chat';
 import AuthRouting from './components/auth_routing/AuthRouting';
 import { AuthContext } from './contexts/AuthContext';
+import HomeRouting from './components/home_routing/HomeRouting';
+
+export const socket = io.connect("http://localhost:5000");
 
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
+  const [ready, setReady] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const initAuth = async () => {
       await getAuth();
-      console.log("init", auth);
-      // if (auth) navigate("/catalog");
-      // else navigate("/home");
+      setReady(true);
     }
     initAuth();
   }, []);
 
+  if (!ready) {
+    return <></>
+  }
+  
   return (
     <>
       <Routes>
-        <Route path='/home' element={<AuthRouting component={Home} />} />
-        <Route path='/sign-in' element={<SignIn/>} />
+        <Route path="/" element={<Navigate to="/home" />} />
+        <Route path='/home' element={<HomeRouting component={Home} />} />
+        <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/about-us' element={<AboutUs />} />
         <Route path='/sign-in/forget' element={<ForgotPassword />} />

@@ -11,15 +11,14 @@ const AuthProvider = ({ children }) => {
 
   const getAuth = async () => {
     try{
-      console.log("called")
+      console.log("called get auth")
       const authResponse = await axios.get(`${authAPI}/auth`, { withCredentials: true });
       setAuth(authResponse);
     } catch (err){
       console.log("error", err);
     }
   }
-
-  console.log(auth);
+  if(auth) console.log("auth", auth);
   return (
     <AuthContext.Provider value={{ auth, setAuth, getAuth }}>
       {children}
