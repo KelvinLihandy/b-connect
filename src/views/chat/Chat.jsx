@@ -8,7 +8,7 @@ import emote from "../../assets/chat_emote.svg"
 import send from "../../assets/chat_send.svg"
 import sendfrom from "../../assets/chat_uploadFromComp.svg"
 import file from "../../assets/chat_file.png"
-
+import default_avatar from "../../assets/default-avatar.png"
 import Footer from '../../components/footer/Footer'
 import Navbar from '../../components/navbar/Navbar'
 import Alex from "../../assets/img_alex-sutejo.svg"
@@ -16,9 +16,11 @@ import Salsabila from "../../assets/img_Salsabila.svg"
 import AlexLamar from "../../assets/img_Alex-Lamar.svg"
 import Nina from "../../assets/img_Nina-Lanae.svg"
 import logo from '../../assets/logo_in_chat.png'
-import { authAPI } from "../../constants/APIRoutes"
+import { authAPI, chatAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { AuthContext } from '../../contexts/AuthContext';
+import { imageShow } from '../../constants/DriveLinkPrefixes';
+import Message from '../../components/message/Message';
 
 const Chat = () => {
   const { auth } = useContext(AuthContext);
@@ -64,54 +66,62 @@ const Chat = () => {
     };
   }, []);
 
-  const handleFileUpload = async (file) => {
-    const fileSize = (file.size / 1024).toFixed(1);
-    const fileType = file.type || "Unknown File Type";
 
-    const fileUrl = await uploadFileToBackend(file);
-    if (!fileUrl) return;
-
-    const newFileMessage = {
-      text: file.name,
-      size: `${fileSize}kb`,
-      type: fileType,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      date: new Date().toISOString().split("T")[0],
-      sender: "User",
-      isFile: true,
-      fileUrl, // URL file for backend
-    };
-
-    const updatedMessages = [...activeUser.messages, newFileMessage];
-    setActiveUser({ ...activeUser, messages: updatedMessages });
-
-    const userIndex = USERS.findIndex((user) => user.id === activeUser.id);
-    if (userIndex !== -1) {
-      USERS[userIndex] = {
-        ...USERS[userIndex],
-        messages: updatedMessages,
-      };
-    }
-
-    setIsUploadVisible(false);
-  };
 
   const [availableRooms, setAvailableRooms] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [roomIndex, setRoomIndex] = useState(null);
   const [currentRoomMessageList, setCurrentRoomMessageList] = useState([]);
 
+  const getTime = (time) => {
+    const date = new Date(time);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
+
   const handleSendMessage = async () => {
     if (messageInput.trim() === "") return;
     const newMessage = {
-      roomId: availableRooms[roomIndex]._id,
+      roomId: availableRooms[roomIndex]?._id,
       senderId: auth?.data?.auth?.id,
       content: messageInput,
       type: "text",
     };
-    console.log(newMessage);
+    console.log("text message", newMessage);
     await socket.emit("send_message", newMessage);
     setMessageInput("");
+  };
+
+  const handleSendFile = async (file) => {
+    const isImage = file.type.startsWith("image/");
+    const detectedType = isImage ? "image" : "file";
+    const newMessage = new FormData();
+    newMessage.append("message_file", file);
+    newMessage.append("roomId", availableRooms[roomIndex]?._id);
+    newMessage.append("senderId", auth?.data?.auth?.id);
+    newMessage.append("type", detectedType);
+    console.log("file", file);
+    console.log("file message", newMessage);
+    try {
+      const response = await axios.post(`${chatAPI}/upload-file-message`,
+        newMessage,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      console.log("response send file", response.data);
+    } catch (error) {
+      console.error('Error send message file:', error);
+    }
+    setMessageInput("");
+    setIsUploadVisible(false);
   };
 
   const joinRoom = (index) => {
@@ -134,9 +144,10 @@ const Chat = () => {
 
   useEffect(() => {
     socket.on("receive_message", (messageList) => {
+      console.log("received list", messageList);
       setCurrentRoomMessageList(messageList);
     });
-  }, [socket]);
+  }, [socket, roomIndex]);
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -180,16 +191,6 @@ const Chat = () => {
     });
   };
 
-
-  const getTime = (time) => {
-    const date = new Date(time);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
   let lastRenderedDate = null;
 
   return (
@@ -221,7 +222,7 @@ const Chat = () => {
                 >
                   <div className="w-[65px] h-[65px">
                     <img
-                      src={chat.picture}
+                      src={chat.picture == "temp" ? default_avatar : `${imageShow}${chat.picture}`}
                       alt={chat.name}
                       className="w-full h-full rounded-full object-cover"
                     />
@@ -236,7 +237,6 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* Chat Area */}
         <div className='flex-1 flex flex-col mt-[150px] mb-[50px] ml-[20px] mr-[10px] h-[800px] w-fit font-inter'
           style={{
             borderRadius: "12px 12px 0px 0px",
@@ -244,31 +244,32 @@ const Chat = () => {
             boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
           }}
         >
-          {/* Header Chat */}
-          <div className="flex items-center bg-[#F3F3F3] p-4 mb-2 shadow-md"
-            style={{
-              borderRadius: "12px 12px 0px 0px",
-              background: "#F3F3F3",
-              boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-            }}
-          >
-            <div className="w-[67px] h-[67px]">
-              <img
-                src={availableUsers[roomIndex]?.picture}
-                alt={availableUsers[roomIndex]?.name}
-                className="w-full h-full rounded-full object-cover"
-              />
+          {availableUsers[roomIndex] &&
+            <div className="flex items-center bg-[#F3F3F3] p-4 mb-2 shadow-md"
+              style={{
+                borderRadius: "12px 12px 0px 0px",
+                background: "#F3F3F3",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+              }}
+            >
+              <div className="w-[67px] h-[67px]">
+                <img
+                  src={availableUsers[roomIndex]?.picture == "temp" ? default_avatar : `${imageShow}${availableUsers[roomIndex]?.picture}`}
+                  alt={availableUsers[roomIndex]?.name}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              </div>
+              <div className="ml-4">
+                <div className="font-bold text-[32px]">{availableUsers[roomIndex]?.name}</div>
+                {
+                  availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
+                    (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}</div>)
+                    :
+                    (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}</div>)
+                }
+              </div>
             </div>
-            <div className="ml-4">
-              <div className="font-bold text-[32px]">{availableUsers[roomIndex]?.name}</div>
-              {
-                availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
-                  (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}</div>)
-                  :
-                  (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}</div>)
-              }
-            </div>
-          </div>
+          }
 
           {/* Chat Messages */}
           <ScrollToBottom
@@ -282,7 +283,7 @@ const Chat = () => {
           >
             {/* Chat Content */}
             <div className="flex flex-col gap-2 text-[15px] space-y-4 px-10 py-5">
-              {currentRoomMessageList.map((message, index) => {
+              {Array.isArray(currentRoomMessageList) && currentRoomMessageList.map((message, index) => {
                 const messageDate = new Date(message.time);
                 const messageMidnight = new Date(messageDate);
                 messageMidnight.setHours(0, 0, 0, 0);
@@ -309,38 +310,7 @@ const Chat = () => {
                     )}
 
                     {/* Message */}
-                    {/* {message.type !== "text" ? (
-                      <a
-                        href={message.fileUrl || "#"}
-                        download={message.text}
-                        className={`p-4 rounded-lg shadow-md max-w-[45%] bg-white flex items-center justify-between gap-3 ${message.sender === "User" ? "self-end" : ""
-                          } no-underline`}
-                        style={{
-                          textDecoration: "none",
-                        }}
-                      >
-                        <img src={file} alt="File Icon" className="w-[28px] h-[32px]" />
-                        <div className="flex-1">
-                          <p className="font-semibold">{message.text}</p>
-                          <p className="text-sm text-gray-500">
-                            {message.size}, {message.type}
-                          </p>
-                        </div>
-                        <div className="text-right text-gray-400 text-xs self-end">{message.time}</div>
-                      </a>
-                    ) : ( */}
-                    <div
-                      className={`p-4 rounded-lg shadow-md max-w-[45%] ${message.senderId === auth?.data?.auth?.id ? "self-end" : "self-start"
-                        }`}
-                      style={message.senderId === auth?.data?.auth?.id ? {
-                        backgroundColor: "rgb(255, 255, 255, 0.65)",
-                      } : {
-                        backgroundColor: "rgb(0, 0 , 0, 1)"
-                      }}
-                    >
-                      <p className={`${message.senderId === auth?.data?.auth?.id ? "text-black" : "text-white"} wrap-break-word`}>{message.content}</p>
-                      <div className={`text-right  text-xs ${message.senderId === auth?.data?.auth?.id ? "text-gray-600" : "text-gray-200" }`}>{getTime(message.time)}</div>
-                    </div>
+                    <Message message={message} roomId={availableRooms[roomIndex]?._id} />
                   </React.Fragment>
                 );
               })}
@@ -348,76 +318,77 @@ const Chat = () => {
           </ScrollToBottom>
 
           {/* Input Pesan */}
-          <div className="relative flex items-center p-4 gap-2 bg-[#EBECEC]">
-            <button className="p-2" onClick={toggleUpload}>
-              <img src={upload} alt="Upload" className="w-6 h-6 cursor-pointer" />
-            </button>
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="Type a message..."
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSendMessage();
-                  }
-                }}
-                className="w-full p-2 pr-10 bg-white outline-none"
-              />
-              <img
-                src={emote}
-                alt="Emote"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
-                onClick={toggleEmoteSelector} // Tampilkan emote selector
-              />
+          {availableUsers[roomIndex] &&
+            <div className="relative flex items-center p-4 gap-2 bg-[#EBECEC]">
+              <button className="p-2" onClick={toggleUpload}>
+                <img src={upload} alt="Upload" className="w-6 h-6 cursor-pointer" />
+              </button>
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSendMessage();
+                    }
+                  }}
+                  className="w-full p-2 pr-10 bg-white outline-none"
+                />
+                <img
+                  src={emote}
+                  alt="Emote"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
+                  onClick={toggleEmoteSelector} // Tampilkan emote selector
+                />
+              </div>
+              <button className="p-2" onClick={handleSendMessage}>
+                <img src={send} alt="Send" className="w-6 h-6 cursor-pointer" />
+              </button>
+
+              {/* Emote Selector */}
+              {isEmoteSelectorVisible && (
+                <div
+                  ref={emoteSelectorRef} // Referensi untuk emote selector
+                  className="absolute bottom-[220px] right-12 bg-white shadow-lg rounded-lg "
+                  style={{
+                    width: "300px",
+                    height: "300px",
+                  }}
+                >
+                  <EmojiPicker onEmojiClick={handleEmoteClick} />
+                </div>
+              )}
+
+              {/* Floating Div */}
+              {isUploadVisible && (
+                <div
+                  className={`absolute bottom-[80px] left-5 rounded-[3px] shadow-lg bg-gray-300 transition-all duration-300 ease-in-out ${isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                    }`}
+                  style={{
+                    zIndex: 1000,
+                  }}
+                >
+                  <label className="flex items-center gap-2 p-2 bg-gray-300 rounded-md hover:bg-gray-400 cursor-pointer">
+                    <img src={sendfrom} alt="Upload Icon" className="w-5 h-5" />
+                    <span className="text-[16px] font-medium">Upload from Computer</span>
+                    <input
+                      type="file"
+                      name="message_file"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files.length > 0) {
+                          handleSendFile(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
-            <button className="p-2" onClick={handleSendMessage}>
-              <img src={send} alt="Send" className="w-6 h-6 cursor-pointer" />
-            </button>
-
-            {/* Emote Selector */}
-            {isEmoteSelectorVisible && (
-              <div
-                ref={emoteSelectorRef} // Referensi untuk emote selector
-                className="absolute bottom-[220px] right-12 bg-white shadow-lg rounded-lg "
-                style={{
-                  width: "300px",
-                  height: "300px",
-                }}
-              >
-                <EmojiPicker onEmojiClick={handleEmoteClick} />
-              </div>
-            )}
-
-            {/* Floating Div */}
-            {isUploadVisible && (
-              <div
-                className={`absolute bottom-[80px] left-5 rounded-[3px] shadow-lg bg-gray-300 transition-all duration-300 ease-in-out ${isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                  }`}
-                style={{
-                  zIndex: 1000,
-                }}
-              >
-                <label className="flex items-center gap-2 p-2 bg-gray-300 rounded-md hover:bg-gray-400 cursor-pointer">
-                  <img src={sendfrom} alt="Upload Icon" className="w-5 h-5" />
-                  <span className="text-[16px] font-medium">Upload from Computer</span>
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files.length > 0) {
-                        handleFileUpload(e.target.files[0]);
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
+          }
         </div>
-
-        {/* About Details */}
         <div className='flex mt-[150px] mb-[50px] ml-[20px] mr-[20px] h-fit w-[308px] font-inter'
           style={{
             borderRadius: "12px 12px 0px 0px",
@@ -425,27 +396,29 @@ const Chat = () => {
             boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
           }}
         >
-          <div className="p-4 w-full">
-            <h2 className="font-bold text-[20px] mb-2 border-b pb-2">About {availableUsers[roomIndex]?.name}</h2>
-            <div className="grid grid-cols-2 text-[16px] gap-y-5 p-2">
-              <div className="text-gray-600">From</div>
-              <div className='text-right'>{availableUsers[roomIndex]?.location}</div>
-              <div className="text-gray-600">Joined Since</div>
-              <div className="text-right">
-                {availableUsers[roomIndex]?.joinedDate &&
-                  new Date(availableUsers[roomIndex].joinedDate).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                  })}
-              </div>
-              <div className="text-gray-600">Rating</div>
-              <div className="text-right flex items-center justify-end">
-                <span className="text-yellow-400 text-[17px]">★</span>
-                <span className="ml-1 font-bold">{availableUsers[roomIndex]?.rating}</span>
-                <span className="ml-1 text-gray-500">({availableUsers[roomIndex]?.reviews})</span>
+          {availableUsers[roomIndex] &&
+            <div className="p-4 w-full">
+              <h2 className="font-bold text-[20px] mb-2 border-b pb-2">About {availableUsers[roomIndex]?.name}</h2>
+              <div className="grid grid-cols-2 text-[16px] gap-y-5 p-2">
+                <div className="text-gray-600">From</div>
+                <div className='text-right'>{availableUsers[roomIndex]?.location}</div>
+                <div className="text-gray-600">Joined Since</div>
+                <div className="text-right">
+                  {availableUsers[roomIndex]?.joinedDate &&
+                    new Date(availableUsers[roomIndex].joinedDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                    })}
+                </div>
+                <div className="text-gray-600">Rating</div>
+                <div className="text-right flex items-center justify-end">
+                  <span className="text-yellow-400 text-[17px]">★</span>
+                  <span className="ml-1 font-bold">{availableUsers[roomIndex]?.rating}</span>
+                  <span className="ml-1 text-gray-500">({availableUsers[roomIndex]?.reviews})</span>
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
       </div>
       <Footer />
