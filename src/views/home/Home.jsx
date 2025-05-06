@@ -156,7 +156,7 @@ const Home = () => {
       const response = await axios.post(`${gigAPI}/get-gig`, { name, category });
       const res = response.data.filteredGigs;
       setGigs(res);
-      console.log("gig fetched");
+      console.log("gig fetched", res);
     } catch (error) {
       console.error('Error fetching gigs:', error.response || error);
     }

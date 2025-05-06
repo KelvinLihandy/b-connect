@@ -3,6 +3,7 @@ import { DynamicStars } from '../dynamic_stars/DynamicStars';
 import arrow_right from '../../assets/arrow_right.svg'
 import { AnimatePresence, motion } from 'framer-motion';
 import default_avatar from '../../assets/default-avatar.png'
+import { imageShow } from '../../constants/DriveLinkPrefixes';
 
 const CarouselTrending = ({ data }) => {
   const itemsPerPage = 3;
@@ -45,7 +46,7 @@ const CarouselTrending = ({ data }) => {
     }, 5000);
     return () => clearInterval(interval);
   }, [data.length]);
-  
+
   console.log(currentIndex)
   return (
     <>
@@ -83,7 +84,10 @@ const CarouselTrending = ({ data }) => {
                   </div>
                 </div>
                 <div className='w-50 h-50 ml-auto bg-white flex items-center justify-center'>
-                  <img className='max-h-full max-w-full' src={partner.picture === "temp" ? default_avatar : partner.picture} alt="picture" />
+                  <img className="w-full h-full object-contain"
+                    src={partner.picture === "temp" ? default_avatar : `${imageShow}${partner.picture}`}
+                    alt="picture"
+                  />
                 </div>
               </div>
             ))}

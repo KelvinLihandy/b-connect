@@ -33,8 +33,7 @@ import fireworks from "../../assets/fireworks.png";
 import particle from "../../assets/Group 14582649.png";
 
 // gambar untuk product
-import product1 from "../../assets/image 35.png";
-import product2 from "../../assets/image.png";
+import product1 from "../../assets/image.png";
 
 // Direct imports for service images
 import WebDevImage from "../../assets/webdev.png";
@@ -620,7 +619,8 @@ const CatalogPage = () => {
                   {/* Product Image with hover effect */}
                   <div className="relative overflow-hidden">
                     <motion.img
-                      src={gig.image[0]}
+                      // src={gig.image[0] == "temp" ? product1 : gig.image[0]}
+                      src={product1}
                       alt={gig.name}
                       className="w-full h-48 object-cover bg-blue-600"
                       whileHover={{ scale: 1.05 }}
@@ -773,8 +773,8 @@ const CatalogPage = () => {
             {[
               { name: "UI/UX Design", icon: "🎨", count: "1,201 services" },
               { name: "Web Development", icon: "💻", count: "842 services" },
-              { name: "Mobile Apps", icon: "📱", count: "633 services" },
-              { name: "Logo Design", icon: "✏️", count: "921 services" },
+              { name: "Video Editing", icon: "📱", count: "633 services" },
+              { name: "Translation", icon: "✏️", count: "921 services" },
             ].map((category, i) => (
               <motion.div
                 key={category.name}
@@ -791,60 +791,6 @@ const CatalogPage = () => {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* Newsletter Subscription */}
-      {/* <motion.div
-        className="bg-blue-600 py-16"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.h2
-              className="text-3xl font-bold text-white mb-4"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              Join Our Newsletter
-            </motion.h2>
-            <motion.p
-              className="text-blue-100 mb-8"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              Get the latest updates on new services and special offers!
-            </motion.p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
-              />
-              <motion.button
-                className="px-6 py-3 bg-yellow-400 text-blue-900 font-medium rounded-lg hover:bg-yellow-300 transition-colors duration-200"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Subscribe
-              </motion.button>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div> */}
-
       <Footer />
     </div>
   );

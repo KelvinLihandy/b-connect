@@ -62,14 +62,6 @@ const SignIn = () => {
 					<img className='h-5 self-center' src={google} alt="" />
 					<div>Continue with Google</div>
 				</button>
-				{/* <button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
-					<img className='h-5 self-center' src={facebook} alt="" />
-					<div>Continue with Facebook</div>
-				</button>
-				<button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
-					<img className='h-5 self-center' src={apple} alt="" />
-					<div>Continue with Apple</div>
-				</button> */}
 			</div>
 
 			<Divider
@@ -153,29 +145,6 @@ const SignIn = () => {
 					Sign Up
 				</button>
 			</div>
-
-			{/* Background Decor */}
-			{/* <img
-                className="fixed w-[376px] h-[268.571px] top-[328px] right-0 sm:right-[5%] md:right-[10%] lg:right-[20%]"
-                alt=""
-                src={bg_right}
-            />
-
-            <img
-                className="fixed w-[376px] h-[268.571px] top-[328px] left-0 sm:left-[5%] md:left-[10%] lg:left-[20%]"
-                alt=""
-                src={bg_left}
-            />
-
-            <img 
-                className='fixed w-[68px] h-[50.216px] top-[42.7px] left-[47.4px]'
-                src={bg_dots} alt="" 
-            />
-
-<img 
-                className='fixed w-[68px] h-[50.216px] bot-[40.7] bottom-[40.7px] right-[50.216px]'
-                src={bg_dots} alt="" 
-            /> */}
 			<div className='absolute -z-[100] w-screen'>
 				<img
 					className='fixed w-[300px] h-[200px] top-[250px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%]'

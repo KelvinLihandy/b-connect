@@ -14,6 +14,7 @@ import login_logo from '../../assets/login_logo.svg'
 import dropdown_tri from '../../assets/dropdown_tri.svg'
 import { AuthContext } from "../../contexts/AuthContext";
 import { motion } from 'framer-motion'
+import { imageShow } from "../../constants/DriveLinkPrefixes";
 
 const Navbar = ({ search = false, alt = false }) => {
   const [enabled, setEnabled] = useState(false);
@@ -89,7 +90,7 @@ const Navbar = ({ search = false, alt = false }) => {
 
             <div className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer">
               <img
-                src={auth?.data?.auth?.picture === "temp" ? default_avatar : auth.data.auth.picture}
+                src={auth?.data?.auth?.picture === "temp" ? default_avatar : `${imageShow}${auth.data.auth.picture}`}
                 alt="profile"
                 className="w-full h-full object-cover rounded-full"
               />

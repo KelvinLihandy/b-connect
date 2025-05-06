@@ -1,6 +1,8 @@
 import React from 'react'
 import heart from '../../assets/heart.svg'
 import { DynamicStars } from '../dynamic_stars/DynamicStars';
+import product1 from "../../assets/image.png";
+import { imageShow } from '../../constants/DriveLinkPrefixes';
 
 const GigItem = ({ data }) => {
   return (
@@ -17,11 +19,11 @@ const GigItem = ({ data }) => {
         return (
           <div key={serv.id} className="w-sm h-110 font-inter">
             <div className="overflow-hidden h-70">
-              <img className="w-full h-full object-cover bg-black" src={serv.image} alt="phone" />
+              <img className="w-full h-full object-cover bg-black" src={serv.image[0] === "temp" ? product1 : `${imageShow}${serv.image[0]}`} alt="phone" />
             </div>
             <div className="p-3 flex flex-col gap-3">
               <div className="flex flex-row justify-between">
-                <p className="text-wrap font-Archivo font-bold text-xl bg-red-200 max-w-80">{serv.name}</p>
+                <p className="text-wrap font-Archivo font-bold text-xl max-w-80">{serv.name}</p>
                 <img className="self-end" src={heart} alt="like" />
               </div>
               <div className='flex flex-row justify-between'>
