@@ -41,7 +41,7 @@ const Navbar = ({ search = false, alt = false }) => {
         >
           <div
             className="flex items-center ml-15 cursor-pointer"
-            onClick={() => navigate("/catalog")}
+            onClick={() => navigate("/home")}
           >
             <motion.img
               src={logo}
