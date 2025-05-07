@@ -1,25 +1,34 @@
-import { useContext, useState } from "react";
-import { Bell, Heart, Users, MessageCircle, ShoppingBag, Search } from "lucide-react";
-import { Switch } from "@headlessui/react";
-import { Link, useNavigate } from "react-router-dom";
-import bell from "../../assets/bell_icon.svg";
-import heart from "../../assets/heart_icon.svg";
-import message from "../../assets/message_icon.svg";
-import people from "../../assets/people_icon.svg";
-import order from "../../assets/order_icon.svg";
-import searchBtn from "../../assets/search_btn.svg";
-import default_avatar from "../../assets/default-avatar.png"
-import logo from "../../assets/logo.svg";
-import login_logo from '../../assets/login_logo.svg'
-import dropdown_tri from '../../assets/dropdown_tri.svg'
+import { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
-import { motion } from 'framer-motion'
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
+
+// Import assets
+import bell from "../../assets/bell_icon.svg";
+import searchBtn from "../../assets/search_btn.svg";
+import default_avatar from "../../assets/default-avatar.png";
+import logo from "../../assets/logo.svg";
+import login_logo from '../../assets/login_logo.svg';
+import dropdown_tri from '../../assets/dropdown_tri.svg';
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 
+// Import custom components
+import MorphToggleButton from "../../components/togglebutton/togglebutton";
+
+// Register GSAP plugins
+gsap.registerPlugin(MorphSVGPlugin);
+
 const Navbar = ({ search = false, alt = false }) => {
-  const [enabled, setEnabled] = useState(false);
+  const [isFreelancer, setIsFreelancer] = useState(false);
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Handle mode toggle
+  const toggleMode = () => {
+    setIsFreelancer(prev => !prev);
+  };
 
   return (
     <>
@@ -57,7 +66,7 @@ const Navbar = ({ search = false, alt = false }) => {
               <input
                 type="text"
                 placeholder="Search For Our Services"
-                className="relative left-3 w-full h-[40px] px-4 rounded-[14px] border-black outline-none text-black text-sm"
+                className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-md font-medium"
               />
               <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
                 <img src={searchBtn} alt="Search" className="w-[83px] h-[64px]" />
@@ -71,22 +80,10 @@ const Navbar = ({ search = false, alt = false }) => {
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
             </div>
 
-            <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold">Order</button>
+            <button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold">Order</button>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={enabled}
-                onChange={auth?.data?.auth?.access ? setEnabled : null}
-                className={`${enabled ? "bg-blue-600" : "bg-[#212861]"} relative inline-flex h-13 w-40 items-center rounded-full p-1`}
-              >
-                <span className={`absolute inset-0 flex items-center ${enabled ? "justify-end pr-6" : "justify-center"} text-lg font-medium text-white`}>
-                  {enabled ? "Freelancer" : "User"}
-                </span>
-                <span
-                  className={`${enabled ? "translate-x-[4px]" : "translate-x-28"} inline-block h-8 w-8 transform bg-white rounded-full transition`}
-                />
-              </Switch>
-            </div>
+            {/* Morph Toggle Button */}
+            <MorphToggleButton />
 
             <div className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer">
               <img
@@ -100,8 +97,7 @@ const Navbar = ({ search = false, alt = false }) => {
         </motion.nav>
       ) : (
         <motion.header
-          className={`fixed top-0 left-0 w-full z-50 p-4 flex flex-row justify-between px-25 h-[100px] shadow-sm ${alt ? "text-white" : "bg-white/10 backdrop-blur-md text-white"
-            }`}
+          className={`fixed top-0 left-0 w-full z-50 p-4 flex flex-row justify-between px-25 h-[100px] shadow-sm ${alt ? "text-white" : "bg-white/10 backdrop-blur-md text-white"}`}
           style={alt ? { backgroundColor: "#2f5379" } : {}}
           initial={{ y: -100 }}
           animate={{ y: 0 }}
@@ -132,7 +128,7 @@ const Navbar = ({ search = false, alt = false }) => {
             >
               Login
               <span>
-                <img className="h-5 self-center" src={login_logo} />
+                <img className="h-5 self-center" src={login_logo} alt="Login" />
               </span>
             </motion.button>
           </div>
