@@ -12,6 +12,7 @@ import InputOTP from './views/input_otp/InputOTP';
 import ChangePassword from './views/change_password/ChangePassword';
 import CatalogPage from './views/catalogPage/CatalogPage';
 import Chat from './views/chat/Chat';
+import FreelancerProfile from './views/FreelancerProfile/FreelancerProfile';
 import AuthRouting from './components/auth_routing/AuthRouting';
 import { AuthContext } from './contexts/AuthContext';
 import HomeRouting from './components/home_routing/HomeRouting';
