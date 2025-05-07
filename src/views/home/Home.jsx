@@ -1,13 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { debounce } from 'lodash'
 import axios from 'axios'
 
 // Assets
-import logo from '../../assets/logo.svg'
-import login_logo from '../../assets/login_logo.svg'
-import dropdown_tri from '../../assets/dropdown_tri.svg'
 import bg_dots_extended from '../../assets/bg_dots_extended.svg'
 import talent_pool from '../../assets/talent_pool.svg'
 import efficient_matching from '../../assets/efficient_matching.svg'
@@ -35,10 +32,12 @@ import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 // Components
 import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
-import ServiceItem from '../../components/service_item/ServiceItem'
+import GigItem from '../../components/gig_item/GigItem'
 
 // API Routes
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
+import { AuthContext } from '../../contexts/AuthContext'
+import Navbar from '../../components/navbar/Navbar'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -60,7 +59,7 @@ const staggerContainer = {
 }
 
 const TrendingServiceButton = ({ text }) => (
-  <motion.div 
+  <motion.div
     className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/10 backdrop-blur-sm w-50 max-w-50 hover:bg-white/20 transition-all duration-300 cursor-pointer'
     whileHover={{ scale: 1.05 }}
     whileTap={{ scale: 0.95 }}
@@ -73,12 +72,12 @@ const TrendingServiceButton = ({ text }) => (
 )
 
 const FeatureCard = ({ image, title, description }) => (
-  <motion.div 
+  <motion.div
     className='w-[300px] flex flex-col items-center gap-3 bg-white/5 backdrop-blur-sm p-6 rounded-xl hover:shadow-lg hover:shadow-blue-400/20 transition-all duration-300'
     whileHover={{ y: -10 }}
   >
-    <motion.img 
-      src={image} 
+    <motion.img
+      src={image}
       alt={title}
       className="w-24 h-24 mb-2"
       whileHover={{ rotate: 5, scale: 1.1 }}
@@ -90,7 +89,7 @@ const FeatureCard = ({ image, title, description }) => (
 )
 
 const ServiceTab = ({ title, isSelected, onClick }) => (
-  <motion.div 
+  <motion.div
     className='flex flex-col cursor-pointer'
     onClick={onClick}
     whileHover={{ scale: 1.05 }}
@@ -98,7 +97,7 @@ const ServiceTab = ({ title, isSelected, onClick }) => (
     <div className={`text-2xl ${isSelected ? 'text-blue-500 font-bold' : 'text-gray-700'}`}>
       {title}
     </div>
-    <motion.div 
+    <motion.div
       className={`h-1 mt-2 ${isSelected ? 'bg-blue-500' : 'invisible'}`}
       initial={{ width: 0 }}
       animate={{ width: isSelected ? '100%' : 0 }}
@@ -112,57 +111,9 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [trendingUsers, setTrendingUsers] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [gigs, setGigs] = useState([
-    {
-      id: 1,
-      image: computer,
-      title: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 2,
-      image: phone,
-      title: "I will design UI UX for mobile app with figma for ios",
-      price: 220000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 3,
-      image: computer,
-      title: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 4,
-      image: phone,
-      title: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 5,
-      image: computer,
-      title: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    },
-    {
-      id: 6,
-      image: phone,
-      title: "I will design UI UX for mobile app with figma for ios",
-      price: 210000,
-      rating: 4,
-      sold: 360
-    }
-  ]);
-  const [selectedServiceType, setSelectedServiceType] = useState("Data Scientist");
+  const [gigs, setGigs] = useState();
+  const categoryList = ["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"];
+  const [currentCategory, setCurrentCategory] = useState(categoryList[0]);
   
   useEffect(() => {
     const getTrendingUsers = async () => {
@@ -200,77 +151,50 @@ const Home = () => {
     };
   }, []);
 
+  const getGig = async (name, category) => {
+    try {
+      const response = await axios.post(`${gigAPI}/get-gig`, { name, category });
+      const res = response.data.filteredGigs;
+      setGigs(res);
+      console.log("gig fetched", res);
+    } catch (error) {
+      console.error('Error fetching gigs:', error.response || error);
+    }
+  }
+
   const debouncedSearch = useCallback(
-    debounce(async (query) => {
+    debounce(async (query, category) => {
       if (!query.length) return;
-      
-      try {
-        const response = await axios.post(`${gigAPI}/get-gig`, { name: query });
-        const res = response.data.filteredGigs;
-        setGigs(res);
-      } catch (error) {
-        console.error('Error fetching gigs:', error.response || error);
-      }
+      await getGig(query, category);
     }, 500),
     []
   );
 
+
   useEffect(() => {
-    if (searchQuery.length > 0) {
-      debouncedSearch(searchQuery);
-    }
-  }, [searchQuery, debouncedSearch]);
+    const fetchGigs = async () => {
+      if (!searchQuery.length) await getGig("", currentCategory);
+      else debouncedSearch(searchQuery, currentCategory);
+    };
+
+    fetchGigs();
+  }, [searchQuery, debouncedSearch, currentCategory]);
 
   return (
     <div className="font-poppins overflow-x-hidden">
       {/* Header/Navigation */}
-      <motion.header 
-        className="fixed top-0 left-0 w-full bg-white/10 z-50 backdrop-blur-md p-4 flex flex-row justify-between px-25 h-[100px] shadow-sm"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 100 }}
-      >
-        <motion.img 
-          src={logo} 
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className="cursor-pointer"
-          onClick={() => navigate('/')}
-        />
-        <div className='flex flex-row items-center gap-8 text-white text-xl'>
-          <motion.p 
-            className='flex flex-row items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-300'
-            whileHover={{ scale: 1.05 }}
-          >
-            Explore <span><img className='self-center' src={dropdown_tri} alt="" /></span>
-          </motion.p>
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Link to="/about-us" className="hover:text-blue-300 transition-colors duration-300">About Us</Link>
-          </motion.div>
-          <motion.button 
-            className='flex flex-row border border-white/30 rounded-xl py-4 px-6 gap-2 items-center hover:bg-white/20 transition-all duration-300'
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/sign-in')}
-          >
-            Login
-            <span>
-              <img className='h-5 self-center' src={login_logo} />
-            </span>
-          </motion.button>
-        </div>
-      </motion.header>
+      <Navbar/>
 
       {/* Hero Section */}
       <section className='bg-gradient-to-br from-[#2E5077] to-[#1d3f63] min-h-[950px] text-white flex flex-wrap px-10 relative justify-center pt-[100px]'>
-        <motion.img 
+        <motion.img
           className='absolute left-0 top-25 blur-sm animate-pulse'
           src={circle}
           alt="circle"
           animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.05, 1] }}
           transition={{ duration: 8, repeat: Infinity }}
         />
-        <motion.img 
+        <motion.img
           className='absolute right-0 top-25 rotate-180 blur-sm animate-pulse'
           src={circle}
           alt="circle"
@@ -279,51 +203,51 @@ const Home = () => {
         />
         <img className='absolute left-0 bottom-0 opacity-80' src={bg_spike_left} alt="bg spike" />
         <img className='absolute right-0 bottom-0 opacity-80' src={bg_spike_right} alt="bg spike" />
-        
-        <motion.div 
+
+        <motion.div
           className='flex flex-col gap-7 font-poppins self-center w-[800px] px-20'
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
         >
-          <motion.p 
+          <motion.p
             className='text-8xl font-bold bg-gradient-to-r from-white to-blue-300 bg-clip-text text-transparent'
             variants={fadeIn}
           >
             B-Connect
           </motion.p>
-          <motion.p 
+          <motion.p
             className='text-5xl font-medium'
             variants={fadeIn}
           >
             FREELANCING MADE EASY !
           </motion.p>
-          <motion.p 
+          <motion.p
             className='text-[#D5D5D5] text-3xl font-medium'
             variants={fadeIn}
           >
             Hire a Person To Help Your Problem.
           </motion.p>
-          <motion.p 
+          <motion.p
             className='text-md text-[#D5D5D5C2] opacity-80 text-wrap max-w-xl'
             variants={fadeIn}
           >
             In the ever-evolving landscape of skills and knowledge, the choice between hiring an expert is a pivotal decision.
           </motion.p>
-          
-          <motion.div 
+
+          <motion.div
             className='flex flex-row text-xl text-black relative'
             variants={fadeIn}
           >
-            <input 
+            <input
               className={`absolute w-[95%] bg-white h-18 self-center rounded-3xl px-5 py-4 transition-all duration-300 shadow-lg ${isSearchFocused ? 'shadow-blue-400' : ''}`}
               type="text"
-              placeholder='Search to "Find Freelancers, Jobs, or Services"'
+              placeholder='Search to Find Our Services'
               onChange={(event) => setSearchQuery(event.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
             />
-            <motion.div 
+            <motion.div
               className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10 cursor-pointer'
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -332,7 +256,7 @@ const Home = () => {
               <img src={search_symbol} alt="search" />
             </motion.div>
           </motion.div>
-          
+
           <motion.div className='flex flex-col gap-5' variants={fadeIn}>
             <p className='text-xl font-medium'>
               TRENDING SERVICES
@@ -344,9 +268,9 @@ const Home = () => {
             </div>
           </motion.div>
         </motion.div>
-        
+
         <div className='relative w-[800px] h-[950px]'>
-          <motion.img 
+          <motion.img
             className='absolute right-1 top-40'
             src={bg_image_right}
             alt="bg right"
@@ -354,63 +278,63 @@ const Home = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-170 top-45 size-15 rotate-50'
             src={triangle_blunt}
             alt="bg tri"
             animate={{ rotate: [50, 60, 50], y: [0, -10, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-20 bottom-25 size-15'
             src={triangle_blunt}
             alt="bg tri"
             animate={{ rotate: [0, 10, 0], x: [0, 10, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.img 
+          <motion.img
             className='absolute bottom-60 right-165 size-15 rotate-15'
             src={triangle_blunt}
             alt="bg tri"
             animate={{ rotate: [15, 25, 15], scale: [1, 1.1, 1] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.img 
+          <motion.img
             className='absolute bottom-68 right-172 size-15 rotate-75'
             src={triangle_blunt}
             alt="bg tir"
             animate={{ rotate: [75, 85, 75] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-145 top-70'
             src={bg_dots_extended}
             alt="bg dots"
             animate={{ opacity: [0.5, 0.8, 0.5] }}
             transition={{ duration: 4, repeat: Infinity }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-40 bottom-2 h-40'
             src={squiggly}
             alt="bg line"
             animate={{ y: [0, -5, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-          <motion.img 
+          <motion.img
             className='absolute bottom-10 right-100 size-10'
             src={circle_outline}
             alt=""
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 3, repeat: Infinity }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-13 top-57'
             src={circle_bg_right}
             alt=""
             animate={{ rotate: 360 }}
             transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-75 top-40'
             src={trid_designer}
             alt=""
@@ -418,7 +342,7 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-75 top-115'
             src={fullstack_developer}
             alt=""
@@ -426,7 +350,7 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
           />
-          <motion.img 
+          <motion.img
             className='absolute right-0 top-100'
             src={graphic_designer}
             alt=""
@@ -438,14 +362,14 @@ const Home = () => {
       </section>
 
       {/* Trending Partners Section */}
-      <motion.section 
+      <motion.section
         className='min-h-[500px] flex flex-col gap-10 p-8 font-Archivo py-20 scroll-animate'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <motion.p 
+        <motion.p
           className='font-poppins text-5xl font-semibold mb-3'
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -463,27 +387,27 @@ const Home = () => {
       </motion.section>
 
       {/* Why Use B-Connect Section */}
-      <motion.section 
+      <motion.section
         className='min-h-[600px] relative p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] py-20 overflow-hidden'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <motion.img 
+        <motion.img
           className='absolute left-0 bottom-0 p-6'
           src={bg_dots_extended}
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.img 
+        <motion.img
           className='absolute right-0 top-0 p-6'
           src={bg_dots_extended}
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
-        
-        <motion.p 
+
+        <motion.p
           className='font-poppins text-5xl font-semibold mb-10 text-center'
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -495,33 +419,33 @@ const Home = () => {
             B-Connect?
           </span>
         </motion.p>
-        
-        <motion.div 
+
+        <motion.div
           className='flex flex-row justify-center mt-7 gap-20 flex-wrap'
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <FeatureCard 
+          <FeatureCard
             image={talent_pool}
             title="Binusian Talent Pool"
             description="Temukan freelancer berbakat dari komunitas Binus University yang terverifikasi dan siap membantu berbagai kebutuhan proyek Anda."
           />
-          
-          <FeatureCard 
+
+          <FeatureCard
             image={efficient_matching}
             title="Efficient Matching"
             description="Gunakan fitur pencarian dan filter untuk menemukan freelancer yang tepat dan selesaikan proyek dengan hasil berkualitas."
           />
-          
-          <FeatureCard 
+
+          <FeatureCard
             image={clear_fair_pricing}
             title="Clear & Fair Pricing"
             description="Bayar proyek dengan sistem pembayaran yang transparan dan aman. Pembayaran hanya dilakukan setelah pekerjaan disetujui."
           />
-          
-          <FeatureCard 
+
+          <FeatureCard
             image={flexible_support}
             title="Flexible Support"
             description="Tim support kami siap membantu kamu setiap hari untuk memastikan pengalaman proyekmu berjalan lancar dan aman."
@@ -530,14 +454,14 @@ const Home = () => {
       </motion.section>
 
       {/* Explore Services Section */}
-      <motion.section 
+      <motion.section
         className='p-10 flex flex-col items-center gap-20 py-24 scroll-animate'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <motion.p 
+        <motion.p
           className='font-Archivo font-bold text-5xl'
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -546,79 +470,51 @@ const Home = () => {
         >
           Explore Our Services
         </motion.p>
-        
-        <motion.div 
+
+        <motion.div
           className='flex flex-row gap-15 font-inter text-2xl'
           initial={{ y: 20, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          <ServiceTab 
-            title="Data Scientist" 
-            isSelected={selectedServiceType === "Data Scientist"}
-            onClick={() => setSelectedServiceType("Data Scientist")}
-          />
-          
-          <ServiceTab 
-            title="UI/UX" 
-            isSelected={selectedServiceType === "UI/UX"}
-            onClick={() => setSelectedServiceType("UI/UX")}
-          />
-          
-          <ServiceTab 
-            title="Graphic Design" 
-            isSelected={selectedServiceType === "Graphic Design"}
-            onClick={() => setSelectedServiceType("Graphic Design")}
-          />
-          
-          <ServiceTab 
-            title="Voice Over" 
-            isSelected={selectedServiceType === "Voice Over"}
-            onClick={() => setSelectedServiceType("Voice Over")}
-          />
-          
-          <motion.div 
-            className='flex flex-row gap-5 text-[#2E90EB] cursor-pointer'
-            whileHover={{ scale: 1.05, x: 5 }}
-            transition={{ type: "spring", stiffness: 400 }}
-          >
-            <p className='self-center font-medium'>
-              View All
-            </p>
-            <motion.img 
-              src={arrow_circle}
-              alt="arrow circle"
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.div>
+          {categoryList.map((category, index) => {
+            return (
+              <ServiceTab
+                key={index}
+                title={category}
+                isSelected={currentCategory === category}
+                onClick={() => setCurrentCategory(category)}
+              />
+            )
+          })}
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           className='flex flex-wrap gap-3 justify-center'
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <motion.div 
+          <motion.div
             className="w-sm flex flex-row h-70 font-inter bg-gradient-to-br from-[#F3F3F3] to-[#E6E6E6] relative items-center rounded-lg shadow-md overflow-hidden"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
             <div className='flex flex-row items-center justify-center p-3'>
-              <p className='text-wrap font-Archivo font-bold text-3xl self-start pt-3 text-gray-800'>
+              <p className='text-wrap font-Archivo font-bold text-3xl self-start -mt-4 text-gray-800'>
                 Our Best Sellers
               </p>
-              <motion.img 
+              <motion.img
+                className='-mt-10'
                 src={mr_pink_hair}
                 alt="mr pink hair"
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
             </div>
-            <motion.button 
+            <motion.button
               className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -626,7 +522,7 @@ const Home = () => {
               <p className='font-arvo text-3xl font-bold text-[#565E6D]'>
                 Shop Now
               </p>
-              <motion.img 
+              <motion.img
                 src={arrow_right}
                 alt="arrow right"
                 animate={{ x: [0, 5, 0] }}
@@ -634,12 +530,12 @@ const Home = () => {
               />
             </motion.button>
           </motion.div>
-          <ServiceItem data={gigs} />
+          <GigItem data={gigs} />
         </motion.div>
       </motion.section>
 
       <Footer />
-      
+
       {/* Floating action button */}
       <motion.div
         className="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg cursor-pointer z-50"
@@ -653,7 +549,7 @@ const Home = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       </motion.div>
-      
+
       {/* Add global styles for scroll animations */}
       <style jsx global>{`
         @keyframes fadeIn {

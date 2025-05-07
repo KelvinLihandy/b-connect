@@ -30,7 +30,7 @@ const AboutUs = () => {
 
     return (
         <div>
-            <Navbar/>
+            <Navbar alt={true} />
 
             <div className="block font-Archivo text-[#171A1F] mx-20 my-40">
                 <div className="flex flex-col lg:flex-row gap-10">
@@ -47,7 +47,7 @@ const AboutUs = () => {
                             />
                         </div>
                         
-                        <div className="text-3xl grid grid-cols-1 md:grid-cols-2 md:grid-rows-1 gap-6 md:gap-6 flex flex-col md:flex-row">
+                        <div className="text-3xl grid grid-cols-1 md:grid-cols-2 md:grid-rows-1 gap-6 md:gap-6 md:flex-row">
                             <p className="leading-relaxed">
                                 Kami menyediakan platform yang menghubungkan pelaku bisnis dan startup teknologi dengan freelancer berkualitas. Melalui B-Connect, Anda dapat menemukan talenta terbaik untuk menyelesaikan proyek Anda secara efisien dan terpercaya.
                             </p>
