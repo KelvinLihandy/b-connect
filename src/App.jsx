@@ -15,6 +15,7 @@ import Chat from './views/chat/Chat';
 import AuthRouting from './components/auth_routing/AuthRouting';
 import { AuthContext } from './contexts/AuthContext';
 import HomeRouting from './components/home_routing/HomeRouting';
+import ProfileUser from './views/profile_user/ProfileUser';
 
 export const socket = io.connect("http://localhost:5000");
 
@@ -51,6 +52,7 @@ const App = () => {
         <Route path="/catalog" element={<AuthRouting component={CatalogPage} />} />
         <Route path="/detail/:gigId" element={<AuthRouting component={Detail} />} />
         <Route path="/chat" element={<AuthRouting component={Chat} />} />
+        <Route path="/profile-user" element={<ProfileUser />} />
       </Routes >
     </>
   )
