@@ -12,6 +12,7 @@ import InputOTP from './views/input_otp/InputOTP';
 import ChangePassword from './views/change_password/ChangePassword';
 import CatalogPager from './views/catalogPage/CatalogPager';
 import Chat from './views/chat/Chat';
+import FreelancerProfile from './views/FreelancerProfile/FreelancerProfile';
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         <Route path='/sign-in/change-password' element={<ChangePassword/>} />
         <Route path='/catalogPage' element={<CatalogPager />} />
         <Route path='/chat' element={<Chat />} />
+        <Route path='/FreelancerProfile' element={<FreelancerProfile/>}></Route>
         </Routes>
     </>
   )

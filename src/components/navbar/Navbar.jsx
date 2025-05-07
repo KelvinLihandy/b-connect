@@ -1,19 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, Heart, Users, MessageCircle, ShoppingBag, Search } from "lucide-react";
 import { Switch } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import bell from "../../assets/bell_icon.svg";
-import heart from "../../assets/heart_icon.svg";
-import message from "../../assets/message_icon.svg";
-import people from "../../assets/people_icon.svg";
-import order from "../../assets/order_icon.svg";
 import search from "../../assets/search_btn.svg";
-import logo from "../../assets/logo.svg";
 import Logo from "../../assets/logo.svg";
 
-export default function Navbar() {
-  const [enabled, setEnabled] = useState(false);
+export default function CustomNavbar({ onModeToggle, initialMode = false }) {
+  const [enabled, setEnabled] = useState(initialMode);
   const navigate = useNavigate();
+
+   // Handle toggle change with callback to parent
+   const handleToggleChange = (value) => {
+    setEnabled(value);
+    if (onModeToggle) {
+      onModeToggle(value);
+    }
+  };
+
+  // If initialMode prop changes, update local state
+  useEffect(() => {
+    setEnabled(initialMode);
+  }, [initialMode]);
 
   return (
     <nav
@@ -51,7 +59,7 @@ export default function Navbar() {
       <div className="flex items-center space-x-2">
         <Switch
           checked={enabled}
-          onChange={setEnabled}
+          onChange={handleToggleChange}
           className={`${
             enabled ? "bg-blue-600" : "bg-gray-400"
           } relative inline-flex h-13 w-35 items-center rounded-full p-1`}

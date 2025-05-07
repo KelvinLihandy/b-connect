@@ -1,4 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { debounce } from 'lodash'
+import axios from 'axios'
+
+// Assets
 import logo from '../../assets/logo.svg'
 import login_logo from '../../assets/login_logo.svg'
 import dropdown_tri from '../../assets/dropdown_tri.svg'
@@ -7,12 +13,9 @@ import talent_pool from '../../assets/talent_pool.svg'
 import efficient_matching from '../../assets/efficient_matching.svg'
 import clear_fair_pricing from '../../assets/clear_fair_pricing.svg'
 import flexible_support from '../../assets/flexible_support.svg'
-import aarav_andeep from '../../assets/aarav_andeep.svg'
-import hrithik_tiwarin from '../../assets/hrithik_tiwarin.svg'
-import shivam_pranay from '../../assets/shivam_pranay.svg'
 import search_symbol from '../../assets/search_symbol_blue_inner.svg'
 import trending_symbol from '../../assets/trending_symbol.svg'
-import circle from '../../assets/circle.svg';
+import circle from '../../assets/circle.svg'
 import bg_spike_left from '../../assets/bg_spike_left.svg'
 import bg_spike_right from '../../assets/bg_spike_right.svg'
 import circle_outline from '../../assets/circle_outline.svg'
@@ -28,18 +31,87 @@ import computer from '../../assets/computer_stock.svg'
 import phone from '../../assets/phone_stock.svg'
 import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
-import { Link, useNavigate } from 'react-router-dom'
+
+// Components
 import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import ServiceItem from '../../components/service_item/ServiceItem'
+
+// API Routes
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
-import axios from 'axios'
-import { debounce } from 'lodash';
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6 }
+  }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3
+    }
+  }
+}
+
+const TrendingServiceButton = ({ text }) => (
+  <motion.div 
+    className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/10 backdrop-blur-sm w-50 max-w-50 hover:bg-white/20 transition-all duration-300 cursor-pointer'
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+  >
+    <p className='self-center font-medium'>
+      {text}
+    </p>
+    <img src={trending_symbol} alt="trending" className="animate-pulse" />
+  </motion.div>
+)
+
+const FeatureCard = ({ image, title, description }) => (
+  <motion.div 
+    className='w-[300px] flex flex-col items-center gap-3 bg-white/5 backdrop-blur-sm p-6 rounded-xl hover:shadow-lg hover:shadow-blue-400/20 transition-all duration-300'
+    whileHover={{ y: -10 }}
+  >
+    <motion.img 
+      src={image} 
+      alt={title}
+      className="w-24 h-24 mb-2"
+      whileHover={{ rotate: 5, scale: 1.1 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    />
+    <p className='font-extrabold text-2xl text-white'>{title}</p>
+    <p className='text-xl text-center text-white/90'>{description}</p>
+  </motion.div>
+)
+
+const ServiceTab = ({ title, isSelected, onClick }) => (
+  <motion.div 
+    className='flex flex-col cursor-pointer'
+    onClick={onClick}
+    whileHover={{ scale: 1.05 }}
+  >
+    <div className={`text-2xl ${isSelected ? 'text-blue-500 font-bold' : 'text-gray-700'}`}>
+      {title}
+    </div>
+    <motion.div 
+      className={`h-1 mt-2 ${isSelected ? 'bg-blue-500' : 'invisible'}`}
+      initial={{ width: 0 }}
+      animate={{ width: isSelected ? '100%' : 0 }}
+      transition={{ duration: 0.3 }}
+    />
+  </motion.div>
+)
 
 const Home = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [trendingUsers, setTrendingUsers] = useState([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [gigs, setGigs] = useState([
     {
       id: 1,
@@ -52,7 +124,7 @@ const Home = () => {
     {
       id: 2,
       image: phone,
-      title: "I will design UI UX forsss mobile app with figma for ios",
+      title: "I will design UI UX for mobile app with figma for ios",
       price: 220000,
       rating: 4,
       sold: 360
@@ -91,344 +163,510 @@ const Home = () => {
     }
   ]);
   const [selectedServiceType, setSelectedServiceType] = useState("Data Scientist");
-  console.log(searchQuery)
-
+  
   useEffect(() => {
     const getTrendingUsers = async () => {
-      await axios.get(`${userAPI}/get-trending-users`)
-        .then(response => {
-          const res = response.data.topUsers;
-          console.log(res);
-          setTrendingUsers(res);
-        })
-        .catch(error => {
-          console.error('Error fetch top user:', error.response);
-        });
-    }
+      try {
+        const response = await axios.get(`${userAPI}/get-trending-users`);
+        const res = response.data.topUsers;
+        setTrendingUsers(res);
+      } catch (error) {
+        console.error('Error fetching top users:', error.response || error);
+      }
+    };
 
     getTrendingUsers();
+
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fadeIn');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    document.querySelectorAll('.scroll-animate').forEach(
+      el => observer.observe(el)
+    );
+
+    return () => {
+      document.querySelectorAll('.scroll-animate').forEach(
+        el => observer.unobserve(el)
+      );
+    };
   }, []);
 
   const debouncedSearch = useCallback(
     debounce(async (query) => {
-      await axios.post(`${gigAPI}/get-gig`, {
-        name: query
-      })
-        .then(response => {
-          const res = response.data.filteredGigs;
-          console.log(res);
-          setGigs(res);
-        })
-        .catch(error => {
-          console.error('Error fetch gig:', error.response);
-        });
+      if (!query.length) return;
+      
+      try {
+        const response = await axios.post(`${gigAPI}/get-gig`, { name: query });
+        const res = response.data.filteredGigs;
+        setGigs(res);
+      } catch (error) {
+        console.error('Error fetching gigs:', error.response || error);
+      }
     }, 500),
     []
   );
 
   useEffect(() => {
-    const handleSearch = (query) => {
-      if (query.length == 0) return
-      console.log("Debouncing reset w from query", query);
-      debouncedSearch(query);
-    };
-    handleSearch(searchQuery);
-  }, [searchQuery])
+    if (searchQuery.length > 0) {
+      debouncedSearch(searchQuery);
+    }
+  }, [searchQuery, debouncedSearch]);
 
   return (
-    <div>
-      <header className="font-poppins fixed top-0 left-0 w-full bg-white/[0.09] z-50 backdrop-blur-xs p-4 flex flex-row justify-between px-25 h-[100px]">
-        <img src={logo} />
+    <div className="font-poppins overflow-x-hidden">
+      {/* Header/Navigation */}
+      <motion.header 
+        className="fixed top-0 left-0 w-full bg-white/10 z-50 backdrop-blur-md p-4 flex flex-row justify-between px-25 h-[100px] shadow-sm"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', stiffness: 100 }}
+      >
+        <motion.img 
+          src={logo} 
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+          className="cursor-pointer"
+          onClick={() => navigate('/')}
+        />
         <div className='flex flex-row items-center gap-8 text-white text-xl'>
-
-          <p className='flex flex-row items-center gap-2'>Explore <span><img className='self-center' src={dropdown_tri} alt="" /></span></p>
-          <Link to="/about-us">About Us</Link>
-          <button className='flex flex-row border rounded-xl py-4 px-6 gap-2 items-center'
+          <motion.p 
+            className='flex flex-row items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-300'
+            whileHover={{ scale: 1.05 }}
+          >
+            Explore <span><img className='self-center' src={dropdown_tri} alt="" /></span>
+          </motion.p>
+          <motion.div whileHover={{ scale: 1.05 }}>
+            <Link to="/about-us" className="hover:text-blue-300 transition-colors duration-300">About Us</Link>
+          </motion.div>
+          <motion.button 
+            className='flex flex-row border border-white/30 rounded-xl py-4 px-6 gap-2 items-center hover:bg-white/20 transition-all duration-300'
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/sign-in')}
           >
             Login
             <span>
-              <img className='h-5 self-center'
-                src={login_logo}
-              />
+              <img className='h-5 self-center' src={login_logo} />
             </span>
-          </button>
+          </motion.button>
         </div>
-      </header>
+      </motion.header>
 
-      <section className='bg-[#2E5077] h-[950px] text-white flex flex-wrap px-10 relative justify-center'>
-        <img className='absolute left-0 top-25 blur-xs'
+      {/* Hero Section */}
+      <section className='bg-gradient-to-br from-[#2E5077] to-[#1d3f63] min-h-[950px] text-white flex flex-wrap px-10 relative justify-center pt-[100px]'>
+        <motion.img 
+          className='absolute left-0 top-25 blur-sm animate-pulse'
           src={circle}
           alt="circle"
+          animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.05, 1] }}
+          transition={{ duration: 8, repeat: Infinity }}
         />
-        <img className='absolute right-0 top-25 rotate-180 blur-xs'
+        <motion.img 
+          className='absolute right-0 top-25 rotate-180 blur-sm animate-pulse'
           src={circle}
           alt="circle"
+          animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.05, 1] }}
+          transition={{ duration: 7, repeat: Infinity, delay: 1 }}
         />
-        <img className='absolute left-0 bottom-0'
-          src={bg_spike_left}
-          alt="bg spike"
-        />
-        <img className='absolute right-0 bottom-0'
-          src={bg_spike_right}
-          alt="bg spike"
-        />
-        <div className='flex flex-col gap-7 font-poppin self-center w-[800px] px-20'>
-          <p className='text-8xl font-bold'>
+        <img className='absolute left-0 bottom-0 opacity-80' src={bg_spike_left} alt="bg spike" />
+        <img className='absolute right-0 bottom-0 opacity-80' src={bg_spike_right} alt="bg spike" />
+        
+        <motion.div 
+          className='flex flex-col gap-7 font-poppins self-center w-[800px] px-20'
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+        >
+          <motion.p 
+            className='text-8xl font-bold bg-gradient-to-r from-white to-blue-300 bg-clip-text text-transparent'
+            variants={fadeIn}
+          >
             B-Connect
-          </p>
-          <p className='text-5xl font-medium'>
+          </motion.p>
+          <motion.p 
+            className='text-5xl font-medium'
+            variants={fadeIn}
+          >
             FREELANCING MADE EASY !
-          </p>
-          <p className='text-[#D5D5D5] text-3xl font-medium'>
+          </motion.p>
+          <motion.p 
+            className='text-[#D5D5D5] text-3xl font-medium'
+            variants={fadeIn}
+          >
             Hire a Person To Help Your Problem.
-          </p>
-          <p className='text-md text-[#D5D5D5C2] opacity-76 text-wrap'>
+          </motion.p>
+          <motion.p 
+            className='text-md text-[#D5D5D5C2] opacity-80 text-wrap max-w-xl'
+            variants={fadeIn}
+          >
             In the ever-evolving landscape of skills and knowledge, the choice between hiring an expert is a pivotal decision.
-          </p>
-          <div className='flex flex-row text-xl text-black relative'>
-            <input className='absolute w-[95%] bg-white h-18 self-center rounded-3xl px-5'
+          </motion.p>
+          
+          <motion.div 
+            className='flex flex-row text-xl text-black relative'
+            variants={fadeIn}
+          >
+            <input 
+              className={`absolute w-[95%] bg-white h-18 self-center rounded-3xl px-5 py-4 transition-all duration-300 shadow-lg ${isSearchFocused ? 'shadow-blue-400' : ''}`}
               type="text"
               placeholder='Search to "Find Freelancers, Jobs, or Services"'
               onChange={(event) => setSearchQuery(event.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
             />
-            <div className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10'>
-              <img src={search_symbol}
-                alt="search"
-              />
-            </div>
-          </div>
-          <div className='flex flex-col gap-5'>
+            <motion.div 
+              className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10 cursor-pointer'
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <img src={search_symbol} alt="search" />
+            </motion.div>
+          </motion.div>
+          
+          <motion.div className='flex flex-col gap-5' variants={fadeIn}>
             <p className='text-xl font-medium'>
               TRENDING SERVICES
             </p>
             <div className='text-lg opacity-80 flex flex-wrap gap-4'>
-              <div className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/4  w-50 max-w-50'>
-                <p className='self-center'>
-                  DESIGNER
-                </p>
-                <img src={trending_symbol}
-                  alt="trending"
-                />
-              </div>
-              <div className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/4 w-50 max-w-50'>
-                <p>
-                  DEVELOPER
-                </p>
-                <img src={trending_symbol}
-                  alt="trending" />
-              </div>
-              <div className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/4 w-50 max-w-50'>
-                <p>
-                  WORDPRESS
-                </p>
-                <img src={trending_symbol}
-                  alt="trending"
-                />
-              </div>
+              <TrendingServiceButton text="DESIGNER" />
+              <TrendingServiceButton text="DEVELOPER" />
+              <TrendingServiceButton text="WORDPRESS" />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
+        
         <div className='relative w-[800px] h-[950px]'>
-          <img className='absolute right-1 top-40'
+          <motion.img 
+            className='absolute right-1 top-40'
             src={bg_image_right}
             alt="bg right"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           />
-          <img className='absolute right-170 top-45 size-15 rotate-50'
+          <motion.img 
+            className='absolute right-170 top-45 size-15 rotate-50'
             src={triangle_blunt}
             alt="bg tri"
+            animate={{ rotate: [50, 60, 50], y: [0, -10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-          <img className='absolute right-20 bottom-25 size-15'
+          <motion.img 
+            className='absolute right-20 bottom-25 size-15'
             src={triangle_blunt}
             alt="bg tri"
+            animate={{ rotate: [0, 10, 0], x: [0, 10, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           />
-          <img className='absolute bottom-60 right-165 size-15 rotate-15'
+          <motion.img 
+            className='absolute bottom-60 right-165 size-15 rotate-15'
             src={triangle_blunt}
             alt="bg tri"
+            animate={{ rotate: [15, 25, 15], scale: [1, 1.1, 1] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           />
-          <img className='absolute bottom-68 right-172 size-15 rotate-75'
+          <motion.img 
+            className='absolute bottom-68 right-172 size-15 rotate-75'
             src={triangle_blunt}
             alt="bg tir"
+            animate={{ rotate: [75, 85, 75] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
-          <img className='absolute right-145 top-70'
+          <motion.img 
+            className='absolute right-145 top-70'
             src={bg_dots_extended}
             alt="bg dots"
+            animate={{ opacity: [0.5, 0.8, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity }}
           />
-          <img className='absolute right-40 bottom-2 h-40'
+          <motion.img 
+            className='absolute right-40 bottom-2 h-40'
             src={squiggly}
             alt="bg line"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-          <img className='absolute bottom-10 right-100 size-10'
+          <motion.img 
+            className='absolute bottom-10 right-100 size-10'
             src={circle_outline}
             alt=""
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 3, repeat: Infinity }}
           />
-          <img className='absolute right-13 top-57'
+          <motion.img 
+            className='absolute right-13 top-57'
             src={circle_bg_right}
             alt=""
+            animate={{ rotate: 360 }}
+            transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
           />
-          <img className='absolute right-75 top-40'
+          <motion.img 
+            className='absolute right-75 top-40'
             src={trid_designer}
             alt=""
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
           />
-          <img className='absolute right-75 top-115'
+          <motion.img 
+            className='absolute right-75 top-115'
             src={fullstack_developer}
             alt=""
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
           />
-          <img className='absolute right-0 top-100'
+          <motion.img 
+            className='absolute right-0 top-100'
             src={graphic_designer}
             alt=""
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
           />
         </div>
       </section>
 
-      <section className='h-[500px] flex flex-col gap-10 p-8 font-Archivo'>
-        <p className='font-poppins text-5xl font-semibold mb-3'>
+      {/* Trending Partners Section */}
+      <motion.section 
+        className='min-h-[500px] flex flex-col gap-10 p-8 font-Archivo py-20 scroll-animate'
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <motion.p 
+          className='font-poppins text-5xl font-semibold mb-3'
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
           Trending&nbsp;
-          <span className='text-[#1E88E5]'>
+          <span className='text-[#1E88E5] font-bold'>
             B-Partner
           </span>
-        </p>
+        </motion.p>
         <div className='flex flex-col items-center text-white'>
-          <CarouselTrending
-            data={trendingUsers}
-          />
+          <CarouselTrending data={trendingUsers} />
         </div>
-      </section>
+      </motion.section>
 
-      <section className='h-[500px] relative p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B]'>
-        <img className='absolute left-0 bottom-0 p-6'
+      {/* Why Use B-Connect Section */}
+      <motion.section 
+        className='min-h-[600px] relative p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] py-20 overflow-hidden'
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <motion.img 
+          className='absolute left-0 bottom-0 p-6'
           src={bg_dots_extended}
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
-        <img className='absolute right-0 top-0 p-6'
+        <motion.img 
+          className='absolute right-0 top-0 p-6'
           src={bg_dots_extended}
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
-        <p className='font-poppins text-5xl font-semibold mb-3'>
+        
+        <motion.p 
+          className='font-poppins text-5xl font-semibold mb-10 text-center'
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
           Why Use&nbsp;
-          <span className='text-[#1E88E5]'>
+          <span className='text-[#1E88E5] font-bold'>
             B-Connect?
           </span>
-        </p>
-        <div className='flex flex-row justify-center mt-7 gap-20'>
-          <div className='w-[300px] flex flex-col items-center gap-3'>
-            <img src={talent_pool}
-              alt="talent pool"
-            />
-            <p className='font-extrabold text-2xl'>
-              Binusian Talent Pool
-            </p>
-            <p className='text-xl text-center'>
-              Temukan freelancer berbakat dari komunitas Binus University
-              yang terverifikasi dan siap membantu berbagai kebutuhan proyek Anda.
-            </p>
-          </div>
-          <div className='w-[300px] flex flex-col items-center gap-3'>
-            <img src={efficient_matching}
-              alt="efficient matching"
-            />
-            <p className='font-extrabold text-2xl'>
-              Efficient Matching
-            </p>
-            <p className='text-xl text-center'>
-              Gunakan fitur pencarian dan filter untuk menemukan freelancer yang tepat
-              dan selesaikan proyek dengan hasil berkualitas.</p>
-          </div>
-          <div className='w-[300px] flex flex-col items-center gap-3'>
-            <img src={clear_fair_pricing}
-              alt="clear face pricing" />
-            <p className='font-extrabold text-2xl'>
-              Clear & Fair Pricing
-            </p>
-            <p className='text-xl text-center'>
-              Bayar proyek dengan sistem pembayaran yang transparan dan aman.
-              Pembayaran hanya dilakukan setelah pekerjaan disetujui.
-            </p>
-          </div>
-          <div className='w-[300px] flex flex-col items-center gap-3'>
-            <img src={flexible_support}
-              alt="flexible support" />
-            <p className='font-extrabold text-2xl'>
-              Flexible Support
-            </p>
-            <p className='text-xl text-center'>
-              Tim support kami siap membantu kamu setiap hari untuk memastikan
-              pengalaman proyekmu berjalan lancar dan aman.
-            </p>
-          </div>
-        </div>
-      </section>
+        </motion.p>
+        
+        <motion.div 
+          className='flex flex-row justify-center mt-7 gap-20 flex-wrap'
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <FeatureCard 
+            image={talent_pool}
+            title="Binusian Talent Pool"
+            description="Temukan freelancer berbakat dari komunitas Binus University yang terverifikasi dan siap membantu berbagai kebutuhan proyek Anda."
+          />
+          
+          <FeatureCard 
+            image={efficient_matching}
+            title="Efficient Matching"
+            description="Gunakan fitur pencarian dan filter untuk menemukan freelancer yang tepat dan selesaikan proyek dengan hasil berkualitas."
+          />
+          
+          <FeatureCard 
+            image={clear_fair_pricing}
+            title="Clear & Fair Pricing"
+            description="Bayar proyek dengan sistem pembayaran yang transparan dan aman. Pembayaran hanya dilakukan setelah pekerjaan disetujui."
+          />
+          
+          <FeatureCard 
+            image={flexible_support}
+            title="Flexible Support"
+            description="Tim support kami siap membantu kamu setiap hari untuk memastikan pengalaman proyekmu berjalan lancar dan aman."
+          />
+        </motion.div>
+      </motion.section>
 
-      <section className='p-10 flex flex-col items-center gap-20'>
-        <p className='font-Archivo font-bold text-5xl'>
+      {/* Explore Services Section */}
+      <motion.section 
+        className='p-10 flex flex-col items-center gap-20 py-24 scroll-animate'
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <motion.p 
+          className='font-Archivo font-bold text-5xl'
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
           Explore Our Services
-        </p>
-        <div className='flex flex-row gap-15 font-inter text-2xl'>
-          <div className='flex flex-col'
+        </motion.p>
+        
+        <motion.div 
+          className='flex flex-row gap-15 font-inter text-2xl'
+          initial={{ y: 20, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+        >
+          <ServiceTab 
+            title="Data Scientist" 
+            isSelected={selectedServiceType === "Data Scientist"}
             onClick={() => setSelectedServiceType("Data Scientist")}
-          >
-            <div>
-              Data Scientist
-            </div>
-            <div className={`h-1 ${selectedServiceType === "Data Scientist" ? 'bg-black' : 'invisible'}`} />
-          </div>
-          <div className='flex flex-col'
+          />
+          
+          <ServiceTab 
+            title="UI/UX" 
+            isSelected={selectedServiceType === "UI/UX"}
             onClick={() => setSelectedServiceType("UI/UX")}
-          >
-            <div>
-              UI/UX
-            </div>
-            <div className={`h-1 ${selectedServiceType === "UI/UX" ? 'bg-black' : 'invisible'}`} />
-          </div>
-          <div className='flex flex-col'
+          />
+          
+          <ServiceTab 
+            title="Graphic Design" 
+            isSelected={selectedServiceType === "Graphic Design"}
             onClick={() => setSelectedServiceType("Graphic Design")}
-          >
-            <div>
-              Graphic Design
-            </div>
-            <div className={`h-1 ${selectedServiceType === "Graphic Design" ? 'bg-black' : 'invisible'}`} />
-          </div>
-          <div className='flex flex-col'
+          />
+          
+          <ServiceTab 
+            title="Voice Over" 
+            isSelected={selectedServiceType === "Voice Over"}
             onClick={() => setSelectedServiceType("Voice Over")}
+          />
+          
+          <motion.div 
+            className='flex flex-row gap-5 text-[#2E90EB] cursor-pointer'
+            whileHover={{ scale: 1.05, x: 5 }}
+            transition={{ type: "spring", stiffness: 400 }}
           >
-            <div>
-              Voice Over
-            </div>
-            <div className={`h-1 ${selectedServiceType === "Voice Over" ? 'bg-black' : 'invisible'}`} />
-          </div>
-          <div className='flex flex-row gap-5 text-[#2E90EB]'>
-            <p className='self-center'>
+            <p className='self-center font-medium'>
               View All
             </p>
-            <img src={arrow_circle}
+            <motion.img 
+              src={arrow_circle}
               alt="arrow circle"
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             />
-          </div>
-        </div>
-        <div className='flex flex-wrap gap-3 justify-center'>
-          <div className="w-sm flex flex-row h-70 font-inter bg-[#F3F3F3] relative items-center">
-            <div className='flex flex-ro items-center justify-center p-3'>
-              <p className='text-wrap font-Archivo font-bold text-3xl self-start pt-3'>
+          </motion.div>
+        </motion.div>
+        
+        <motion.div 
+          className='flex flex-wrap gap-3 justify-center'
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          viewport={{ once: true }}
+        >
+          <motion.div 
+            className="w-sm flex flex-row h-70 font-inter bg-gradient-to-br from-[#F3F3F3] to-[#E6E6E6] relative items-center rounded-lg shadow-md overflow-hidden"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <div className='flex flex-row items-center justify-center p-3'>
+              <p className='text-wrap font-Archivo font-bold text-3xl self-start pt-3 text-gray-800'>
                 Our Best Sellers
               </p>
-              <img src={mr_pink_hair}
+              <motion.img 
+                src={mr_pink_hair}
                 alt="mr pink hair"
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
             </div>
-            <button className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center'>
+            <motion.button 
+              className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <p className='font-arvo text-3xl font-bold text-[#565E6D]'>
                 Shop Now
               </p>
-              <img src={arrow_right}
+              <motion.img 
+                src={arrow_right}
                 alt="arrow right"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
               />
-            </button>
-          </div>
-          <ServiceItem
-            data={gigs}
-          />
-        </div>
-      </section>
+            </motion.button>
+          </motion.div>
+          <ServiceItem data={gigs} />
+        </motion.div>
+      </motion.section>
 
       <Footer />
+      
+      {/* Floating action button */}
+      <motion.div
+        className="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg cursor-pointer z-50"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </motion.div>
+      
+      {/* Add global styles for scroll animations */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 1s ease forwards;
+        }
+        .scroll-animate {
+          opacity: 0;
+        }
+      `}</style>
     </div>
   )
 }
