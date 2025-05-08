@@ -66,11 +66,9 @@ const Chat = () => {
     };
   }, []);
 
-
-
   const [availableRooms, setAvailableRooms] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
-  const [roomIndex, setRoomIndex] = useState(null);
+  const [roomIndex, setRoomIndex] = useState(0);
   const [currentRoomMessageList, setCurrentRoomMessageList] = useState([]);
 
   const getTime = (time) => {

@@ -62,12 +62,8 @@ const CatalogPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [appliedFilter, setAppliedFilter] = useState(false);
   const [start, setStart] = useState(0);
-  const [end, setEnd] = useState(itemsPerPage-1);
+  const [end, setEnd] = useState(itemsPerPage - 1);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if(!auth) navigate("/sign-in")
-  }, [])
 
   console.log("user", auth);
   const toggleFavorite = (gigId) => {
@@ -184,7 +180,7 @@ const CatalogPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar search />
+      <Navbar search alt />
 
       {/* Hero Section with Animated Services */}
       <motion.div
@@ -427,10 +423,12 @@ const CatalogPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div>
-            <h2 className="text-2xl font-semibold">Hey {auth?.data?.auth?.name || ""}👋👋</h2>
+          <div className="flex flex-col sm:flex-row gap-6 w-full">
+            <h2 className="text-2xl font-semibold sm:w-1/4 sm:max-w-1/4">
+              Hey {auth?.data?.auth?.name ?? "Guest"}👋👋
+            </h2>
             <motion.p
-              className="text-gray-600"
+              className="text-black self-start sm:self-center text-2xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -441,27 +439,11 @@ const CatalogPage = () => {
                 transition={{ delay: 0.5, duration: 0.8 }}
               >
                 {totalGigs}
-              </motion.span> services
+              </motion.span>{" "}
+              services
             </motion.p>
           </div>
 
-          {/* Search box */}
-          <div className="mt-4 md:mt-0 w-full md:w-1/3 relative">
-            <div className={`flex items-center border ${isSearchFocused ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-300'} rounded-lg overflow-hidden bg-white transition-all duration-200`}>
-              <input
-                type="text"
-                placeholder="Search for services..."
-                className="w-full py-2 px-4 outline-none"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-              />
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 transition-colors duration-200">
-                <Search size={20} />
-              </button>
-            </div>
-          </div>
         </motion.div>
 
         {/* Mobile Filter Toggle Button (only visible on mobile) */}
@@ -681,7 +663,7 @@ const CatalogPage = () => {
                   disabled={currentPage === 1}
                   onClick={() => {
                     setCurrentPage(prev => Math.max(prev - 1, 1));
-                    setStart(prev => Math.max(0, (prev - itemsPerPage)*itemsPerPage));
+                    setStart(prev => Math.max(0, (prev - itemsPerPage) * itemsPerPage));
                     setEnd(prev => Math.max(itemsPerPage, prev - itemsPerPage));
                   }}
                 >
@@ -721,7 +703,7 @@ const CatalogPage = () => {
                       setStart(prev => Math.min(prev + itemsPerPage, totalGigs));
                       setEnd(prev => Math.min(prev + itemsPerPage, totalGigs));
                     }
-                  }}                  
+                  }}
                 >
                   <ChevronRight className="w-5 h-5" />
                 </motion.button>

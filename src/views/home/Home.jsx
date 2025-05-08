@@ -183,7 +183,7 @@ const Home = () => {
   return (
     <div className="font-poppins overflow-x-hidden">
       {/* Header/Navigation */}
-      <Navbar/>
+      <Navbar />
 
       {/* Hero Section */}
       <section className='bg-gradient-to-br from-[#2E5077] to-[#1d3f63] min-h-[950px] text-white flex flex-wrap px-10 relative justify-center pt-[100px]'>
@@ -518,6 +518,7 @@ const Home = () => {
               className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/catalog")}
             >
               <p className='font-arvo text-3xl font-bold text-[#565E6D]'>
                 Shop Now

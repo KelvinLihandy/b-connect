@@ -6,7 +6,8 @@ import file from "../../assets/chat_file.png"
 
 const Message = ({ message, roomId }) => {
   const [fileData, setFileData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isImageLoading, setIsImageloading] = useState(false);
   const { auth } = useContext(AuthContext);
 
   const getTime = (time) => {
@@ -81,7 +82,15 @@ const Message = ({ message, roomId }) => {
     );
   }
 
-  if (message.type === "image") {
+  {
+    isImageLoading && message.type === "image" && (
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+        <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
+  if (message.type === "image" && !isImageLoading) {
     return (
       <div
         className={`p-2 rounded-lg shadow-md max-w-[45%] ${message.senderId === auth?.data?.auth?.id ? "self-end" : "self-start"
@@ -101,11 +110,7 @@ const Message = ({ message, roomId }) => {
             src={`${imageShow}${message.content}`}
             alt="Image"
             className="w-full h-auto rounded-lg max-h-[300px] object-contain"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src =
-                "https://via.placeholder.com/300?text=Image+Error";
-            }}
+            onLoad={() => setIsImageloading(false)}
           />
         </a>
         <div

@@ -35,22 +35,22 @@ const App = () => {
   if (!ready) {
     return <></>
   }
-  
+
   return (
     <>
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
-        <Route path='/home' element={<HomeRouting component={Home} />} />
+        <Route path='/home' element={<Home />} />
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/about-us' element={<AboutUs />} />
         <Route path='/sign-in/forget' element={<ForgotPassword />} />
         <Route path='/sign-in/verify-otp' element={<InputOTP />} />
         <Route path='/sign-in/change-password' element={<ChangePassword />} />
+        <Route path="/catalog" element={<CatalogPage />} />
         {/* restrcted auth*/}
         {/* if auth default catalog && home is restricted then redirected to catalog */}
-        <Route path="/catalog" element={<AuthRouting component={CatalogPage} />} />
-        <Route path="/detail/:gigId" element={<AuthRouting component={Detail} />} />
+        <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/chat" element={<AuthRouting component={Chat} />} />
       </Routes >
     </>
