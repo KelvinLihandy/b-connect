@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -15,6 +15,7 @@ import dropdown_tri from '../../assets/dropdown_tri.svg';
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import MorphToggleButton from "../../components/togglebutton/togglebutton";
 import { NotificationContext } from "../../contexts/NotificationContext";
+import NotificationItem from "../notification_item/NotificationItem";
 
 // Register GSAP plugins
 gsap.registerPlugin(MorphSVGPlugin);
@@ -28,20 +29,18 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const unreadCount = notificationList.filter(n => !n.read).length;
   useEffect(() => { console.log("notifs", notificationList) }, [notificationList])
 
-  const getRelativeTimeLabel = (time) => {
+
+
+  const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
     const now = new Date();
-    const diffMs = now - messageDate;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const messageMidnight = new Date(messageDate);
     messageMidnight.setHours(0, 0, 0, 0);
     const nowMidnight = new Date(now);
     nowMidnight.setHours(0, 0, 0, 0);
-    const diffDays = Math.floor((nowMidnight - messageMidnight) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) {
-      if (diffHours === 0) return "Just now";
-      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    }
+    const diffTime = nowMidnight - messageMidnight;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays === 2) return "2 days ago";
     return messageDate.toLocaleDateString("en-US", {
@@ -49,7 +48,9 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
       day: "numeric",
       year: "numeric",
     });
-  }
+  };
+
+  let lastRenderedDate = null;
 
   return (
     <>
@@ -116,20 +117,21 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 )}
               </div>
               <AnimatePresence>
-                {!showNotificationDropdown && (
+                {showNotificationDropdown && (
                   <motion.div
-                    className="absolute left-1/2 mt-2 w-80 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
+                    className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
                     initial="hidden"
                     animate="visible"
                     exit="exit"
                   >
-                    <div className="flex justify-between items-center p-4  bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
-                      <h3 className="font-semibold text-white">Notifikasi</h3>
+                    <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
+                      <h3 className="font-semibold text-white text-xl">Notifikasi</h3>
                       {unreadCount > 0 && (
                         <motion.span
-                          className="text-xs text-blue-500 cursor-pointer hover:underline"
+                          className="text-sm text-white cursor-pointer"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
+                          onClick={() => console.log("all read")}
                         >
                           Mark all as read
                         </motion.span>
@@ -137,50 +139,46 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                     </div>
 
                     <div className="max-h-96 overflow-y-auto">
-                      {notificationList.length > 0 ? (
-                        <motion.div initial="hidden" animate="visible">
-                          {notificationList.map((notification, index) => (
-                            <motion.div
-                              key={notification.id}
-                              custom={index}
-                              whileHover="hover"
-                              className={`p-4 border-b border-gray-100 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
-                            >
-                              <div className="flex justify-between">
-                                <p className="text-sm text-gray-800">{notification.message.content}</p>
-                                {!notification.read && (
-                                  <motion.span
-                                    className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ type: "spring", stiffness: 500 }}
-                                  ></motion.span>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">{getRelativeTimeLabel(notification.message.time)}</p>
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          className="p-8 text-center text-gray-500"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          No notifications yet
-                        </motion.div>
-                      )}
-                    </div>
+                      {notificationList.length > 0 ?
+                        (
+                          <motion.div initial="hidden" animate="visible">
+                            {notificationList.map((notification, index) => {
+                              const messageDate = new Date(notification.message.time);
+                              const messageMidnight = new Date(messageDate);
+                              messageMidnight.setHours(0, 0, 0, 0);
 
-                    <div className="p-3 text-center border-t border-gray-200">
-                      <motion.button
-                        className="text-sm text-blue-500 hover:underline"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        View all notifications
-                      </motion.button>
+                              let showDateLabel = false;
+
+                              if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
+                                showDateLabel = true;
+                                lastRenderedDate = messageMidnight;
+                              }
+                              const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
+
+                              return (
+                                <React.Fragment key={index}>
+                                  {label && (
+                                    <div className="text-black font-Archivo p-3 text-lg font-semibold">
+                                      {label}
+                                    </div>
+                                  )}
+                                  <NotificationItem notification={notification} />
+                                </React.Fragment>
+                              )
+                            })}
+                          </motion.div>
+                        )
+                        :
+                        (
+                          <motion.div
+                            className="p-8 text-center text-gray-500"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            No notifications yet
+                          </motion.div>
+                        )}
                     </div>
                   </motion.div>
                 )}

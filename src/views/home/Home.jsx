@@ -34,7 +34,7 @@ import GigItem from '../../components/gig_item/GigItem'
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
 import { AuthContext } from '../../contexts/AuthContext'
 import Navbar from '../../components/navbar/Navbar'
-import { CircularProgress } from '@mui/material'
+
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
