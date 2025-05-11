@@ -15,7 +15,7 @@ import {
   Search,
   Filter,
   ShoppingCart,
-  ChevronUp
+  ChevronUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -70,7 +70,7 @@ const CatalogPage = () => {
   console.log("user", auth);
   const toggleFavorite = (gigId) => {
     if (favoriteGigs.includes(gigId)) {
-      setFavoriteGigs(favoriteGigs.filter(_id => _id !== gigId));
+      setFavoriteGigs(favoriteGigs.filter((_id) => _id !== gigId));
     } else {
       setFavoriteGigs([...favoriteGigs, gigId]);
     }
@@ -83,7 +83,6 @@ const CatalogPage = () => {
     });
   };
 
-
   // Animation variants
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -93,9 +92,9 @@ const CatalogPage = () => {
       transition: {
         delay: i * 0.1,
         duration: 0.5,
-        ease: "easeOut"
-      }
-    })
+        ease: "easeOut",
+      },
+    }),
   };
 
   const containerVariants = {
@@ -103,17 +102,17 @@ const CatalogPage = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const serviceCardVariants = {
     hover: {
       y: -10,
       boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.3 },
+    },
   };
 
   // Filter toggle effect
@@ -142,19 +141,29 @@ const CatalogPage = () => {
 
   const getGig = async (name, category, minPrice, maxPrice, rating) => {
     console.log({
-      name, category, minPrice, maxPrice, rating
-    })
+      name,
+      category,
+      minPrice,
+      maxPrice,
+      rating,
+    });
     try {
-      const response = await axios.post(`${gigAPI}/get-gig`, { name, category, minPrice, maxPrice, rating });
+      const response = await axios.post(`${gigAPI}/get-gig`, {
+        name,
+        category,
+        minPrice,
+        maxPrice,
+        rating,
+      });
       const res = response.data.filteredGigs;
       setGigs(res);
-      setTotalGigs(res.length)
+      setTotalGigs(res.length);
       setTotalPages(Math.max(1, Math.ceil(res.length / itemsPerPage)));
       console.log("gig fetched", res);
     } catch (error) {
-      console.error('Error fetching gigs:', error.response || error);
+      console.error("Error fetching gigs:", error.response || error);
     }
-  }
+  };
 
   const debouncedSearch = useCallback(
     debounce(async (query, category, minPrice, maxPrice, rating) => {
@@ -164,7 +173,6 @@ const CatalogPage = () => {
     }, 500),
     []
   );
-
 
   useEffect(() => {
     const fetchGigs = async () => {
@@ -282,7 +290,9 @@ const CatalogPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.8 }}
-              >Our Popular</motion.h2>
+              >
+                Our Popular
+              </motion.h2>
               <motion.div
                 className="flex justify-center items-center"
                 initial={{ opacity: 0, y: 20 }}
@@ -294,12 +304,12 @@ const CatalogPage = () => {
                   src={fireworks}
                   animate={{
                     rotate: [0, 10, -10, 0],
-                    scale: [1, 1.1, 1]
+                    scale: [1, 1.1, 1],
                   }}
                   transition={{
                     repeat: Infinity,
                     repeatType: "reverse",
-                    duration: 3
+                    duration: 3,
                   }}
                 />
                 <span className="text-yellow-300 text-4xl md:text-6xl font-bold">Services</span>
@@ -308,13 +318,13 @@ const CatalogPage = () => {
                   src={fireworks}
                   animate={{
                     rotate: [0, -10, 10, 0],
-                    scale: [1, 1.1, 1]
+                    scale: [1, 1.1, 1],
                   }}
                   transition={{
                     repeat: Infinity,
                     repeatType: "reverse",
                     duration: 3,
-                    delay: 0.5
+                    delay: 0.5,
                   }}
                 />
               </motion.div>
@@ -452,7 +462,6 @@ const CatalogPage = () => {
               services
             </motion.p>
           </div>
-
         </motion.div>
 
         {/* Mobile Filter Toggle Button (only visible on mobile) */}
@@ -467,7 +476,7 @@ const CatalogPage = () => {
             className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg py-3 px-4 text-gray-700 font-medium"
           >
             <Filter size={18} />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            {showFilters ? "Hide Filters" : "Show Filters"}
           </button>
         </motion.div>
 
@@ -475,7 +484,7 @@ const CatalogPage = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar with Filters - With animation for mobile */}
           <motion.div
-            className={`w-full lg:w-1/4 self-start ${showFilters ? 'block' : 'hidden md:block'}`}
+            className={`w-full lg:w-1/4 self-start ${showFilters ? "block" : "hidden md:block"}`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -484,11 +493,18 @@ const CatalogPage = () => {
               {/* Categories Filter */}
               <div className="p-5 border-b flex justify-between items-center bg-gray-50">
                 <h3 className="font-semibold text-gray-800">Kategorisasi</h3>
-                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                </button>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200"></button>
               </div>
               <div className="p-5 space-y-3">
-                {["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"].map((category) => (
+                {[
+                  "Graphics Design",
+                  "UI/UX Design",
+                  "Video Editing",
+                  "Content Writing",
+                  "Translation",
+                  "Photography",
+                  "Web Development",
+                ].map((category) => (
                   <motion.div
                     key={category}
                     className="flex items-center group cursor-pointer"
@@ -496,12 +512,22 @@ const CatalogPage = () => {
                     transition={{ duration: 0.2 }}
                     onClick={() => setSelectedCategory(category)}
                   >
-                    <div className={`w-5 h-5 rounded mr-3 border flex items-center justify-center ${selectedCategory === category ? 'bg-blue-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-400'}`}>
-                      {selectedCategory === category && (
-                        <Check size={14} className="text-white" />
-                      )}
+                    <div
+                      className={`w-5 h-5 rounded mr-3 border flex items-center justify-center ${
+                        selectedCategory === category
+                          ? "bg-blue-600 border-blue-600"
+                          : "border-gray-300 group-hover:border-blue-400"
+                      }`}
+                    >
+                      {selectedCategory === category && <Check size={14} className="text-white" />}
                     </div>
-                    <label className={`text-sm cursor-pointer ${selectedCategory === category ? 'font-medium text-blue-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                    <label
+                      className={`text-sm cursor-pointer ${
+                        selectedCategory === category
+                          ? "font-medium text-blue-600"
+                          : "text-gray-700 group-hover:text-gray-900"
+                      }`}
+                    >
                       {category}
                     </label>
                   </motion.div>
@@ -511,8 +537,7 @@ const CatalogPage = () => {
               {/* Pricing Filter */}
               <div className="p-5 border-t flex justify-between items-center bg-gray-50">
                 <h3 className="font-semibold text-gray-800">Harga (Ribu Rupiah Rp)</h3>
-                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                </button>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200"></button>
               </div>
               <div className="p-5">
                 <div className="flex justify-between text-sm mb-4">
@@ -541,8 +566,7 @@ const CatalogPage = () => {
               {/* Reviews Filter */}
               <div className="p-5 border-t flex justify-between items-center bg-gray-50">
                 <h3 className="font-semibold text-gray-800">Reviews</h3>
-                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                </button>
+                <button className="text-blue-600 hover:text-blue-800 transition-colors duration-200"></button>
               </div>
               <div className="p-5 space-y-3">
                 {[5, 4, 3, 2, 1].map((stars, index) => (
@@ -580,7 +604,11 @@ const CatalogPage = () => {
               {/* Apply Filters Button */}
               <div className="p-5 border-t">
                 <motion.button
-                  className={`w-full ${appliedFilter ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-600 hover:bg-blue-700"}  text-white font-medium py-3 rounded-lg transition-colors duration-200`}
+                  className={`w-full ${
+                    appliedFilter
+                      ? "bg-gray-400 hover:bg-gray-500"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }  text-white font-medium py-3 rounded-lg transition-colors duration-200`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setAppliedFilter(!appliedFilter)}
@@ -608,7 +636,22 @@ const CatalogPage = () => {
                   whileHover={{ y: -5 }}
                 >
                   {/* Product Image with hover effect */}
-                  <div className="relative overflow-hidden">
+                  <div className="relative ">
+                    <motion.button
+                      className="absolute top-51 right-3  p-2 "
+                      whileHover={{ scale: 1 }}
+                      whileTap={{ scale: 0.8 }}
+                      onClick={() => toggleFavorite(gig._id)}
+                    >
+                      <Heart
+                        className={`w-5 h-5 ${
+                          favoriteGigs.includes(gig._id)
+                            ? "text-red-500 fill-red-500"
+                            : "text-black"
+                        }`}
+                      />
+                    
+                    </motion.button>
                     <motion.img
                       // src={gig.image[0] == "temp" ? product1 : gig.image[0]}
                       src={product1}
@@ -617,25 +660,20 @@ const CatalogPage = () => {
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                     />
-                    <motion.button
-                      className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md z-10"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => toggleFavorite(gig._id)}
-                    >
-                      {/* send to be add favorited by user id */}
-                      <Heart
-                        className={`w-5 h-5 ${favoriteGigs.includes(gig._id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
-                      />
-                    </motion.button>
                   </div>
 
                   {/* Product Info */}
                   <div className="p-5">
-                    <h3 className="text-md font-medium mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-100">{gig.name}</h3>
+                    <h3 className="text-md font-medium mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-100">
+                      {gig.name}
+                    </h3>
                     <div className="flex-col items-center mb-2">
-                      <p className="text-md font-semibold text-blue-600">Rp. {formattedPrice(gig.packages[0].price)}</p>
-                      <p className="text-md font-semibold text-blue-600">Rp. {formattedPrice(gig.packages[gig.packages.length - 1].price)}</p>
+                      <p className="text-md font-semibold text-blue-600">
+                        Rp. {formattedPrice(gig.packages[0].price)}
+                      </p>
+                      <p className="text-md font-semibold text-blue-600">
+                        Rp. {formattedPrice(gig.packages[gig.packages.length - 1].price)}
+                      </p>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center text-md w-full justify-between">
@@ -671,9 +709,9 @@ const CatalogPage = () => {
                   whileTap={{ scale: 0.95 }}
                   disabled={currentPage === 1}
                   onClick={() => {
-                    setCurrentPage(prev => Math.max(prev - 1, 1));
-                    setStart(prev => Math.max(0, (prev - itemsPerPage) * itemsPerPage));
-                    setEnd(prev => Math.max(itemsPerPage, prev - itemsPerPage));
+                    setCurrentPage((prev) => Math.max(prev - 1, 1));
+                    setStart((prev) => Math.max(0, (prev - itemsPerPage) * itemsPerPage));
+                    setEnd((prev) => Math.max(itemsPerPage, prev - itemsPerPage));
                   }}
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -682,10 +720,11 @@ const CatalogPage = () => {
                 {getPageNumbers().map((page, index) => (
                   <motion.button
                     key={index}
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${page === currentPage
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600"
-                      } transition-colors duration-200`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+                      page === currentPage
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600"
+                    } transition-colors duration-200`}
                     whileHover={{ scale: page !== "..." ? 1.05 : 1 }}
                     whileTap={{ scale: page !== "..." ? 0.95 : 1 }}
                     onClick={() => {
@@ -711,9 +750,9 @@ const CatalogPage = () => {
                   disabled={currentPage === totalPages}
                   onClick={() => {
                     if (currentPage < totalPages) {
-                      setCurrentPage(prev => prev + 1);
-                      setStart(prev => Math.min(prev + itemsPerPage, totalGigs));
-                      setEnd(prev => Math.min(prev + itemsPerPage, totalGigs));
+                      setCurrentPage((prev) => prev + 1);
+                      setStart((prev) => Math.min(prev + itemsPerPage, totalGigs));
+                      setEnd((prev) => Math.min(prev + itemsPerPage, totalGigs));
                     }
                   }}
                 >
@@ -729,7 +768,7 @@ const CatalogPage = () => {
               animate={{ opacity: 1, scale: 1 }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
               <ChevronUp size={24} />
             </motion.button>

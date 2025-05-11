@@ -62,6 +62,7 @@ const App = () => {
         <Route path='/sign-in/change-password' element={<ChangePassword />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/detail/:gigId" element={<Detail />} />
+        <Route path="/freelancerPage" element={<FreelancerProfile />} />
         {/* restrcted auth*/}
         {/* if auth default catalog && home is restricted then redirected to catalog */}
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
