@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { debounce } from 'lodash'
@@ -23,11 +23,7 @@ import trid_designer from '../../assets/3d_designer.svg'
 import fullstack_developer from '../../assets/fullstack_developer.svg'
 import graphic_designer from '../../assets/graphic_designer.svg'
 import circle_bg_right from '../../assets/circle_bg_right.svg'
-import arrow_circle from '../../assets/arrow_circle.svg'
-import computer from '../../assets/computer_stock.svg'
-import phone from '../../assets/phone_stock.svg'
-import arrow_right from '../../assets/arrow_right.svg'
-import mr_pink_hair from '../../assets/mr_pink_hair.svg'
+
 
 // Components
 import Footer from '../../components/footer/Footer'
@@ -38,6 +34,7 @@ import GigItem from '../../components/gig_item/GigItem'
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
 import { AuthContext } from '../../contexts/AuthContext'
 import Navbar from '../../components/navbar/Navbar'
+import { CircularProgress } from '@mui/material'
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -114,7 +111,10 @@ const Home = () => {
   const [gigs, setGigs] = useState();
   const categoryList = ["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"];
   const [currentCategory, setCurrentCategory] = useState(categoryList[0]);
-  
+  const servicesSection = useRef(null);
+  const [isFetchingGig, setIsFetchingGig] = useState(false);
+  const homeScrollUp = useRef(null);
+
   useEffect(() => {
     const getTrendingUsers = async () => {
       try {
@@ -152,6 +152,7 @@ const Home = () => {
   }, []);
 
   const getGig = async (name, category) => {
+    setTimeout(() => { }, [2000])
     try {
       const response = await axios.post(`${gigAPI}/get-gig`, { name, category });
       const res = response.data.filteredGigs;
@@ -160,28 +161,32 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching gigs:', error.response || error);
     }
+    setIsFetchingGig(false);
   }
 
   const debouncedSearch = useCallback(
     debounce(async (query, category) => {
       if (!query.length) return;
       await getGig(query, category);
+      servicesSection.current?.scrollIntoView({ behavior: 'smooth' });
     }, 500),
     []
   );
 
+  const fetchGigs = async () => {
+    if (!searchQuery.length) await getGig("", currentCategory);
+    else debouncedSearch(searchQuery, currentCategory);
+  };
 
   useEffect(() => {
-    const fetchGigs = async () => {
-      if (!searchQuery.length) await getGig("", currentCategory);
-      else debouncedSearch(searchQuery, currentCategory);
-    };
-
     fetchGigs();
-  }, [searchQuery, debouncedSearch, currentCategory]);
+  }, [debouncedSearch, currentCategory]);
 
   return (
-    <div className="font-poppins overflow-x-hidden">
+    <div
+      className="font-poppins overflow-x-hidden"
+      ref={homeScrollUp}
+    >
       {/* Header/Navigation */}
       <Navbar />
 
@@ -246,14 +251,28 @@ const Home = () => {
               onChange={(event) => setSearchQuery(event.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setIsFetchingGig(true);
+                  fetchGigs();
+                }
+              }}
             />
             <motion.div
-              className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10 cursor-pointer'
+              className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10 cursor-pointer text-white'
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              onClick={() => {
+                setIsFetchingGig(true);
+                fetchGigs();
+              }}
             >
-              <img src={search_symbol} alt="search" />
+              {isFetchingGig ?
+                <CircularProgress color='inherit' />
+                :
+                <img src={search_symbol} alt="search" />
+              }
             </motion.div>
           </motion.div>
 
@@ -269,6 +288,7 @@ const Home = () => {
           </motion.div>
         </motion.div>
 
+        {/* Images */}
         <div className='relative w-[800px] h-[950px]'>
           <motion.img
             className='absolute right-1 top-40'
@@ -454,7 +474,7 @@ const Home = () => {
       </motion.section>
 
       {/* Explore Services Section */}
-      <motion.section
+      <motion.section ref={servicesSection}
         className='p-10 flex flex-col items-center gap-20 py-24 scroll-animate'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -497,49 +517,15 @@ const Home = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <motion.div
-            className="w-sm flex flex-row h-70 font-inter bg-gradient-to-br from-[#F3F3F3] to-[#E6E6E6] relative items-center rounded-lg shadow-md overflow-hidden"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className='flex flex-row items-center justify-center p-3'>
-              <p className='text-wrap font-Archivo font-bold text-3xl self-start -mt-4 text-gray-800'>
-                Our Best Sellers
-              </p>
-              <motion.img
-                className='-mt-10'
-                src={mr_pink_hair}
-                alt="mr pink hair"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </div>
-            <motion.button
-              className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/catalog")}
-            >
-              <p className='font-arvo text-3xl font-bold text-[#565E6D]'>
-                Shop Now
-              </p>
-              <motion.img
-                src={arrow_right}
-                alt="arrow right"
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-            </motion.button>
-          </motion.div>
           <GigItem data={gigs} />
         </motion.div>
       </motion.section>
 
-      <Footer />
+      <Footer refScrollUp={homeScrollUp} />
 
       {/* Floating action button */}
       <motion.div
-        className="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg cursor-pointer z-50"
+        className="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg cursor-pointer z-100"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         initial={{ opacity: 0, y: 100 }}
@@ -552,7 +538,7 @@ const Home = () => {
       </motion.div>
 
       {/* Add global styles for scroll animations */}
-      <style jsx global>{`
+      {/* <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -563,7 +549,7 @@ const Home = () => {
         .scroll-animate {
           opacity: 0;
         }
-      `}</style>
+      `}</style> */}
     </div>
   )
 }

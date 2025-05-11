@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import logo from '../../assets/logo.svg'
 import linkedin_ball from '../../assets/linkedin_ball.svg'
 import youtube_ball from '../../assets/youtube_ball.svg'
@@ -6,61 +7,196 @@ import facebook_ball from '../../assets/facebook_ball.svg'
 import twitter_ball from '../../assets/twitter_ball.svg'
 import arrowhead_up from '../../assets/arrowhead_up.svg'
 import logo_gray from '../../assets/logo_gray.svg'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
-export const Footer = () => {
+export const Footer = ({ refScrollUp = null, offset = 0 }) => {
+  const navigate = useNavigate();
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  const staggerChildren = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const socialIconHover = {
+    hover: { scale: 1.1, transition: { duration: 0.2 } }
+  };
+
   return (
-    <footer className='bg-[#F8F9FA] h-[450px] flex flex-row pt-13 font-jost relative justify-center'>
-      <div className='max-w-[460px]'>
-        <div className='flex flex-row items-center px-5 justify-between'>
-          <img src={logo}></img>
-          <p className='font-poppins text-[#404040] opacity-14 font-bold flex flex-row items-center text-4xl'>
-            <span className='text-9xl self-center'>
+    <footer
+      className='bg-[#F8F9FA] min-h-[450px] flex flex-col md:flex-row pt-8 md:pt-13 font-jost relative justify-center overflow-hidden'
+    >
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className='max-w-[460px] w-full px-4 md:px-0'
+      >
+        <motion.div variants={fadeInUp} className='flex flex-row items-center px-5 justify-between'>
+          <img src={logo} alt="Logo"></img>
+          <p className='font-poppins text-[#404040] opacity-14 font-bold flex flex-row items-center text-3xl md:text-4xl'>
+            <span className='text-7xl md:text-9xl self-center'>
               B
             </span>
             -Connect
           </p>
-        </div>
-        <div className='w-full h-[1px] bg-black' />
-        <p className='text-3xl text-center p-2 text-wrap'>
+        </motion.div>
+        <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
+        <motion.p
+          variants={fadeInUp}
+          className='text-xl md:text-3xl text-center p-2 text-wrap'
+        >
           Find the perfect freelancer for your project—fast and easy.
-        </p>
-      </div>
-      <div className='h-full bg-black w-[1px]' />
-      <div className='flex flex-col min-w-[360px]'>
-        <div className='flex flex-col p-5 text-2xl gap-10'>
-          <Link to="/about-us">About</Link>
-          <Link to=''>FAQ</Link>
-          <Link to=''>Services</Link>
-          <Link to=''>Tournaments</Link>
+        </motion.p>
+      </motion.div>
+
+      {/* Vertical divider for desktop, horizontal for mobile */}
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className='md:h-full md:w-[1px] w-full h-[1px] bg-black my-4 md:my-0'
+      />
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerChildren}
+        className='flex flex-col min-w-[200px] md:min-w-[360px] w-full md:w-auto'
+      >
+        <div className='flex flex-col p-5 text-xl md:text-2xl gap-5 md:gap-10'>
+          <motion.div variants={fadeInUp}>
+            <Link to="/about-us" className="hover:text-blue-600 transition-colors duration-300">About</Link>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Link to='' className="hover:text-blue-600 transition-colors duration-300">FAQ</Link>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Link to='/catalog' className="hover:text-blue-600 transition-colors duration-300">Services</Link>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Link to='' className="hover:text-blue-600 transition-colors duration-300">Tournaments</Link>
+          </motion.div>
         </div>
-        <div className='w-full h-[1px] bg-black' />
-        <p className='px-5 py-10 text-lg text-[#92989F] font-bold self-center'>© 2025 B-Connect • Privacy • Terms</p>
-      </div>
-      <div className='h-full bg-black w-[1px]' />
-      <div className='flex flex-col justify-between px-5 pb-10'>
+        <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
+        <motion.p
+          variants={fadeInUp}
+          className='px-5 py-6 md:py-10 text-base md:text-lg text-[#92989F] font-bold self-center'
+        >
+          © 2025 B-Connect • Privacy • Terms
+        </motion.p>
+      </motion.div>
+
+      {/* Vertical divider for desktop, horizontal for mobile */}
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className='md:h-full md:w-[1px] w-full h-[1px] bg-black my-4 md:my-0'
+      />
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={staggerChildren}
+        className='flex flex-col justify-between px-5 pb-10 w-full md:w-auto'
+      >
         <div className='flex flex-col gap-6'>
-          <div className='text-3xl font-bold flex flex-col gap-4 text-wrap'>
+          <motion.div
+            variants={fadeInUp}
+            className='text-xl md:text-3xl font-bold flex flex-col gap-4 text-wrap'
+          >
             <p>Looking for the right freelancer for your project?</p>
             <p>Let's Find skilled professionals today!</p>
-          </div>
-          <button className='border rounded-md max-w-[50%] text-2xl font-bold py-3'>
+          </motion.div>
+          <motion.button
+            variants={fadeInUp}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className='border rounded-md max-w-[200px] text-xl md:text-2xl font-bold py-3 hover:bg-blue-600 hover:text-white transition-colors duration-300'
+            onClick={() => navigate("/catalog")}
+          >
             Click Here 🛠️
-          </button>
+          </motion.button>
         </div>
-        <div className='flex flex-row justify-between'>
-          <div className='flex flex-row gap-7'>
-            <img src={linkedin_ball} alt="" />
-            <img src={youtube_ball} alt="" />
-            <img src={facebook_ball} alt="" />
-            <img src={twitter_ball} alt="" />
+        <motion.div
+          variants={fadeInUp}
+          className='flex flex-row justify-between mt-8 md:mt-0'
+        >
+          <div className='flex flex-row gap-4 md:gap-7'>
+            <motion.img
+              src={linkedin_ball}
+              alt="LinkedIn"
+              whileHover="hover"
+              variants={socialIconHover}
+              className="cursor-pointer"
+            />
+            <motion.img
+              src={youtube_ball}
+              alt="YouTube"
+              whileHover="hover"
+              variants={socialIconHover}
+              className="cursor-pointer"
+            />
+            <motion.img
+              src={facebook_ball}
+              alt="Facebook"
+              whileHover="hover"
+              variants={socialIconHover}
+              className="cursor-pointer"
+            />
+            <motion.img
+              src={twitter_ball}
+              alt="Twitter"
+              whileHover="hover"
+              variants={socialIconHover}
+              className="cursor-pointer"
+            />
           </div>
-          <div className='bg-black rounded-full aspect-square flex items-center justify-center w-[55px] h-auto'>
-            <img src={arrowhead_up} />
-          </div>
-        </div>
-      </div>
-      <img className='absolute bottom-0 right-0' src={logo_gray} alt="" />
+          <motion.div
+            whileHover={{ scale: 1.1, backgroundColor: '#333' }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              window.scrollTo({
+                top: refScrollUp.current.offsetTop - {offset},
+                behavior: "smooth",
+              });
+              console.log("scroll", refScrollUp.current);
+            }}
+            className='bg-black rounded-full aspect-square flex items-center justify-center w-[45px] md:w-[55px] h-auto cursor-pointer z-30'
+          >
+            <img
+              src={arrowhead_up}
+              alt="Scroll to top"
+            />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+      <motion.img
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.7, transition: { delay: 0.5, duration: 0.8 } }}
+        viewport={{ once: true }}
+        className='absolute bottom-0 right-0 max-w-[30%] md:max-w-full'
+        src={logo_gray}
+        alt=""
+      />
     </footer>
   )
 }

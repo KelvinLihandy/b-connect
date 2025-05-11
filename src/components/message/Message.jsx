@@ -26,7 +26,7 @@ const Message = ({ message, roomId }) => {
       console.log("file message request", message);
       socket.emit("get_file_data", { fileId: message.content, roomId: roomId });
       const handleFileData = (data) => {
-        console.log("Received file data:", data);
+        // console.log("Received file data:", data);
         setFileData(data);
         setIsLoading(false);
       };

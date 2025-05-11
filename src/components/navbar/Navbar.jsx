@@ -13,26 +13,18 @@ import logo from "../../assets/logo.svg";
 import login_logo from '../../assets/login_logo.svg';
 import dropdown_tri from '../../assets/dropdown_tri.svg';
 import { imageShow } from "../../constants/DriveLinkPrefixes";
-
-// Import custom components
 import MorphToggleButton from "../../components/togglebutton/togglebutton";
 
 // Register GSAP plugins
 gsap.registerPlugin(MorphSVGPlugin);
 
-const Navbar = ({ search = false, alt = false }) => {
+const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const [isFreelancer, setIsFreelancer] = useState(false);
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Handle mode toggle
-  const toggleMode = () => {
-    setIsFreelancer(prev => !prev);
-  };
-
   return (
     <>
-      {/* Background filler to prevent animation gap */}
       {(auth || alt) && (
         <div
           className="fixed top-0 left-0 w-full h-[100px] z-40"
@@ -66,6 +58,7 @@ const Navbar = ({ search = false, alt = false }) => {
               <input
                 type="text"
                 placeholder="Search For Our Services"
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-md font-medium"
               />
               <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
@@ -110,6 +103,19 @@ const Navbar = ({ search = false, alt = false }) => {
             className="cursor-pointer"
             onClick={() => navigate("/home")}
           />
+          {search && (
+            <div className="relative flex items-center w-[550px] h-[50px] bg-white rounded-[14px] overflow-visible">
+              <input
+                type="text"
+                placeholder="Search For Our Services"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-md font-medium"
+              />
+              <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
+                <img src={searchBtn} alt="Search" className="w-[83px] h-[64px]" />
+              </button>
+            </div>
+          )}
           <div className="flex flex-row items-center gap-8 text-xl">
             <motion.p
               className="flex flex-row items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-300"

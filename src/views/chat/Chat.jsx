@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import ScrollToBottom from 'react-scroll-to-bottom';
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import EmojiPicker from 'emoji-picker-react';
 import { socket } from '../../App';
 import upload from "../../assets/chat_upload.svg"
@@ -23,11 +23,13 @@ import { imageShow } from '../../constants/DriveLinkPrefixes';
 import Message from '../../components/message/Message';
 
 const Chat = () => {
+  const { roomId } = useParams();
   const { auth } = useContext(AuthContext);
   const [messageInput, setMessageInput] = useState("");
   const [isUploadVisible, setIsUploadVisible] = useState(false);
   const [isEmoteSelectorVisible, setIsEmoteSelectorVisible] = useState(false);
   const emoteSelectorRef = useRef(null);
+  const navigate = useNavigate();
 
   const toggleUpload = () => {
     setIsUploadVisible(!isUploadVisible);
@@ -68,23 +70,14 @@ const Chat = () => {
 
   const [availableRooms, setAvailableRooms] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
-  const [roomIndex, setRoomIndex] = useState(0);
+  const [roomIndex, setRoomIndex] = useState(null);
   const [currentRoomMessageList, setCurrentRoomMessageList] = useState([]);
-
-  const getTime = (time) => {
-    const date = new Date(time);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
+  const chatScrollUp = useRef(null)
 
   const handleSendMessage = async () => {
     if (messageInput.trim() === "") return;
     const newMessage = {
-      roomId: availableRooms[roomIndex]?._id,
+      roomId: roomId,
       senderId: auth?.data?.auth?.id,
       content: messageInput,
       type: "text",
@@ -99,7 +92,7 @@ const Chat = () => {
     const detectedType = isImage ? "image" : "file";
     const newMessage = new FormData();
     newMessage.append("message_file", file);
-    newMessage.append("roomId", availableRooms[roomIndex]?._id);
+    newMessage.append("roomId", roomId);
     newMessage.append("senderId", auth?.data?.auth?.id);
     newMessage.append("type", detectedType);
     console.log("file", file);
@@ -126,6 +119,9 @@ const Chat = () => {
     if (auth?.data?.auth?.id && availableRooms[index]) {
       console.log("room", availableRooms[index]);
       socket.emit("join_room", availableRooms[index]._id);
+      socket.on("switch_room", (url) => {
+        navigate(url);
+      });
       console.log(currentRoomMessageList);
     };
   }
@@ -133,19 +129,25 @@ const Chat = () => {
   useEffect(() => {
     socket.emit("get_rooms", auth?.data?.auth?.id);
     socket.on("receive_rooms", ({ roomList, userList }) => {
-      console.log("room", roomList);
-      console.log("user", userList);
       setAvailableRooms(roomList);
       setAvailableUsers(userList);
     });
   }, []);
 
   useEffect(() => {
+    if (roomId) {
+      console.log("Emitting message for roomId:", roomId);
+      socket.emit("get_room_message", roomId);
+    }
+  }, [roomId]);
+  console.log(availableRooms)
+  console.log("index", roomIndex);
+
+  useEffect(() => {
     socket.on("receive_message", (messageList) => {
-      console.log("received list", messageList);
       setCurrentRoomMessageList(messageList);
     });
-  }, [socket, roomIndex]);
+  }, []);
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -192,7 +194,9 @@ const Chat = () => {
   let lastRenderedDate = null;
 
   return (
-    <div className=''>
+    <div
+      ref={chatScrollUp}
+    >
       <Navbar />
 
       <div className='flex'>
@@ -214,7 +218,7 @@ const Chat = () => {
                                 border-b border-gray-300 ${roomIndex === i ? "bg-gray-300" : "bg-[#F3F3F3]"
                     }`}
                   onClick={() => {
-                    setRoomIndex(i)
+                    setRoomIndex(i);
                     joinRoom(i);
                   }}
                 >
@@ -419,7 +423,7 @@ const Chat = () => {
           }
         </div>
       </div>
-      <Footer />
+      <Footer refScrollUp={chatScrollUp} />
     </div >
   );
 };
