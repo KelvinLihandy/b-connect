@@ -84,10 +84,13 @@ const CarouselTrending = ({ data }) => {
                   </div>
                 </div>
                 <div className='w-50 h-50 ml-auto bg-white flex items-center justify-center'>
-                  <img className="w-full h-full object-contain"
-                    src={partner.picture === "temp" ? default_avatar : `${imageShow}${partner.picture}`}
-                    alt="picture"
-                  />
+                  <div className="w-full h-full aspect-square overflow-hidden">
+                    <img
+                      className="w-full h-full object-cover"
+                      src={partner.picture === "temp" ? default_avatar : `${imageShow}${partner.picture}`}
+                      alt="picture"
+                    />
+                  </div>
                 </div>
               </div>
             ))}

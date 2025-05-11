@@ -83,7 +83,7 @@ const Chat = () => {
       type: "text",
     };
     console.log("text message", newMessage);
-    await socket.emit("send_message", newMessage);
+    socket.emit("send_message", newMessage);
     setMessageInput("");
   };
 
@@ -117,21 +117,29 @@ const Chat = () => {
 
   const joinRoom = (index) => {
     if (auth?.data?.auth?.id && availableRooms[index]) {
-      console.log("room", availableRooms[index]);
       socket.emit("join_room", availableRooms[index]._id);
-      socket.on("switch_room", (url) => {
+      const handleSwitchRoom = (url) => {
         navigate(url);
-      });
-      console.log(currentRoomMessageList);
-    };
-  }
+        socket.off("switch_room", handleSwitchRoom);
+      };
+
+      socket.on("switch_room", handleSwitchRoom);
+    }
+  };
 
   useEffect(() => {
     socket.emit("get_rooms", auth?.data?.auth?.id);
-    socket.on("receive_rooms", ({ roomList, userList }) => {
+    const handleReceiveRooms = ({ roomList, userList }) => {
       setAvailableRooms(roomList);
       setAvailableUsers(userList);
-    });
+      const index = roomList.findIndex(room => room._id === roomId);
+      setRoomIndex(index);
+    };
+    socket.on("receive_rooms", handleReceiveRooms);
+
+    return () => {
+      socket.off("receive_rooms", handleReceiveRooms);
+    };
   }, []);
 
   useEffect(() => {
@@ -140,13 +148,19 @@ const Chat = () => {
       socket.emit("get_room_message", roomId);
     }
   }, [roomId]);
-  console.log(availableRooms)
+  
+  console.log("available rooms", availableRooms)
   console.log("index", roomIndex);
 
   useEffect(() => {
-    socket.on("receive_message", (messageList) => {
+    const handleReceiveMessage = (messageList) => {
       setCurrentRoomMessageList(messageList);
-    });
+    };
+    socket.on("receive_message", handleReceiveMessage);
+
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+    };
   }, []);
 
   const getRelativeDateLabel = (time) => {
@@ -222,7 +236,7 @@ const Chat = () => {
                     joinRoom(i);
                   }}
                 >
-                  <div className="w-[65px] h-[65px">
+                  <div className="w-[65px] h-[65px]">
                     <img
                       src={chat.picture == "temp" ? default_avatar : `${imageShow}${chat.picture}`}
                       alt={chat.name}

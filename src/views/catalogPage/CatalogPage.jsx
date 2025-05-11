@@ -65,6 +65,7 @@ const CatalogPage = () => {
   const [end, setEnd] = useState(itemsPerPage - 1);
   const navigate = useNavigate();
   const catalogScrollUp = useRef(null);
+  const navScrollUp = useRef(null);
 
   console.log("user", auth);
   const toggleFavorite = (gigId) => {
@@ -431,7 +432,7 @@ const CatalogPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col sm:flex-row gap-6 w-full">
+          <div className="flex flex-col sm:flex-row gap-6 w-full" ref={navScrollUp}>
             <h2 className="text-2xl font-semibold sm:w-1/4 sm:max-w-1/4">
               Hey {auth?.data?.auth?.name ?? "Guest"}👋👋
             </h2>
@@ -692,6 +693,10 @@ const CatalogPage = () => {
                         setCurrentPage(page);
                         setStart((page - 1) * itemsPerPage);
                         setEnd(page * itemsPerPage);
+                        window.scrollTo({
+                          top: navScrollUp.current.offsetTop - 150,
+                          behavior: "smooth",
+                        });
                       }
                     }}
                   >

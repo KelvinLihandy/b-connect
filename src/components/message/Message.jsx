@@ -26,7 +26,6 @@ const Message = ({ message, roomId }) => {
       console.log("file message request", message);
       socket.emit("get_file_data", { fileId: message.content, roomId: roomId });
       const handleFileData = (data) => {
-        // console.log("Received file data:", data);
         setFileData(data);
         setIsLoading(false);
       };
@@ -109,7 +108,7 @@ const Message = ({ message, roomId }) => {
           <img
             src={`${imageShow}${message.content}`}
             alt="Image"
-            className="w-full h-auto rounded-lg max-h-[300px] object-contain"
+            className="w-full h-auto rounded-lg object-contain"
             onLoad={() => setIsImageloading(false)}
           />
         </a>
@@ -128,15 +127,15 @@ const Message = ({ message, roomId }) => {
       <a
         href={`${fileDownload}${message.content}`}
         download={fileData?.fileName}
-        className={`p-4 rounded-lg shadow-md max-w-[45%] bg-white flex items-center justify-between gap-3 ${message.senderId === auth?.data?.auth?.id ? "self-end" : "self-start"
+        className={`p-4 rounded-lg shadow-md max-w-[45%] h-30 bg-white flex items-center justify-between gap-3 ${message.senderId === auth?.data?.auth?.id ? "self-end" : "self-start"
           } no-underline`}
         style={{
           textDecoration: "none",
         }}
       >
-        <img src={file} alt="File Icon" className="w-[28px] h-[32px]" />
+        <img src={file} alt="File Icon" className="w-[28px]" />
         <div className="flex-1">
-          <p className="font-semibold text-sm">
+          <p className="font-semibold text-sm break-all">
             {isLoading ? "Loading..." : fileData?.fileName}
           </p>
           <p className="text-sm text-gray-500">
