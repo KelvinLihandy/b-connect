@@ -48,6 +48,7 @@ const App = () => {
         <Route path='/sign-in/verify-otp' element={<InputOTP />} />
         <Route path='/sign-in/change-password' element={<ChangePassword />} />
         <Route path="/catalog" element={<CatalogPage />} />
+       <Route path="/freelancerPage" element={<FreelancerProfile/>}/>
         {/* restrcted auth*/}
         {/* if auth default catalog && home is restricted then redirected to catalog */}
         <Route path="/detail/:gigId" element={<Detail />} />
