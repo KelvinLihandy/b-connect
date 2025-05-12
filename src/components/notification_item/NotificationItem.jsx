@@ -4,12 +4,13 @@ import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { CircularProgress } from '@mui/material'
 import { Notebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../../App";
 
-const NotificationItem = ({ notification }) => {
+const NotificationItem = ({ notification, refresh, setRefresh }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
-
+  
   const getRelativeTimeLabel = (time) => {
     const messageDate = new Date(time);
     const now = new Date();
@@ -38,8 +39,11 @@ const NotificationItem = ({ notification }) => {
       whileHover="hover"
       className={`border-b border-gray-400 cursor-pointer bg-white`}
       onClick={() => {
-        if (notification.messageType === "chat")
-          navigate(`/chat/${notification.message._id}`)
+        socket.emit("view_notification", notification);
+        socket.once("redirect_notification", (url) => {
+          setRefresh(r => !r);
+          navigate(url);
+        })
       }}
     >
       <div className="flex text-black min-h-20">

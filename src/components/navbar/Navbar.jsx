@@ -26,6 +26,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   const unreadCount = notificationList.filter(n => !n.read).length;
   useEffect(() => { console.log("notifs", notificationList) }, [notificationList])
 
@@ -131,7 +132,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                           className="text-sm text-white cursor-pointer"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => console.log("all read")}
+                          onClick={() => socket.emit("read_all_notification", auth?.data?.auth?.id)}
                         >
                           Mark all as read
                         </motion.span>
@@ -156,13 +157,13 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                               const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
 
                               return (
-                                <React.Fragment key={index}>
+                                <React.Fragment key={notification._id}>
                                   {label && (
                                     <div className="text-black font-Archivo p-3 text-lg font-semibold">
                                       {label}
                                     </div>
                                   )}
-                                  <NotificationItem notification={notification} />
+                                  <NotificationItem notification={notification} refresh={refresh} setRefresh={setRefresh}/>
                                 </React.Fragment>
                               )
                             })}
