@@ -32,9 +32,6 @@ const SignIn = () => {
 	}
 
 	const login = async () => {
-		console.log(email);
-		console.log(password);
-
 		try {
 			const response = await axios.post(`${authAPI}/login`, {
 				email: email,
@@ -43,7 +40,6 @@ const SignIn = () => {
 			},
 				{ withCredentials: true }
 			);
-			console.log("login", response.data);
 			await getAuth();
 			navigate("/catalog");
 		} catch (error) {

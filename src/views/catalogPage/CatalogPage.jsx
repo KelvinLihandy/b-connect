@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useEffect, useCallback, useContext, useRef } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import {
@@ -64,6 +64,8 @@ const CatalogPage = () => {
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(itemsPerPage - 1);
   const navigate = useNavigate();
+  const catalogScrollUp = useRef(null);
+  const navScrollUp = useRef(null);
 
   console.log("user", auth);
   const toggleFavorite = (gigId) => {
@@ -187,8 +189,15 @@ const CatalogPage = () => {
   }, [searchQuery, debouncedSearch, appliedFilter]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar search alt />
+    <div
+      className="min-h-screen bg-gray-50"
+      ref={catalogScrollUp}
+    >
+      <Navbar
+        search
+        alt
+        setSearchQuery={setSearchQuery}
+      />
 
       {/* Hero Section with Animated Services */}
       <motion.div
@@ -433,7 +442,7 @@ const CatalogPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col sm:flex-row gap-6 w-full">
+          <div className="flex flex-col sm:flex-row gap-6 w-full" ref={navScrollUp}>
             <h2 className="text-2xl font-semibold sm:w-1/4 sm:max-w-1/4">
               Hey {auth?.data?.auth?.name ?? "Guest"}👋👋
             </h2>
@@ -723,6 +732,10 @@ const CatalogPage = () => {
                         setCurrentPage(page);
                         setStart((page - 1) * itemsPerPage);
                         setEnd(page * itemsPerPage);
+                        window.scrollTo({
+                          top: navScrollUp.current.offsetTop - 150,
+                          behavior: "smooth",
+                        });
                       }
                     }}
                   >
@@ -735,7 +748,6 @@ const CatalogPage = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={currentPage === totalPages}
-                  // onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   onClick={() => {
                     if (currentPage < totalPages) {
                       setCurrentPage((prev) => prev + 1);
@@ -812,7 +824,7 @@ const CatalogPage = () => {
           </motion.div>
         </div>
       </motion.div>
-      <Footer />
+      <Footer refScrollUp={catalogScrollUp} />
     </div>
   );
 };

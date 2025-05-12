@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn } from "lucide-react";
@@ -30,6 +30,7 @@ const Detail = () => {
   const [gigDetail, setGigDetail] = useState(null);
   const [freelancer, setFreelancer] = useState(null);
   const [images, setImages] = useState([]);
+  const detailScrollUp = useRef(null);
 
   const getDetail = async () => {
     try {
@@ -274,7 +275,9 @@ const Detail = () => {
   };
 
   return (
-    <div>
+    <div
+      ref={detailScrollUp}
+    >
       <Navbar alt />
 
       {/* Main content area */}
@@ -612,7 +615,7 @@ const Detail = () => {
         </div>
       </div>
 
-      <Footer />
+      <Footer refScrollUp={detailScrollUp} />
 
       {/* Fullscreen view modal */}
       <AnimatePresence>
