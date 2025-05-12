@@ -31,6 +31,13 @@ const SignIn = () => {
 		setShowPass((showPass) => !showPass)
 	}
 
+	// useEffect(() => {
+	// 	if(auth) navigate("/catalog");
+	// }, [auth]);
+	// kalau nanti user logout ada implementasinys
+	// jadi kalau belum logout (delete auth state) gabisa sign-in
+	// langsung redirect catalog
+
 	const login = async () => {
 		try {
 			const response = await axios.post(`${authAPI}/login`, {

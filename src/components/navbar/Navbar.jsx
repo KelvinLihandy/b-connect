@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from 'gsap';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
+import { socket } from "../../App";
 
 // Import assets
 import bell from "../../assets/bell_icon.svg";
@@ -26,7 +27,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
-  const [refresh, setRefresh] = useState(false);
   const unreadCount = notificationList.filter(n => !n.read).length;
   useEffect(() => { console.log("notifs", notificationList) }, [notificationList])
 
@@ -120,10 +120,11 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               <AnimatePresence>
                 {showNotificationDropdown && (
                   <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                     className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
                   >
                     <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
                       <h3 className="font-semibold text-white text-xl">Notifikasi</h3>
@@ -140,55 +141,55 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                     </div>
 
                     <div className="max-h-96 overflow-y-auto">
-                      {notificationList.length > 0 ?
-                        (
-                          <motion.div initial="hidden" animate="visible">
-                            {notificationList.map((notification, index) => {
-                              const messageDate = new Date(notification.message.time);
-                              const messageMidnight = new Date(messageDate);
-                              messageMidnight.setHours(0, 0, 0, 0);
+                      {notificationList.length > 0 ? (
+                        <motion.div initial="hidden" animate="visible">
+                          {notificationList.map((notification, index) => {
+                            const messageDate = new Date(notification.message.time);
+                            const messageMidnight = new Date(messageDate);
+                            messageMidnight.setHours(0, 0, 0, 0);
 
-                              let showDateLabel = false;
+                            let showDateLabel = false;
 
-                              if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
-                                showDateLabel = true;
-                                lastRenderedDate = messageMidnight;
-                              }
-                              const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
+                            if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
+                              showDateLabel = true;
+                              lastRenderedDate = messageMidnight;
+                            }
 
-                              return (
-                                <React.Fragment key={notification._id}>
-                                  {label && (
-                                    <div className="text-black font-Archivo p-3 text-lg font-semibold">
-                                      {label}
-                                    </div>
-                                  )}
-                                  <NotificationItem notification={notification} refresh={refresh} setRefresh={setRefresh}/>
-                                </React.Fragment>
-                              )
-                            })}
-                          </motion.div>
-                        )
-                        :
-                        (
-                          <motion.div
-                            className="p-8 text-center text-gray-500"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                          >
-                            No notifications yet
-                          </motion.div>
-                        )}
+                            const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
+
+                            return (
+                              <React.Fragment key={notification._id}>
+                                {label && (
+                                  <div className="text-black font-Archivo p-3 text-lg font-semibold">
+                                    {label}
+                                  </div>
+                                )}
+                                <NotificationItem notification={notification} />
+                              </React.Fragment>
+                            );
+                          })}
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          className="p-8 text-center text-gray-500"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          No notifications yet
+                        </motion.div>
+                      )}
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
+
             </div>
 
             <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer ml-10"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/catalog")}
             >
               Order
             </motion.button>

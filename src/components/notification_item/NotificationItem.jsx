@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { CircularProgress } from '@mui/material'
@@ -6,11 +6,18 @@ import { Notebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../App";
 
-const NotificationItem = ({ notification, refresh, setRefresh }) => {
+const NotificationItem = ({ notification }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [read, setRead] = useState(notification.read);
   const navigate = useNavigate();
-  
+  const [localRead, setLocalRead] = useState(notification.read);
+  console.log(read);
+  useEffect(() => {
+    setRead(notification.read);
+  }, [notification.read]);
+
+
   const getRelativeTimeLabel = (time) => {
     const messageDate = new Date(time);
     const now = new Date();
@@ -41,15 +48,16 @@ const NotificationItem = ({ notification, refresh, setRefresh }) => {
       onClick={() => {
         socket.emit("view_notification", notification);
         socket.once("redirect_notification", (url) => {
-          setRefresh(r => !r);
+          setLocalRead(true);
           navigate(url);
         })
       }}
     >
       <div className="flex text-black min-h-20">
-        {!notification.read && (
+        {!read && !localRead && (
           <div className="w-1 bg-black"></div>
         )}
+
         <div className="px-2 flex flex-row gap-4 w-full">
           <div className="relative w-12 h-12 min-w-12 self-center">
             {!imageLoaded && !imageError && (
