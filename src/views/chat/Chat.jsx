@@ -154,7 +154,9 @@ const Chat = () => {
 
   useEffect(() => {
     const handleReceiveMessage = (messageList) => {
+      console.log("receiving message");
       setCurrentRoomMessageList(messageList);
+      console.log("state update problem");
     };
     socket.on("receive_message", handleReceiveMessage);
 
@@ -417,7 +419,7 @@ const Chat = () => {
               <h2 className="font-bold text-[20px] mb-2 border-b pb-2">About {availableUsers[roomIndex]?.name}</h2>
               <div className="grid grid-cols-2 text-[16px] gap-y-5 p-2">
                 <div className="text-gray-600">From</div>
-                <div className='text-right'>{availableUsers[roomIndex]?.location}</div>
+                <div className='text-right'>{availableUsers[roomIndex]?.location === "" ? "unspecified" : availableUsers[roomIndex]?.location}</div>
                 <div className="text-gray-600">Joined Since</div>
                 <div className="text-right">
                   {availableUsers[roomIndex]?.joinedDate &&

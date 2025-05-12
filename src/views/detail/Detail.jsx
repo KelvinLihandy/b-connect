@@ -31,7 +31,7 @@ const Detail = () => {
   const [freelancer, setFreelancer] = useState(null);
   const [images, setImages] = useState([]);
   const detailScrollUp = useRef(null);
-
+  console.log("detail", gigDetail)
   const getDetail = async () => {
     try {
       const response = await axios.get(`${gigAPI}/get-gig/${gigId}`);
@@ -62,7 +62,9 @@ const Detail = () => {
       return;
     };
     socket.emit("create_room", [auth?.data?.auth?.id, gigDetail?.creator]);
-    navigate("/chat");
+    socket.on("switch_room", (url) => {
+      navigate(url);
+    })
   }
 
   useEffect(() => {
@@ -306,7 +308,7 @@ const Detail = () => {
 
             {/* Enhanced Animated Carousel */}
             <div
-              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-96 shadow-lg "
+              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-128 shadow-lg"
               onMouseEnter={() => {
                 handleMouseEnter();
                 setShowZoomOverlay(true);
