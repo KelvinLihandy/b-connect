@@ -44,6 +44,7 @@ import axios from "axios";
 import { gigAPI } from "../../constants/APIRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { imageShow } from "../../constants/DriveLinkPrefixes";
 
 const CatalogPage = () => {
   const { auth } = useContext(AuthContext);
@@ -634,6 +635,7 @@ const CatalogPage = () => {
                   variants={cardVariants}
                   custom={i}
                   whileHover={{ y: -5 }}
+                  onClick={() => navigate(`/detail/${gig._id}`)}
                 >
                   {/* Product Image with hover effect */}
                   <div className="relative ">
@@ -653,8 +655,7 @@ const CatalogPage = () => {
                     
                     </motion.button>
                     <motion.img
-                      // src={gig.image[0] == "temp" ? product1 : gig.image[0]}
-                      src={product1}
+                      src={gig.image[0] == "temp" ? product1 : `${imageShow}${gig.image[0]}`}
                       alt={gig.name}
                       className="w-full h-48 object-cover bg-blue-600"
                       whileHover={{ scale: 1.05 }}
