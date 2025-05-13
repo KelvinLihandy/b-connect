@@ -463,7 +463,7 @@ const ProfileUser = () => {
       setTimeout(() => {
         alert("Anda akan keluar dan perlu login kembali dengan password baru.");
         handleLogOut(); // Call the logout function after password change
-      }, 1000); // 1000 milliseconds = 1 second delay
+      }, 1000);
       
     } catch (error) {
       console.error("Error changing password:", error);
