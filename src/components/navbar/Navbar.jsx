@@ -201,7 +201,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/profile")}
+              onClick={() => navigate("/profile-user")}
             >
               <img
                 src={auth?.data?.auth?.picture === "temp" ? default_avatar : `${imageShow}${auth?.data?.auth.picture}`}
