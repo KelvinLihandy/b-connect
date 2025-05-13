@@ -8,11 +8,13 @@ import password_show from "../../assets/eye_on.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { EmailContext } from '../../contexts/EmailContext'
+import { CircularProgress } from '@mui/material'
 
 const ChangePassword = () => {
   const [showPass, setShowPass] = useState(false)
   const [password, setPassword] = useState("");
   const [passwordComf, setPasswordConf] = useState("");
+  const [differentError, setDifferentError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { email, setEmail } = useContext(EmailContext);
   const otpToken = localStorage.getItem('otpToken');
@@ -31,7 +33,11 @@ const ChangePassword = () => {
   };
 
   const ChangePassword = async (password, passwordComf) => {
-    if (password !== passwordComf) return;
+    if (password !== passwordComf) {
+      setDifferentError("Passsword and Konfirmasi harus sama");
+      return;
+    }
+    console.log(email);
     setIsLoading(true);
     await axios.post(`${authAPI}/change-password`, {
       email: email,
@@ -111,6 +117,11 @@ const ChangePassword = () => {
                 Use 8 or more characters with a mix of upper & lowercase letters, numbers & symbols (@ $ ! % * ? &)
               </p>
             }
+            {
+              <p className='text-red-400 text-base text-wrap'>
+                {differentError}
+              </p>
+            }
           </div>
           <div className='flex flex-col gap-2 mb-8'>
             <div className='flex flex-row justify-between'>
@@ -130,6 +141,11 @@ const ChangePassword = () => {
                 Use 8 or more characters with a mix of upper & lowercase letters, numbers & symbols (@ $ ! % * ? &)
               </p>
             }
+            {
+              <p className='text-red-400 text-base text-wrap'>
+                {differentError}
+              </p>
+            }
           </div>
         </div>
 
@@ -138,7 +154,11 @@ const ChangePassword = () => {
             onClick={() => ChangePassword(password, passwordComf)}
             disabled={isLoading}
           >
-            Change Password
+            {isLoading ?
+              <CircularProgress color='inherit' />
+              :
+              "Change Password"
+            }
           </button>
         </div>
       </div>

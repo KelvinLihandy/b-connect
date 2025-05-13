@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import ScrollToBottom from 'react-scroll-to-bottom';
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import EmojiPicker from 'emoji-picker-react';
 import { socket } from '../../App';
 import upload from "../../assets/chat_upload.svg"
@@ -23,11 +23,13 @@ import { imageShow } from '../../constants/DriveLinkPrefixes';
 import Message from '../../components/message/Message';
 
 const Chat = () => {
+  const { roomId } = useParams();
   const { auth } = useContext(AuthContext);
   const [messageInput, setMessageInput] = useState("");
   const [isUploadVisible, setIsUploadVisible] = useState(false);
   const [isEmoteSelectorVisible, setIsEmoteSelectorVisible] = useState(false);
   const emoteSelectorRef = useRef(null);
+  const navigate = useNavigate();
 
   const toggleUpload = () => {
     setIsUploadVisible(!isUploadVisible);
@@ -68,29 +70,21 @@ const Chat = () => {
 
   const [availableRooms, setAvailableRooms] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
-  const [roomIndex, setRoomIndex] = useState(0);
+  const [roomIndex, setRoomIndex] = useState(null);
   const [currentRoomMessageList, setCurrentRoomMessageList] = useState([]);
-
-  const getTime = (time) => {
-    const date = new Date(time);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
+  const [disableMessaging, setDisableMessaging] = useState(false);
+  const chatScrollUp = useRef(null)
 
   const handleSendMessage = async () => {
     if (messageInput.trim() === "") return;
     const newMessage = {
-      roomId: availableRooms[roomIndex]?._id,
+      roomId: roomId,
       senderId: auth?.data?.auth?.id,
       content: messageInput,
       type: "text",
     };
     console.log("text message", newMessage);
-    await socket.emit("send_message", newMessage);
+    socket.emit("send_message", newMessage);
     setMessageInput("");
   };
 
@@ -99,11 +93,13 @@ const Chat = () => {
     const detectedType = isImage ? "image" : "file";
     const newMessage = new FormData();
     newMessage.append("message_file", file);
-    newMessage.append("roomId", availableRooms[roomIndex]?._id);
+    newMessage.append("roomId", roomId);
     newMessage.append("senderId", auth?.data?.auth?.id);
     newMessage.append("type", detectedType);
     console.log("file", file);
     console.log("file message", newMessage);
+    setDisableMessaging(true);
+    setMessageInput("uploading...");
     try {
       const response = await axios.post(`${chatAPI}/upload-file-message`,
         newMessage,
@@ -118,34 +114,59 @@ const Chat = () => {
     } catch (error) {
       console.error('Error send message file:', error);
     }
-    setMessageInput("");
     setIsUploadVisible(false);
   };
 
   const joinRoom = (index) => {
     if (auth?.data?.auth?.id && availableRooms[index]) {
-      console.log("room", availableRooms[index]);
       socket.emit("join_room", availableRooms[index]._id);
-      console.log(currentRoomMessageList);
-    };
-  }
+      const handleSwitchRoom = (url) => {
+        navigate(url);
+        socket.off("switch_room", handleSwitchRoom);
+      };
+
+      socket.on("switch_room", handleSwitchRoom);
+    }
+  };
 
   useEffect(() => {
     socket.emit("get_rooms", auth?.data?.auth?.id);
-    socket.on("receive_rooms", ({ roomList, userList }) => {
-      console.log("room", roomList);
-      console.log("user", userList);
+    const handleReceiveRooms = ({ roomList, userList }) => {
       setAvailableRooms(roomList);
       setAvailableUsers(userList);
-    });
+      const index = roomList.findIndex(room => room._id === roomId);
+      setRoomIndex(index);
+    };
+    socket.on("receive_rooms", handleReceiveRooms);
+
+    return () => {
+      socket.off("receive_rooms", handleReceiveRooms);
+    };
   }, []);
 
   useEffect(() => {
-    socket.on("receive_message", (messageList) => {
-      console.log("received list", messageList);
+    if (roomId) {
+      console.log("Emitting message for roomId:", roomId);
+      socket.emit("get_room_message", roomId);
+    }
+  }, [roomId]);
+  
+  console.log("available rooms", availableRooms)
+  console.log("index", roomIndex);
+
+  useEffect(() => {
+    const handleReceiveMessage = (messageList) => {
+      console.log("receiving message");
       setCurrentRoomMessageList(messageList);
-    });
-  }, [socket, roomIndex]);
+      setDisableMessaging(false);
+      setMessageInput("");
+    };
+    socket.on("receive_message", handleReceiveMessage);
+
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+    };
+  }, []);
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -192,7 +213,9 @@ const Chat = () => {
   let lastRenderedDate = null;
 
   return (
-    <div className=''>
+    <div
+      ref={chatScrollUp}
+    >
       <Navbar />
 
       <div className='flex'>
@@ -214,11 +237,11 @@ const Chat = () => {
                                 border-b border-gray-300 ${roomIndex === i ? "bg-gray-300" : "bg-[#F3F3F3]"
                     }`}
                   onClick={() => {
-                    setRoomIndex(i)
+                    setRoomIndex(i);
                     joinRoom(i);
                   }}
                 >
-                  <div className="w-[65px] h-[65px">
+                  <div className="w-[65px] h-[65px]">
                     <img
                       src={chat.picture == "temp" ? default_avatar : `${imageShow}${chat.picture}`}
                       alt={chat.name}
@@ -326,6 +349,7 @@ const Chat = () => {
                   type="text"
                   placeholder="Type a message..."
                   value={messageInput}
+                  disabled={disableMessaging}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -399,7 +423,7 @@ const Chat = () => {
               <h2 className="font-bold text-[20px] mb-2 border-b pb-2">About {availableUsers[roomIndex]?.name}</h2>
               <div className="grid grid-cols-2 text-[16px] gap-y-5 p-2">
                 <div className="text-gray-600">From</div>
-                <div className='text-right'>{availableUsers[roomIndex]?.location}</div>
+                <div className='text-right'>{availableUsers[roomIndex]?.location === "" ? "unspecified" : availableUsers[roomIndex]?.location}</div>
                 <div className="text-gray-600">Joined Since</div>
                 <div className="text-right">
                   {availableUsers[roomIndex]?.joinedDate &&
@@ -419,7 +443,7 @@ const Chat = () => {
           }
         </div>
       </div>
-      <Footer />
+      <Footer refScrollUp={chatScrollUp} />
     </div >
   );
 };

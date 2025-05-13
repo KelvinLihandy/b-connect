@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn } from "lucide-react";
@@ -30,7 +30,8 @@ const Detail = () => {
   const [gigDetail, setGigDetail] = useState(null);
   const [freelancer, setFreelancer] = useState(null);
   const [images, setImages] = useState([]);
-
+  const detailScrollUp = useRef(null);
+  console.log("detail", gigDetail)
   const getDetail = async () => {
     try {
       const response = await axios.get(`${gigAPI}/get-gig/${gigId}`);
@@ -61,7 +62,9 @@ const Detail = () => {
       return;
     };
     socket.emit("create_room", [auth?.data?.auth?.id, gigDetail?.creator]);
-    navigate("/chat");
+    socket.on("switch_room", (url) => {
+      navigate(url);
+    })
   }
 
   useEffect(() => {
@@ -183,6 +186,13 @@ const Detail = () => {
     }
   };
 
+  const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
+    return (price ?? 0).toLocaleString(locale, {
+      minimumFractionDigits: minFraction,
+      maximumFractionDigits: maxFraction,
+    });
+  };
+
   // Progress indicator for carousel
   const ProgressIndicator = ({ current, total }) => {
     return (
@@ -274,7 +284,9 @@ const Detail = () => {
   };
 
   return (
-    <div>
+    <div
+      ref={detailScrollUp}
+    >
       <Navbar alt />
 
       {/* Main content area */}
@@ -303,7 +315,7 @@ const Detail = () => {
 
             {/* Enhanced Animated Carousel */}
             <div
-              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-96 shadow-lg "
+              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-128 shadow-lg"
               onMouseEnter={() => {
                 handleMouseEnter();
                 setShowZoomOverlay(true);
@@ -551,7 +563,10 @@ const Detail = () => {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <h3 className="font-medium uppercase">{gigDetail?.packages[activePackage]?.name}</h3>
+                      <div className="flex flex-row justify-between">
+                        <h3 className="font-medium uppercase">{gigDetail?.packages[activePackage]?.name}</h3>
+                        <h3>Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
+                      </div>
                       <p className="text-xl font-bold mt-1">{gigDetail?.packages[activePackage]?.description}</p>
 
                       <div className="text-gray-600 text-sm mt-3">
@@ -612,7 +627,7 @@ const Detail = () => {
         </div>
       </div>
 
-      <Footer />
+      <Footer refScrollUp={detailScrollUp} />
 
       {/* Fullscreen view modal */}
       <AnimatePresence>

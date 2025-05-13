@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { debounce } from 'lodash'
@@ -23,9 +23,6 @@ import trid_designer from '../../assets/3d_designer.svg'
 import fullstack_developer from '../../assets/fullstack_developer.svg'
 import graphic_designer from '../../assets/graphic_designer.svg'
 import circle_bg_right from '../../assets/circle_bg_right.svg'
-import arrow_circle from '../../assets/arrow_circle.svg'
-import computer from '../../assets/computer_stock.svg'
-import phone from '../../assets/phone_stock.svg'
 import arrow_right from '../../assets/arrow_right.svg'
 import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 
@@ -33,11 +30,12 @@ import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import GigItem from '../../components/gig_item/GigItem'
-
+import { CircularProgress } from '@mui/material'
 // API Routes
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
 import { AuthContext } from '../../contexts/AuthContext'
 import Navbar from '../../components/navbar/Navbar'
+
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -114,7 +112,10 @@ const Home = () => {
   const [gigs, setGigs] = useState();
   const categoryList = ["Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"];
   const [currentCategory, setCurrentCategory] = useState(categoryList[0]);
-  
+  const servicesSection = useRef(null);
+  const [isFetchingGig, setIsFetchingGig] = useState(false);
+  const homeScrollUp = useRef(null);
+
   useEffect(() => {
     const getTrendingUsers = async () => {
       try {
@@ -152,6 +153,7 @@ const Home = () => {
   }, []);
 
   const getGig = async (name, category) => {
+    setTimeout(() => { }, [2000])
     try {
       const response = await axios.post(`${gigAPI}/get-gig`, { name, category });
       const res = response.data.filteredGigs;
@@ -160,29 +162,32 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching gigs:', error.response || error);
     }
+    setIsFetchingGig(false);
   }
 
   const debouncedSearch = useCallback(
     debounce(async (query, category) => {
       if (!query.length) return;
       await getGig(query, category);
+      servicesSection.current?.scrollIntoView({ behavior: 'smooth' });
     }, 500),
     []
   );
 
+  const fetchGigs = async () => {
+    if (!searchQuery.length) await getGig("", currentCategory);
+    else debouncedSearch(searchQuery, currentCategory);
+  };
 
   useEffect(() => {
-    const fetchGigs = async () => {
-      if (!searchQuery.length) await getGig("", currentCategory);
-      else debouncedSearch(searchQuery, currentCategory);
-    };
-
     fetchGigs();
-  }, [searchQuery, debouncedSearch, currentCategory]);
+  }, [debouncedSearch, currentCategory]);
 
   return (
-    <div className="font-poppins overflow-x-hidden">
-      {/* Header/Navigation */}
+    <div
+      className="font-poppins overflow-x-hidden"
+      ref={homeScrollUp}
+    >
       <Navbar />
 
       {/* Hero Section */}
@@ -246,14 +251,28 @@ const Home = () => {
               onChange={(event) => setSearchQuery(event.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setIsFetchingGig(true);
+                  fetchGigs();
+                }
+              }}
             />
             <motion.div
-              className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10 cursor-pointer'
+              className='bg-[#2E90EB] size-23 rounded-full flex items-center justify-center ml-auto z-10 cursor-pointer text-white'
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              onClick={() => {
+                setIsFetchingGig(true);
+                fetchGigs();
+              }}
             >
-              <img src={search_symbol} alt="search" />
+              {isFetchingGig ?
+                <CircularProgress color='inherit' />
+                :
+                <img src={search_symbol} alt="search" />
+              }
             </motion.div>
           </motion.div>
 
@@ -269,6 +288,7 @@ const Home = () => {
           </motion.div>
         </motion.div>
 
+        {/* Images */}
         <div className='relative w-[800px] h-[950px]'>
           <motion.img
             className='absolute right-1 top-40'
@@ -454,7 +474,7 @@ const Home = () => {
       </motion.section>
 
       {/* Explore Services Section */}
-      <motion.section
+      <motion.section ref={servicesSection}
         className='p-10 flex flex-col items-center gap-20 py-24 scroll-animate'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -494,11 +514,11 @@ const Home = () => {
           className='flex flex-wrap gap-3 justify-center'
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
           <motion.div
-            className="w-sm flex flex-row h-70 font-inter bg-gradient-to-br from-[#F3F3F3] to-[#E6E6E6] relative items-center rounded-lg shadow-md overflow-hidden"
+            className="w-sm flex flex-row h-90 font-inter bg-[#F3F3F3] relative items-center rounded-lg shadow-md overflow-hidden"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
@@ -507,7 +527,7 @@ const Home = () => {
                 Our Best Sellers
               </p>
               <motion.img
-                className='-mt-10'
+                className='mt-10'
                 src={mr_pink_hair}
                 alt="mr pink hair"
                 animate={{ y: [0, -10, 0] }}
@@ -520,7 +540,7 @@ const Home = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/catalog")}
             >
-              <p className='font-arvo text-3xl font-bold text-[#565E6D]'>
+              <p className='font-Archivo text-3xl font-bold text-[#565E6D]'>
                 Shop Now
               </p>
               <motion.img
@@ -531,15 +551,15 @@ const Home = () => {
               />
             </motion.button>
           </motion.div>
-          <GigItem data={gigs} />
+          <GigItem data={gigs} home />
         </motion.div>
       </motion.section>
 
-      <Footer />
+      <Footer refScrollUp={homeScrollUp} />
 
       {/* Floating action button */}
       <motion.div
-        className="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg cursor-pointer z-50"
+        className="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg cursor-pointer z-100"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         initial={{ opacity: 0, y: 100 }}
@@ -550,20 +570,6 @@ const Home = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       </motion.div>
-
-      {/* Add global styles for scroll animations */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 1s ease forwards;
-        }
-        .scroll-animate {
-          opacity: 0;
-        }
-      `}</style>
     </div>
   )
 }

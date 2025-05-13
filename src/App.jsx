@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import io from "socket.io-client";
 import "./App.css";
 import SignUp from "./views/sign_up/SignUp";
@@ -18,13 +20,48 @@ import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
 import FreelancerUserView from "./views/FreelancerProfile/FreelancerUserView";
 import FreelancerView from "./views/FreelancerProfile/FreelancerView";
+import AboutUs from './views/about_us/AboutUs';
+import ForgotPassword from './views/forgot_password/ForgotPassword';
+import InputOTP from './views/input_otp/InputOTP';
+import ChangePassword from './views/change_password/ChangePassword';
+import CatalogPage from './views/catalogPage/CatalogPage';
+import Chat from './views/chat/Chat';
+import FreelancerProfile from './views/FreelancerProfile/FreelancerProfile';
+import ProfileUser from './views/profile-user/ProfileUser';
+import AuthRouting from './components/auth_routing/AuthRouting';
+import { AuthContext } from './contexts/AuthContext';
+import { NotificationContext } from './contexts/NotificationContext';
+import HomeRouting from './components/home_routing/HomeRouting';
 
 export const socket = io.connect("http://localhost:5000");
 
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
   const [ready, setReady] = useState(false);
+  const { notificationList, setNotificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+    const handleReceiveNotifications = (notificationsData) => {
+      console.log("notifs data", notificationsData)
+      setNotificationList(notificationsData);
+    };
+      socket.on("receive_notifications", handleReceiveNotifications);
+
+    return () => {
+      socket.off("receive_notifications", handleReceiveNotifications);
+    };
+  }, []);
+
+  useEffect(() => {
+    if(auth?.data?.auth?.id){
+      socket.emit("retrieve_notifications", auth?.data?.auth?.id)
+    }
+  }, [auth?.data?.auth?.id, location.pathname]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname]);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -32,7 +69,7 @@ const App = () => {
       setReady(true);
     };
     initAuth();
-  }, []);
+  }, [auth?.data?.auth?.id]);
 
   if (!ready) {
     return <></>;
@@ -55,7 +92,11 @@ const App = () => {
         {/* restrcted auth*/}
         {/* if auth default catalog && home is restricted then redirected to catalog */}
         <Route path="/detail/:gigId" element={<Detail />} />
+        <Route path="/freelancerPage" element={<FreelancerProfile />} />
+        
+        {/* Protected routes - require authentication */}
         <Route path="/chat" element={<AuthRouting component={Chat} />} />
+        <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
       </Routes>
     </>
   );

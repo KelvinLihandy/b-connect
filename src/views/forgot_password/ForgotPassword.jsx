@@ -6,10 +6,12 @@ import bg_dots from "../../assets/bg_dots.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { EmailContext } from '../../contexts/EmailContext'
+import { CircularProgress } from '@mui/material'
 
 const ForgotPassword = () => {
   const { email, setEmail } = useContext(EmailContext);
   const [emailMessage, setEmailMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -30,6 +32,7 @@ const ForgotPassword = () => {
         })
         .catch(error => {
           console.error('Error send otp:', error.response);
+          setErrorMessage(error.response.data.error)
         });
       setIsLoading(false);
     }
@@ -86,8 +89,17 @@ const ForgotPassword = () => {
             onClick={() => sendOTP(email)}
             disabled={isLoading}
           >
-            Request reset OTP
+            {isLoading ?
+              <CircularProgress color='inherit' />
+              :
+              "Request Reset OTP"
+            }
           </button>
+          {
+            <p className='text-red-400 text-base text-wrap text-center'>
+              {errorMessage}
+            </p>
+          }
           <div className='text-center'>
             <Link className='text-xl font-poppins text-[#004B90] hover:text-[#0073E6]' to='/sign-in'>
               Back To Login
