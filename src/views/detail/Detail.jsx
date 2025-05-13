@@ -186,6 +186,13 @@ const Detail = () => {
     }
   };
 
+  const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
+    return (price ?? 0).toLocaleString(locale, {
+      minimumFractionDigits: minFraction,
+      maximumFractionDigits: maxFraction,
+    });
+  };
+
   // Progress indicator for carousel
   const ProgressIndicator = ({ current, total }) => {
     return (
@@ -556,7 +563,10 @@ const Detail = () => {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <h3 className="font-medium uppercase">{gigDetail?.packages[activePackage]?.name}</h3>
+                      <div className="flex flex-row justify-between">
+                        <h3 className="font-medium uppercase">{gigDetail?.packages[activePackage]?.name}</h3>
+                        <h3>Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
+                      </div>
                       <p className="text-xl font-bold mt-1">{gigDetail?.packages[activePackage]?.description}</p>
 
                       <div className="text-gray-600 text-sm mt-3">

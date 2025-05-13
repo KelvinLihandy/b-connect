@@ -25,6 +25,12 @@ const SignUp = () => {
 		setShowPass((showPass) => !showPass)
 	}
 
+	const validateEmail = (email) => {
+		const rfcEmailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
+		if(!rfcEmailRegex.test(email)) return false;
+		else return true;
+	}
+
 	const validatePassword = (password) => {
 		const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 		if (!regex.test(password)) {
@@ -112,6 +118,11 @@ const SignUp = () => {
 								placeholder='Enter your email address'
 								onChange={(event) => setEmail(event.target.value)}
 							/>
+							{!validateEmail(email) &&
+								<p className='text-red-400 text-base text-wrap'>
+									Format email tidak valid
+								</p>
+							}
 						</div>
 
 						<div className='flex flex-col gap-2 mb-8'>

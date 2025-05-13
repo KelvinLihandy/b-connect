@@ -81,13 +81,13 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
       >
         <div className='flex flex-col p-5 text-xl md:text-2xl gap-5 md:gap-10'>
           <motion.div variants={fadeInUp}>
-            <Link to="/about-us" className="hover:text-blue-600 transition-colors duration-300">About</Link>
+            <div onClick={() => navigate("/about-us")} className="hover:text-blue-600 transition-colors duration-300">About</div>
           </motion.div>
           <motion.div variants={fadeInUp}>
             <Link to='' className="hover:text-blue-600 transition-colors duration-300">FAQ</Link>
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <Link to='/catalog' className="hover:text-blue-600 transition-colors duration-300">Services</Link>
+            <div onClick={() => navigate("/catalog")} className="hover:text-blue-600 transition-colors duration-300">Services</div>
           </motion.div>
           <motion.div variants={fadeInUp}>
             <Link to='' className="hover:text-blue-600 transition-colors duration-300">Tournaments</Link>

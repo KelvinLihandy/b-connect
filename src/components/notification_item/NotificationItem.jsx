@@ -12,7 +12,7 @@ const NotificationItem = ({ notification }) => {
   const [read, setRead] = useState(notification.read);
   const navigate = useNavigate();
   const [localRead, setLocalRead] = useState(notification.read);
-  console.log(read);
+
   useEffect(() => {
     setRead(notification.read);
   }, [notification.read]);
@@ -47,6 +47,7 @@ const NotificationItem = ({ notification }) => {
       className={`border-b border-gray-400 cursor-pointer bg-white`}
       onClick={() => {
         socket.emit("view_notification", notification);
+        setRead(true);
         socket.once("redirect_notification", (url) => {
           setLocalRead(true);
           navigate(url);

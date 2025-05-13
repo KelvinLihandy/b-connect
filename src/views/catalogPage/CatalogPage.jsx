@@ -45,17 +45,17 @@ import { gigAPI } from "../../constants/APIRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
+import GigItem from "../../components/gig_item/GigItem";
 
 const CatalogPage = () => {
   const { auth } = useContext(AuthContext);
   const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
-  const [favoriteGigs, setFavoriteGigs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(2000);
-  const [selectedRating, setSelectedRating] = useState();
+  const [selectedRating, setSelectedRating] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [gigs, setGigs] = useState([]);
@@ -68,23 +68,6 @@ const CatalogPage = () => {
   const catalogScrollUp = useRef(null);
   const navScrollUp = useRef(null);
 
-  console.log("user", auth);
-  const toggleFavorite = (gigId) => {
-    if (favoriteGigs.includes(gigId)) {
-      setFavoriteGigs(favoriteGigs.filter((_id) => _id !== gigId));
-    } else {
-      setFavoriteGigs([...favoriteGigs, gigId]);
-    }
-  };
-
-  const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
-    return (price ?? 0).toLocaleString(locale, {
-      minimumFractionDigits: minFraction,
-      maximumFractionDigits: maxFraction,
-    });
-  };
-
-  // Animation variants
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i) => ({
@@ -511,23 +494,24 @@ const CatalogPage = () => {
                     className="flex items-center group cursor-pointer"
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => {
+                      if(selectedCategory == category) setSelectedCategory("");
+                      else setSelectedCategory(category);
+                    }}
                   >
                     <div
-                      className={`w-5 h-5 rounded mr-3 border flex items-center justify-center ${
-                        selectedCategory === category
-                          ? "bg-blue-600 border-blue-600"
-                          : "border-gray-300 group-hover:border-blue-400"
-                      }`}
+                      className={`w-5 h-5 rounded mr-3 border flex items-center justify-center ${selectedCategory === category
+                        ? "bg-blue-600 border-blue-600"
+                        : "border-gray-300 group-hover:border-blue-400"
+                        }`}
                     >
                       {selectedCategory === category && <Check size={14} className="text-white" />}
                     </div>
                     <label
-                      className={`text-sm cursor-pointer ${
-                        selectedCategory === category
-                          ? "font-medium text-blue-600"
-                          : "text-gray-700 group-hover:text-gray-900"
-                      }`}
+                      className={`text-sm cursor-pointer ${selectedCategory === category
+                        ? "font-medium text-blue-600"
+                        : "text-gray-700 group-hover:text-gray-900"
+                        }`}
                     >
                       {category}
                     </label>
@@ -583,7 +567,10 @@ const CatalogPage = () => {
                       name="rating"
                       className="mr-3 accent-blue-600 h-4 w-4"
                       checked={selectedRating === stars}
-                      onClick={() => setSelectedRating(stars)}
+                      onClick={() => {
+                        if(selectedRating == stars) setSelectedRating(0)
+                        else setSelectedRating(stars)
+                      }}
                     />
                     <label htmlFor={`star${stars}`} className="flex items-center cursor-pointer">
                       {Array(5)
@@ -605,14 +592,19 @@ const CatalogPage = () => {
               {/* Apply Filters Button */}
               <div className="p-5 border-t">
                 <motion.button
-                  className={`w-full ${
-                    appliedFilter
-                      ? "bg-gray-400 hover:bg-gray-500"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }  text-white font-medium py-3 rounded-lg transition-colors duration-200`}
+                  className={`w-full ${appliedFilter
+                    ? "bg-gray-400 hover:bg-gray-500"
+                    : "bg-blue-600 hover:bg-blue-700"
+                    }  text-white font-medium py-3 rounded-lg transition-colors duration-200`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setAppliedFilter(!appliedFilter)}
+                  onClick={() => {
+                    setAppliedFilter(!appliedFilter);
+                    window.scrollTo({
+                      top: navScrollUp.current.offsetTop - 150,
+                      behavior: "smooth",
+                    });
+                  }}
                 >
                   {appliedFilter ? "Nonaktifkan Filter" : "Terapkan Filter"}
                 </motion.button>
@@ -627,140 +619,81 @@ const CatalogPage = () => {
             initial="hidden"
             animate="visible"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {gigs.slice(start, end).map((gig, i) => (
-                <motion.div
-                  key={gig._id}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
-                  variants={cardVariants}
-                  custom={i}
-                  whileHover={{ y: -5 }}
-                  onClick={() => navigate(`/detail/${gig._id}`)}
-                >
-                  {/* Product Image with hover effect */}
-                  <div className="relative ">
-                    <motion.button
-                      className="absolute top-51 right-3  p-2 "
-                      whileHover={{ scale: 1 }}
-                      whileTap={{ scale: 0.8 }}
-                      onClick={() => toggleFavorite(gig._id)}
-                    >
-                      <Heart
-                        className={`w-5 h-5 ${
-                          favoriteGigs.includes(gig._id)
-                            ? "text-red-500 fill-red-500"
-                            : "text-black"
-                        }`}
-                      />
-                    
-                    </motion.button>
-                    <motion.img
-                      src={gig.image[0] == "temp" ? product1 : `${imageShow}${gig.image[0]}`}
-                      alt={gig.name}
-                      className="w-full h-48 object-cover bg-blue-600"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-5">
-                    <h3 className="text-md font-medium mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-100">
-                      {gig.name}
-                    </h3>
-                    <div className="flex-col items-center mb-2">
-                      <p className="text-md font-semibold text-blue-600">
-                        Rp. {formattedPrice(gig.packages[0].price)}
-                      </p>
-                      <p className="text-md font-semibold text-blue-600">
-                        Rp. {formattedPrice(gig.packages[gig.packages.length - 1].price)}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-md w-full justify-between">
-                        <div className="flex flex-row items-center gap-3 flex-wrap">
-                          <div className="flex flex-row">
-                            {Array(Math.floor(gig.rating))
-                              .fill()
-                              .map((_, i) => (
-                                <Star key={i} className="w-4 h-4" fill="#FFD700" stroke="#FFD700" />
-                              ))}
-                          </div>
-                          <div>{gig.rating}</div>
-                        </div>
-                        <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+            <div className="flex flex-wrap gap-3">
+              <GigItem
+                start={start}
+                end={end}
+                data={gigs}
+              />
             </div>
 
             {/* Pagination with Animation */}
-            <motion.div
-              className="flex justify-center mt-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-            >
-              <div className="flex items-center gap-2">
-                <motion.button
-                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  disabled={currentPage === 1}
-                  onClick={() => {
-                    setCurrentPage((prev) => Math.max(prev - 1, 1));
-                    setStart((prev) => Math.max(0, (prev - itemsPerPage) * itemsPerPage));
-                    setEnd((prev) => Math.max(itemsPerPage, prev - itemsPerPage));
-                  }}
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </motion.button>
-
-                {getPageNumbers().map((page, index) => (
+            {gigs.length > 0 &&
+              <motion.div
+                className="flex justify-center mt-12"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                <div className="flex items-center gap-2">
                   <motion.button
-                    key={index}
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-                      page === currentPage
+                    className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={currentPage === 1}
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.max(prev - 1, 1));
+                      setStart((prev) => Math.max(0, (prev - itemsPerPage) * itemsPerPage));
+                      setEnd((prev) => Math.max(itemsPerPage, prev - itemsPerPage));
+                    }}
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </motion.button>
+
+                  {getPageNumbers().map((page, index) => (
+                    <motion.button
+                      key={index}
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg ${page === currentPage
                         ? "bg-blue-600 text-white"
                         : "border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600"
-                    } transition-colors duration-200`}
-                    whileHover={{ scale: page !== "..." ? 1.05 : 1 }}
-                    whileTap={{ scale: page !== "..." ? 0.95 : 1 }}
+                        } transition-colors duration-200`}
+                      whileHover={{ scale: page !== "..." ? 1.05 : 1 }}
+                      whileTap={{ scale: page !== "..." ? 0.95 : 1 }}
+                      onClick={() => {
+                        if (page !== "...") {
+                          setCurrentPage(page);
+                          setStart((page - 1) * itemsPerPage);
+                          setEnd(page * itemsPerPage);
+                          window.scrollTo({
+                            top: navScrollUp.current.offsetTop - 150,
+                            behavior: "smooth",
+                          });
+                        }
+                      }}
+                    >
+                      {page}
+                    </motion.button>
+                  ))}
+
+                  <motion.button
+                    className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={currentPage === totalPages}
                     onClick={() => {
-                      if (page !== "...") {
-                        setCurrentPage(page);
-                        setStart((page - 1) * itemsPerPage);
-                        setEnd(page * itemsPerPage);
-                        window.scrollTo({
-                          top: navScrollUp.current.offsetTop - 150,
-                          behavior: "smooth",
-                        });
+                      if (currentPage < totalPages) {
+                        setCurrentPage((prev) => prev + 1);
+                        setStart((prev) => Math.min(prev + itemsPerPage, totalGigs));
+                        setEnd((prev) => Math.min(prev + itemsPerPage, totalGigs));
                       }
                     }}
                   >
-                    {page}
+                    <ChevronRight className="w-5 h-5" />
                   </motion.button>
-                ))}
+                </div>
+              </motion.div>
+            }
 
-                <motion.button
-                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors duration-200"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  disabled={currentPage === totalPages}
-                  onClick={() => {
-                    if (currentPage < totalPages) {
-                      setCurrentPage((prev) => prev + 1);
-                      setStart((prev) => Math.min(prev + itemsPerPage, totalGigs));
-                      setEnd((prev) => Math.min(prev + itemsPerPage, totalGigs));
-                    }
-                  }}
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </motion.button>
-              </div>
-            </motion.div>
 
             {/* "Back to top" button - appears when scrolled down */}
             <motion.button
