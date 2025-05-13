@@ -205,9 +205,11 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
             {/* Morph Toggle Button */}
             <MorphToggleButton />
 
-            <motion.div className="relative w-15 h-15 bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
+            <motion.div 
+              className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
               whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.90 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/profile-user")}
             >
               {imageLoading ? (
                 <CircularProgress color="inherit" />

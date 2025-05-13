@@ -13,9 +13,11 @@ import ChangePassword from './views/change_password/ChangePassword';
 import CatalogPage from './views/catalogPage/CatalogPage';
 import Chat from './views/chat/Chat';
 import FreelancerProfile from './views/FreelancerProfile/FreelancerProfile';
+import ProfileUser from './views/profile-user/ProfileUser';
 import AuthRouting from './components/auth_routing/AuthRouting';
 import { AuthContext } from './contexts/AuthContext';
 import { NotificationContext } from './contexts/NotificationContext';
+import HomeRouting from './components/home_routing/HomeRouting';
 
 export const socket = io.connect("http://localhost:5000");
 
@@ -73,10 +75,11 @@ const App = () => {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/freelancerPage" element={<FreelancerProfile />} />
-        {/* restrcted auth*/}
-        {/* if auth default catalog && home is restricted then redirected to catalog */}
-        <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
-      </Routes >
+        
+        {/* Protected routes - require authentication */}
+        <Route path="/chat" element={<AuthRouting component={Chat} />} />
+        <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
+      </Routes>
     </>
   )
 }
