@@ -85,7 +85,10 @@ const Navbar = ({ search = false, alt = false }) => {
             {/* Morph Toggle Button */}
             <MorphToggleButton />
 
-            <div className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10">
+            <div 
+              className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
+              onClick={() => navigate('/profile-user')} 
+            >
               <img
                 src={auth?.data?.auth?.picture === "temp" ? default_avatar : `${imageShow}${auth.data.auth.picture}`}
                 alt="profile"

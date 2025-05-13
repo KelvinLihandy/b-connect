@@ -16,6 +16,7 @@ import FreelancerProfile from './views/FreelancerProfile/FreelancerProfile';
 import AuthRouting from './components/auth_routing/AuthRouting';
 import { AuthContext } from './contexts/AuthContext';
 import HomeRouting from './components/home_routing/HomeRouting';
+import ProfileUser from './views/profile-user/ProfileUser';
 
 export const socket = io.connect("http://localhost:5000");
 
@@ -52,6 +53,7 @@ const App = () => {
         {/* if auth default catalog && home is restricted then redirected to catalog */}
         <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/chat" element={<AuthRouting component={Chat} />} />
+        <Route path="/profile-user" element={<ProfileUser />} />
       </Routes >
     </>
   )
