@@ -17,20 +17,28 @@ import { imageShow } from "../../constants/DriveLinkPrefixes";
 import MorphToggleButton from "../../components/togglebutton/togglebutton";
 import { NotificationContext } from "../../contexts/NotificationContext";
 import NotificationItem from "../notification_item/NotificationItem";
+import { CircularProgress } from '@mui/material'
 
-// Register GSAP plugins
 gsap.registerPlugin(MorphSVGPlugin);
 
 const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const [isFreelancer, setIsFreelancer] = useState(false);
   const { auth } = useContext(AuthContext);
-  const { notificationList } = useContext(NotificationContext);
+  const { notificationList, localRead, setLocalRead } = useContext(NotificationContext);
   const navigate = useNavigate();
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const unreadCount = notificationList.filter(n => !n.read).length;
-  useEffect(() => { console.log("notifs", notificationList) }, [notificationList])
+  const [imageLoading, setImageLoading] = useState(true);
+  const imageUrl = auth?.data?.auth?.picture === "temp"
+    ? default_avatar
+    : `${imageShow}${auth?.data?.auth.picture}`;
 
-
+  // Preload image
+  useEffect(() => {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => setImageLoading(false);
+  }, [imageUrl]);
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -201,12 +209,18 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.90 }}
             >
-              <img
-                src={auth?.data?.auth?.picture === "temp" ? default_avatar : `${imageShow}${auth?.data?.auth.picture}`}
-                alt="profile"
-                className="w-full h-full object-cover rounded-full"
-              />
-              <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+              {imageLoading ? (
+                <CircularProgress color="inherit" />
+              ) : (
+                <>
+                  <img
+                    src={imageUrl}
+                    alt="profile"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+                </>
+              )}
             </motion.div>
           </motion.div>
         </motion.nav>

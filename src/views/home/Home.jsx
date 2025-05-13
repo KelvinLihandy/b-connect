@@ -23,13 +23,14 @@ import trid_designer from '../../assets/3d_designer.svg'
 import fullstack_developer from '../../assets/fullstack_developer.svg'
 import graphic_designer from '../../assets/graphic_designer.svg'
 import circle_bg_right from '../../assets/circle_bg_right.svg'
-
+import arrow_right from '../../assets/arrow_right.svg'
+import mr_pink_hair from '../../assets/mr_pink_hair.svg'
 
 // Components
 import Footer from '../../components/footer/Footer'
 import CarouselTrending from '../../components/carousel_trending/CarouselTrending'
 import GigItem from '../../components/gig_item/GigItem'
-
+import { CircularProgress } from '@mui/material'
 // API Routes
 import { gigAPI, userAPI } from '../../constants/APIRoutes'
 import { AuthContext } from '../../contexts/AuthContext'
@@ -187,7 +188,6 @@ const Home = () => {
       className="font-poppins overflow-x-hidden"
       ref={homeScrollUp}
     >
-      {/* Header/Navigation */}
       <Navbar />
 
       {/* Hero Section */}
@@ -514,10 +514,44 @@ const Home = () => {
           className='flex flex-wrap gap-3 justify-center'
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <GigItem data={gigs} />
+          <motion.div
+            className="w-sm flex flex-row h-90 font-inter bg-[#F3F3F3] relative items-center rounded-lg shadow-md overflow-hidden"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <div className='flex flex-row items-center justify-center p-3'>
+              <p className='text-wrap font-Archivo font-bold text-3xl self-start -mt-4 text-gray-800'>
+                Our Best Sellers
+              </p>
+              <motion.img
+                className='mt-10'
+                src={mr_pink_hair}
+                alt="mr pink hair"
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+            <motion.button
+              className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/catalog")}
+            >
+              <p className='font-Archivo text-3xl font-bold text-[#565E6D]'>
+                Shop Now
+              </p>
+              <motion.img
+                src={arrow_right}
+                alt="arrow right"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+            </motion.button>
+          </motion.div>
+          <GigItem data={gigs} home />
         </motion.div>
       </motion.section>
 
@@ -536,20 +570,6 @@ const Home = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       </motion.div>
-
-      {/* Add global styles for scroll animations */}
-      {/* <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 1s ease forwards;
-        }
-        .scroll-animate {
-          opacity: 0;
-        }
-      `}</style> */}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import bg_dots from "../../assets/bg_dots.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { EmailContext } from '../../contexts/EmailContext'
+import { CircularProgress } from '@mui/material'
 
 const InputOTP = () => {
   const [params] = useSearchParams();
@@ -270,8 +271,17 @@ const InputOTP = () => {
             onClick={() => verifyOTP(token)}
             disabled={isLoading}
           >
-            Verify
+            {isLoading ?
+              <CircularProgress color='inherit' />
+              :
+              "Verify"
+            }
           </button>
+          {
+            <p className='text-red-400 text-base text-wrap text-center'>
+              {errorMessage}
+            </p>
+          }
           <div className='text-center flex flex-col gap-2'>
             <p>
               Received no email?&nbsp;

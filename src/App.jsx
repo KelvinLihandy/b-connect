@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import io from "socket.io-client";
 import './App.css';
 import SignUp from './views/sign_up/SignUp';
@@ -24,13 +24,13 @@ const App = () => {
   const [ready, setReady] = useState(false);
   const { notificationList, setNotificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
-
+  const location = useLocation();
   useEffect(() => {
     const handleReceiveNotifications = (notificationsData) => {
       console.log("notifs data", notificationsData)
       setNotificationList(notificationsData);
     };
-    socket.on("receive_notifications", handleReceiveNotifications);
+      socket.on("receive_notifications", handleReceiveNotifications);
 
     return () => {
       socket.off("receive_notifications", handleReceiveNotifications);
@@ -38,12 +38,22 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    if(auth?.data?.auth?.id){
+      socket.emit("retrieve_notifications", auth?.data?.auth?.id)
+    }
+  }, [auth?.data?.auth?.id, location.pathname]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname]);
+
+  useEffect(() => {
     const initAuth = async () => {
       await getAuth();
       setReady(true);
     }
     initAuth();
-  }, []);
+  }, [auth?.data?.auth?.id]);
 
   if (!ready) {
     return <></>

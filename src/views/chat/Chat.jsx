@@ -72,6 +72,7 @@ const Chat = () => {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [roomIndex, setRoomIndex] = useState(null);
   const [currentRoomMessageList, setCurrentRoomMessageList] = useState([]);
+  const [disableMessaging, setDisableMessaging] = useState(false);
   const chatScrollUp = useRef(null)
 
   const handleSendMessage = async () => {
@@ -97,6 +98,8 @@ const Chat = () => {
     newMessage.append("type", detectedType);
     console.log("file", file);
     console.log("file message", newMessage);
+    setDisableMessaging(true);
+    setMessageInput("uploading...");
     try {
       const response = await axios.post(`${chatAPI}/upload-file-message`,
         newMessage,
@@ -111,7 +114,6 @@ const Chat = () => {
     } catch (error) {
       console.error('Error send message file:', error);
     }
-    setMessageInput("");
     setIsUploadVisible(false);
   };
 
@@ -156,7 +158,8 @@ const Chat = () => {
     const handleReceiveMessage = (messageList) => {
       console.log("receiving message");
       setCurrentRoomMessageList(messageList);
-      console.log("state update problem");
+      setDisableMessaging(false);
+      setMessageInput("");
     };
     socket.on("receive_message", handleReceiveMessage);
 
@@ -346,6 +349,7 @@ const Chat = () => {
                   type="text"
                   placeholder="Type a message..."
                   value={messageInput}
+                  disabled={disableMessaging}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
