@@ -3,6 +3,7 @@ import React, { useState, createContext, useEffect } from 'react'
 import { authAPI } from '../constants/APIRoutes';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { socket } from '../App';
 
 export const AuthContext = createContext();
 
@@ -13,12 +14,20 @@ const AuthProvider = ({ children }) => {
     try{
       console.log("called get auth")
       const authResponse = await axios.get(`${authAPI}/auth`, { withCredentials: true });
+      socket.emit("login", authResponse.data.auth.id);
+      console.log("emit login");
       setAuth(authResponse);
     } catch (err){
       console.log("error", err);
     }
   }
-  if(auth) console.log("auth", auth);
+
+  if(auth){
+    console.log("auth", auth);
+    console.log("retrieving notif");
+    socket.emit("retrieve_notifications", auth.data.auth.id)
+  }
+
   return (
     <AuthContext.Provider value={{ auth, setAuth, getAuth }}>
       {children}
