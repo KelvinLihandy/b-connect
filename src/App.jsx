@@ -95,7 +95,7 @@ const App = () => {
         <Route path="/freelancerPage" element={<FreelancerProfile />} />
         
         {/* Protected routes - require authentication */}
-        <Route path="/chat" element={<AuthRouting component={Chat} />} />
+        <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
       </Routes>
     </>

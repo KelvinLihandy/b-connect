@@ -13,7 +13,7 @@ const AuthProvider = ({ children }) => {
   const getAuth = async () => {
     try{
       console.log("called get auth")
-      const authResponse = await axios.get(`${authAPI}/auth`, { withCredentials: true });
+      const authResponse = await axios.post(`${authAPI}/auth`, {}, { withCredentials: true });
       socket.emit("login", authResponse.data.auth.id);
       console.log("emit login");
       setAuth(authResponse);

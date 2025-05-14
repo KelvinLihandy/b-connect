@@ -15,13 +15,16 @@ import bg_dots from "../../assets/bg_dots.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { AuthContext } from '../../contexts/AuthContext'
+import { CircularProgress } from '@mui/material'
 
 const SignIn = () => {
 	const [showPass, setShowPass] = useState(false)
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 	const [isChecked, setIsChecked] = useState(false);
 	const { auth, getAuth } = useContext(AuthContext);
+	const [errorMessage, setErrorMessage] = useState("")
 	const navigate = useNavigate();
 
 	const handleCheckboxChange = () => {
@@ -39,6 +42,7 @@ const SignIn = () => {
 	// langsung redirect catalog
 
 	const login = async () => {
+		setIsLoading(true);
 		try {
 			const response = await axios.post(`${authAPI}/login`, {
 				email: email,
@@ -51,7 +55,9 @@ const SignIn = () => {
 			navigate("/catalog");
 		} catch (error) {
 			console.error('Error login:', error);
+			setErrorMessage(error.response.data.error)
 		}
+		setIsLoading(false);
 	};
 
 	return (
@@ -130,8 +136,17 @@ const SignIn = () => {
 					<button className='bg-[#111111]/25 text-xl text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90'
 						onClick={() => login()}
 					>
-						Log in
+						{isLoading ?
+							<CircularProgress color='inherit' />
+							:
+							"Sign In"
+						}
 					</button>
+					{
+						<p className='text-red-400 text-base text-wrap text-center'>
+							{errorMessage}
+						</p>
+					}
 				</div>
 
 				<div className="mt-5 mb-5 flex w-[560px] items-center relative flex-[0_0_auto]">
