@@ -18,8 +18,9 @@ import AuthRouting from './components/auth_routing/AuthRouting';
 import { AuthContext } from './contexts/AuthContext';
 import { NotificationContext } from './contexts/NotificationContext';
 import HomeRouting from './components/home_routing/HomeRouting';
+import { baseAPI } from './constants/APIRoutes';
 
-export const socket = io.connect("http://localhost:5000");
+export const socket = io.connect(baseAPI);
 
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
@@ -30,9 +31,10 @@ const App = () => {
   useEffect(() => {
     const handleReceiveNotifications = (notificationsData) => {
       console.log("notifs data", notificationsData)
-      setNotificationList(notificationsData);
+      setNotificationList((prevList) => [...prevList, ...notificationsData]);
+
     };
-      socket.on("receive_notifications", handleReceiveNotifications);
+    socket.on("receive_notifications", handleReceiveNotifications);
 
     return () => {
       socket.off("receive_notifications", handleReceiveNotifications);
@@ -40,7 +42,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if(auth?.data?.auth?.id){
+    if (auth?.data?.auth?.id) {
       socket.emit("retrieve_notifications", auth?.data?.auth?.id)
     }
   }, [auth?.data?.auth?.id, location.pathname]);
@@ -75,7 +77,7 @@ const App = () => {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/freelancerPage" element={<FreelancerProfile />} />
-        
+
         {/* Protected routes - require authentication */}
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
