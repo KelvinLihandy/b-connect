@@ -73,7 +73,7 @@ const ProfileUser = () => {
   const { auth, getAuth } = useContext(AuthContext);
 
   // Add isImageLoading state
-  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   // Add a new state to track pending image deletion
   const [isPendingImageDelete, setIsPendingImageDelete] = useState(false);
