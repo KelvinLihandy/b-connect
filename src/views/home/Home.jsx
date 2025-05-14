@@ -119,7 +119,8 @@ const Home = () => {
   useEffect(() => {
     const getTrendingUsers = async () => {
       try {
-        const response = await axios.get(`${userAPI}/get-trending-users`);
+        const response = await axios.post(`${userAPI}/get-trending-users`, {});
+        console.log(response);
         const res = response.data.topUsers;
         setTrendingUsers(res);
       } catch (error) {

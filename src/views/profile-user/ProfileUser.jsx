@@ -70,7 +70,7 @@ const ProfileUser = () => {
   });
   const dropdownRef = useRef(null);
 
-  const { auth } = useContext(AuthContext);
+  const { auth, getAuth } = useContext(AuthContext);
 
   // Add isImageLoading state
   const [isImageLoading, setIsImageLoading] = useState(false);
@@ -182,6 +182,7 @@ const ProfileUser = () => {
         setIsPendingImageDelete(false);
         
         alert("Profil berhasil diperbarui");
+        await getAuth();
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -545,7 +546,7 @@ const ProfileUser = () => {
     const fetchUserProfile = async () => {
       try {
         const response = await fetch(`${userAPI}/get-user/${auth?.data?.auth.id}`, {
-          method: 'GET',
+          method: 'POST',
           withCredentials: true,
         });
         

@@ -9,7 +9,7 @@ const CarouselTrending = ({ data }) => {
   const itemsPerPage = 3;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const totalIndex = Math.ceil(data.length / itemsPerPage);
+  const totalIndex = Math.ceil(data?.length / itemsPerPage);
 
   const handleIndexChange = (newIndex) => {
     const dir = newIndex > currentIndex ? 1 : -1;
@@ -32,22 +32,21 @@ const CarouselTrending = ({ data }) => {
     })
   };
 
-  const currentItems = data.slice(
+  const currentItems = data?.slice(
     currentIndex * itemsPerPage,
     currentIndex * itemsPerPage + itemsPerPage
   );
 
   useEffect(() => {
-    if (data.length === 0) return;
+    if (data?.length === 0) return;
     let interval;
     interval = setInterval(() => {
       setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % totalIndex);
     }, 5000);
     return () => clearInterval(interval);
-  }, [data.length]);
+  }, [data?.length]);
 
-  console.log(currentIndex)
   return (
     <>
       <div className='flex flex-row gap-5 h-64'>
@@ -62,7 +61,7 @@ const CarouselTrending = ({ data }) => {
             transition={{ duration: 0.3 }}
             className="flex flex-row gap-4 w-full"
           >
-            {currentItems.map((partner) => (
+            {currentItems?.map((partner) => (
               <div
                 className='w-md flex flex-row justify-around items-center p-4 bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] rounded-2xl shadow-[7px_8px_10px_rgba(0,0,0,0.25)]'
                 key={partner.id}

@@ -26,14 +26,17 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { auth } = useContext(AuthContext);
   const { notificationList, localRead, setLocalRead } = useContext(NotificationContext);
   const navigate = useNavigate();
+  console.log(notificationList)
+  const list = Array.isArray(notificationList)
+    ? notificationList
+    : Object.values(notificationList);
+  const unreadCount = list.filter(n => n && !n.read).length;
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
-  const unreadCount = notificationList.filter(n => !n.read).length;
   const [imageLoading, setImageLoading] = useState(true);
   const imageUrl = auth?.data?.auth?.picture === "temp"
     ? default_avatar
     : `${imageShow}${auth?.data?.auth.picture}`;
-
-  // Preload image
+    
   useEffect(() => {
     const img = new Image();
     img.src = imageUrl;
@@ -205,7 +208,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
             {/* Morph Toggle Button */}
             <MorphToggleButton />
 
-            <motion.div 
+            <motion.div
               className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}

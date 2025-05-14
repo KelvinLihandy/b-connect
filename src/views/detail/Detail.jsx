@@ -34,7 +34,7 @@ const Detail = () => {
   console.log("detail", gigDetail)
   const getDetail = async () => {
     try {
-      const response = await axios.get(`${gigAPI}/get-gig/${gigId}`);
+      const response = await axios.post(`${gigAPI}/get-gig/${gigId}`, {});
       const res = response.data.detail;
       setGigDetail(res);
       setImages(res.image);
@@ -47,7 +47,7 @@ const Detail = () => {
 
   const getFreelancer = async () => {
     try {
-      const response = await axios.get(`${userAPI}/get-user/${gigDetail?.creator}`);
+      const response = await axios.post(`${userAPI}/get-user/${gigDetail?.creator}`, {});
       const res = response.data.user;
       setFreelancer(res);
       console.log("freelancer", res);
