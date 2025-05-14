@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import React, { useContext, useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import io from "socket.io-client";
 import "./App.css";
 import SignUp from "./views/sign_up/SignUp";
@@ -19,17 +17,8 @@ import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
 import FreelancerUserView from "./views/FreelancerProfile/FreelancerUserView";
-import FreelancerView from "./views/FreelancerProfile/FreelancerView";
-import AboutUs from './views/about_us/AboutUs';
-import ForgotPassword from './views/forgot_password/ForgotPassword';
-import InputOTP from './views/input_otp/InputOTP';
-import ChangePassword from './views/change_password/ChangePassword';
-import CatalogPage from './views/catalogPage/CatalogPage';
-import Chat from './views/chat/Chat';
-import FreelancerProfile from './views/FreelancerProfile/FreelancerProfile';
+import FreelancerView from "./views/FreelancerProfile/FreelancerView
 import ProfileUser from './views/profile-user/ProfileUser';
-import AuthRouting from './components/auth_routing/AuthRouting';
-import { AuthContext } from './contexts/AuthContext';
 import { NotificationContext } from './contexts/NotificationContext';
 import HomeRouting from './components/home_routing/HomeRouting';
 
