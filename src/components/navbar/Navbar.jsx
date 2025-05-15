@@ -18,13 +18,16 @@ import MorphToggleButton from "../../components/togglebutton/togglebutton";
 import { NotificationContext } from "../../contexts/NotificationContext";
 import NotificationItem from "../notification_item/NotificationItem";
 import { CircularProgress } from '@mui/material'
+import { set } from "lodash";
+import { UserTypeContext } from "../../contexts/UserTypeContext";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
 const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
-  const [isFreelancer, setIsFreelancer] = useState(false);
+  const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
+  console.log("fl state", isFreelancer);
   const { auth } = useContext(AuthContext);
-  const { notificationList, localRead, setLocalRead } = useContext(NotificationContext);
+  const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
   console.log(notificationList)
   const list = Array.isArray(notificationList)
@@ -36,7 +39,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const imageUrl = auth?.data?.auth?.picture === "temp"
     ? default_avatar
     : `${imageShow}${auth?.data?.auth.picture}`;
-    
+
   useEffect(() => {
     const img = new Image();
     img.src = imageUrl;
@@ -83,7 +86,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
         >
           <div
             className="flex items-center ml-15 cursor-pointer"
-            onClick={() => navigate("/home")}
+            onClick={() => {
+              if (isFreelancer) navigate("/");
+              else navigate("/home")
+            }}
           >
             <motion.img
               src={logo}
@@ -95,7 +101,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
             />
           </div>
 
-          {search && (
+          {search && !isFreelancer && (
             <div className="relative flex items-center w-130 h-14 bg-white rounded-[14px] overflow-visible">
               <input
                 type="text"
@@ -205,8 +211,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               Order
             </motion.button>
 
-            {/* Morph Toggle Button */}
-            <MorphToggleButton />
+            <MorphToggleButton
+              isFreelancer={isFreelancer}
+              setIsFreelancer={setIsFreelancer}
+            />
 
             <motion.div
               className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"

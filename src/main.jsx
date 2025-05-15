@@ -6,16 +6,19 @@ import './index.css';
 import App from './App.jsx';
 import EmailProvider from './contexts/EmailContext.jsx';
 import NotificationProvider from './contexts/NotificationContext.jsx';
+import UserTypeProvider from './contexts/UserTypeContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <NotificationProvider>
-          <EmailProvider>
-            <App />
-          </EmailProvider>
-        </NotificationProvider>
+        <UserTypeProvider>
+          <NotificationProvider>
+            <EmailProvider>
+              <App />
+            </EmailProvider>
+          </NotificationProvider>
+        </UserTypeProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

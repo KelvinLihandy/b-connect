@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import io from "socket.io-client";
 import "./App.css";
 import SignUp from "./views/sign_up/SignUp";
@@ -15,12 +15,10 @@ import Chat from "./views/chat/Chat";
 import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
-import HomeRouting from "./components/home_routing/HomeRouting";
 import FreelancerUserView from "./views/FreelancerProfile/FreelancerUserView";
-import FreelancerView from "./views/FreelancerProfile/FreelancerView
+import FreelancerView from "./views/FreelancerProfile/FreelancerView"
 import ProfileUser from './views/profile-user/ProfileUser';
 import { NotificationContext } from './contexts/NotificationContext';
-import HomeRouting from './components/home_routing/HomeRouting';
 import { baseAPI } from './constants/APIRoutes';
 
 export const socket = io.connect(baseAPI);
@@ -34,8 +32,7 @@ const App = () => {
   useEffect(() => {
     const handleReceiveNotifications = (notificationsData) => {
       console.log("notifs data", notificationsData)
-      setNotificationList((prevList) => [...prevList, ...notificationsData]);
-
+      setNotificationList(notificationsData)
     };
     socket.on("receive_notifications", handleReceiveNotifications);
 
@@ -80,13 +77,10 @@ const App = () => {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/freelancer/:id" element={<FreelancerView />} />
         <Route path="/freelancer-profile/:id" element={<FreelancerUserView />} />
+        <Route path="/chat/:roomId" element={<Chat />} />
         {/* restrcted auth*/}
-        {/* if auth default catalog && home is restricted then redirected to catalog */}
         <Route path="/detail/:gigId" element={<Detail />} />
-        <Route path="/freelancerPage" element={<FreelancerProfile />} />
-
-        {/* Protected routes - require authentication */}
-        <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
+        <Route path="/freelancerPage/:id" element={<FreelancerProfile />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
       </Routes>
     </>
