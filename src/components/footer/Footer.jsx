@@ -170,23 +170,7 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
               className="cursor-pointer"
             />
           </div>
-          <motion.div
-            whileHover={{ scale: 1.1, backgroundColor: '#333' }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              window.scrollTo({
-                top: refScrollUp.current.offsetTop - {offset},
-                behavior: "smooth",
-              });
-              console.log("scroll", refScrollUp.current);
-            }}
-            className='bg-black rounded-full aspect-square flex items-center justify-center w-[45px] md:w-[55px] h-auto cursor-pointer z-30'
-          >
-            <img
-              src={arrowhead_up}
-              alt="Scroll to top"
-            />
-          </motion.div>
+
         </motion.div>
       </motion.div>
       <motion.img
