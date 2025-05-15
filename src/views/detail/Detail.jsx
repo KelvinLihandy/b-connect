@@ -517,9 +517,7 @@ const Detail = () => {
                       <div>
                         <h3 className="font-medium">{review.name}</h3>
                         <div className="flex items-center text-yellow-400">
-                          {"★★★★★".split("").map((star, i) => (
-                            <span key={i} className={i < Math.floor(review.rating) ? "" : "text-gray-300"}>{star}</span>
-                          ))}
+                          <DynamicStars number={review.rating}/>
                           <span className="ml-1 text-gray-700">{review.rating}</span>
                         </div>
                       </div>

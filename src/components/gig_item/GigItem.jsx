@@ -2,7 +2,8 @@ import product1 from "../../assets/image.png";
 import { imageShow } from '../../constants/DriveLinkPrefixes';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {  Star } from 'lucide-react';
+import { Star } from 'lucide-react';
+import { DynamicStars } from "../dynamic_stars/DynamicStars";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -24,7 +25,7 @@ const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 
   });
 };
 
-const GigItem = ({ data, home = false, start = 0, end = 10 }) => {
+const GigItem = ({ data, home = false, start = 0, end = 5 }) => {
   const navigate = useNavigate();
 
   return (
@@ -69,11 +70,7 @@ const GigItem = ({ data, home = false, start = 0, end = 10 }) => {
                     <div className="flex items-center text-md w-full justify-between">
                       <div className="flex flex-row items-center gap-3 flex-wrap">
                         <div className="flex flex-row">
-                          {Array(Math.floor(gig.rating))
-                            .fill()
-                            .map((_, i) => (
-                              <Star key={i} className="w-4 h-4" fill="#FFD700" stroke="#FFD700" />
-                            ))}
+                          <DynamicStars number={gig.rating} />
                         </div>
                         <div>{gig.rating}</div>
                       </div>

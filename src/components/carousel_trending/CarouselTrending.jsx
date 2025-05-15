@@ -4,13 +4,14 @@ import arrow_right from '../../assets/arrow_right.svg'
 import { AnimatePresence, motion } from 'framer-motion';
 import default_avatar from '../../assets/default-avatar.png'
 import { imageShow } from '../../constants/DriveLinkPrefixes';
+import { CircularProgress } from '@mui/material';
 
 const CarouselTrending = ({ data }) => {
   const itemsPerPage = 3;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const totalIndex = Math.ceil(data?.length / itemsPerPage);
-
+  const [loadingImages, setLoadingImages] = useState({});
   const handleIndexChange = (newIndex) => {
     const dir = newIndex > currentIndex ? 1 : -1;
     setDirection(dir);
@@ -47,6 +48,22 @@ const CarouselTrending = ({ data }) => {
     return () => clearInterval(interval);
   }, [data?.length]);
 
+  useEffect(() => {
+    if (!currentItems) return;
+    const initialLoadingState = {};
+    currentItems.forEach(partner => {
+      initialLoadingState[partner.id] = true;
+    });
+    setLoadingImages(initialLoadingState);
+  }, [currentIndex, data]);
+
+  const handleImageLoad = (id) => {
+    setLoadingImages((prev) => ({
+      ...prev,
+      [id]: false,
+    }));
+  };
+
   return (
     <>
       <div className='flex flex-row gap-5 h-64'>
@@ -72,22 +89,32 @@ const CarouselTrending = ({ data }) => {
                     <p className='text-4xl font-semibold'>{partner.name.split(/ (.+)/)[1] ? partner.name.split(/ (.+)/)[1] : "\u00A0"}</p>
                     <p>{console.log(partner.name.split(' '))}</p>
                   </div>
-                  <div className='flex flex-col'>
-                    <DynamicStars number={partner.rating} />
-                    <p className='text-xl font-inter mx-1'>{partner.rating}</p>
-                    <p className='text-xl font-inter'>({partner.reviews})</p>
+                  <div className='flex flex-col gap-2'>
+                    <div>
+                      <DynamicStars number={partner.rating} />
+                    </div>
+                    <div className='flex flex-row'>
+                      <p className='text-xl font-inter mx-1'>{partner.rating}</p>
+                      <p className='text-xl font-inter'>({partner.reviews})</p>
+                    </div>
                   </div>
                   <div className='flex flex-row font-inter gap-2'>
                     <p className='text-lg'>{partner.type}</p>
                     <img src={arrow_right} alt="arrow right" />
                   </div>
                 </div>
-                <div className='w-50 h-50 ml-auto bg-white flex items-center justify-center'>
+                <div className='w-50 h-50 ml-auto bg-blue-300 flex items-center justify-center'>
                   <div className="w-full h-full aspect-square overflow-hidden">
+                    {loadingImages[partner.id] && (
+                      <div className='w-full h-full flex justify-center items-center'>
+                        <CircularProgress color="inherit" size={80} />
+                      </div>
+                    )}
                     <img
                       className="w-full h-full object-cover"
                       src={partner.picture === "temp" ? default_avatar : `${imageShow}${partner.picture}`}
                       alt="picture"
+                      onLoad={() => handleImageLoad(partner.id)}
                     />
                   </div>
                 </div>
