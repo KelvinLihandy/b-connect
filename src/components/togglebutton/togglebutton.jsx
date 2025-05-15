@@ -1,13 +1,27 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useContext } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
+  const { auth } = useContext(AuthContext);
   const containerRef = useRef(null);
-
+  let localState = isFreelancer;
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <div className="flex justify-center items-center p-4">
       <div
         ref={containerRef}
-        onClick={() => setIsFreelancer((prev) => !prev)}
+        onClick={() => {
+          localState = !localState;
+          if(location.pathname.startsWith('/chat')) {
+            setIsFreelancer((prev) => !prev);
+            return;
+          }
+          if (localState) navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
+          else navigate("/home");
+          setIsFreelancer((prev) => !prev);
+        }}
         className={`relative cursor-pointer px-3 py-3  flex items-center ${isFreelancer}`}
         style={{
           minWidth: "170px",

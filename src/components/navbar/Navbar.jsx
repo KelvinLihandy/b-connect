@@ -29,7 +29,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { auth } = useContext(AuthContext);
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
-  console.log(notificationList)
+  console.log("notifs", notificationList)
   const list = Array.isArray(notificationList)
     ? notificationList
     : Object.values(notificationList);
@@ -65,6 +65,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     });
   };
 
+
   let lastRenderedDate = null;
 
   return (
@@ -87,7 +88,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
           <div
             className="flex items-center ml-15 cursor-pointer"
             onClick={() => {
-              if (isFreelancer) navigate("/");
+              if (isFreelancer) navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
               else navigate("/home")
             }}
           >
@@ -202,14 +203,15 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               </AnimatePresence>
 
             </div>
-
-            <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer ml-10"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/catalog")}
-            >
-              Order
-            </motion.button>
+            {!isFreelancer &&
+              <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer ml-10"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/catalog")}
+              >
+                Order
+              </motion.button>
+            }
 
             <MorphToggleButton
               isFreelancer={isFreelancer}

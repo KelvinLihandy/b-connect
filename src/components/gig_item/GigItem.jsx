@@ -45,7 +45,7 @@ const GigItem = ({ data, home = false, start = 0, end = 5 }) => {
                 {/* Product Image with hover effect */}
                 <div className="relative ">
                   <motion.img
-                    src={gig.image[0] == "temp" ? product1 : `${imageShow}${gig.image[0]}`}
+                    src={gig.images[0] == "temp" ? product1 : `${imageShow}${gig.images[0]}`}
                     alt={gig.name}
                     className="w-full h-48 object-cover bg-blue-600"
                     whileHover={{ scale: 1.05 }}

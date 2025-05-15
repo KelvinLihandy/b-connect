@@ -128,7 +128,7 @@ const CatalogPage = () => {
       name,
       category,
       minPrice,
-      maxPrice,
+      maxPrice: maxPrice*1000,
       rating,
     });
     try {
@@ -136,7 +136,7 @@ const CatalogPage = () => {
         name,
         category,
         minPrice,
-        maxPrice,
+        maxPrice: maxPrice*1000,
         rating,
       });
       const res = response.data.filteredGigs;
@@ -693,19 +693,6 @@ const CatalogPage = () => {
                 </div>
               </motion.div>
             }
-
-
-            {/* "Back to top" button - appears when scrolled down */}
-            <motion.button
-              className="fixed bottom-8 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-blue-700 transition-colors duration-200"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-              <ChevronUp size={24} />
-            </motion.button>
           </motion.div>
         </div>
       </div>

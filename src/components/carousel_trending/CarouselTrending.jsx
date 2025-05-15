@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { DynamicStars } from '../dynamic_stars/DynamicStars';
 import arrow_right from '../../assets/arrow_right.svg'
 import { AnimatePresence, motion } from 'framer-motion';
 import default_avatar from '../../assets/default-avatar.png'
 import { imageShow } from '../../constants/DriveLinkPrefixes';
 import { CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const CarouselTrending = ({ data }) => {
   const itemsPerPage = 3;
@@ -12,6 +14,8 @@ const CarouselTrending = ({ data }) => {
   const [direction, setDirection] = useState(0);
   const totalIndex = Math.ceil(data?.length / itemsPerPage);
   const [loadingImages, setLoadingImages] = useState({});
+  const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
   const handleIndexChange = (newIndex) => {
     const dir = newIndex > currentIndex ? 1 : -1;
     setDirection(dir);
@@ -81,7 +85,7 @@ const CarouselTrending = ({ data }) => {
             {currentItems?.map((partner) => (
               <div
                 className='w-md flex flex-row justify-around items-center p-4 bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] rounded-2xl shadow-[7px_8px_10px_rgba(0,0,0,0.25)]'
-                key={partner.id}
+                key={partner._id}
               >
                 <div className='flex flex-col gap-3'>
                   <div>
@@ -100,7 +104,13 @@ const CarouselTrending = ({ data }) => {
                   </div>
                   <div className='flex flex-row font-inter gap-2'>
                     <p className='text-lg'>{partner.type}</p>
-                    <img src={arrow_right} alt="arrow right" />
+                    {auth &&
+                      <img className='cursor-pointer'
+                        src={arrow_right}
+                        alt="arrow right"
+                        onClick={() => { navigate(`/profile-user/${partner._id}`) }}
+                      />
+                    }
                   </div>
                 </div>
                 <div className='w-50 h-50 ml-auto bg-blue-300 flex items-center justify-center'>
