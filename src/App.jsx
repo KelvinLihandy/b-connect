@@ -15,11 +15,9 @@ import Chat from "./views/chat/Chat";
 import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
-import FreelancerUserView from "./views/FreelancerProfile/FreelancerUserView";
-import FreelancerView from "./views/FreelancerProfile/FreelancerView"
+import HomeRouting from "./components/home_routing/HomeRouting";
 import ProfileUser from './views/profile-user/ProfileUser';
 import { NotificationContext } from './contexts/NotificationContext';
-import { baseAPI } from './constants/APIRoutes';
 
 export const socket = io.connect(baseAPI);
 
@@ -75,12 +73,12 @@ const App = () => {
         <Route path="/sign-in/verify-otp" element={<InputOTP />} />
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
         <Route path="/catalog" element={<CatalogPage />} />
-        <Route path="/freelancer/:id" element={<FreelancerView />} />
-        <Route path="/freelancer-profile/:id" element={<FreelancerUserView />} />
-        <Route path="/chat/:roomId" element={<Chat />} />
         {/* restrcted auth*/}
         <Route path="/detail/:gigId" element={<Detail />} />
-        <Route path="/freelancerPage/:id" element={<FreelancerProfile />} />
+        <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
+        
+        {/* Protected routes - require authentication */}
+        <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
       </Routes>
     </>

@@ -117,19 +117,19 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
 
 
           <motion.div className="flex items-center gap-6 text-white">
-            <div className="relative w-14">
-              <div className="cursor-pointer w-14">
+            <div className="relative w-11">
+              <div className="cursor-pointer w-12">
                 <motion.img
                   src={bell}
                   alt="Notifications"
-                  className="w-12 h-12"
+                  className="w-10 h-10"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
                 />
                 {unreadCount > 0 && (
-                  <div className="absolute top-0 right-0 w-7 h-7 bg-red-500 rounded-full text-white font-bold text-xs flex items-center justify-center">
+                  <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-white font-bold text-xs flex items-center justify-center">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </div>
                 )}
