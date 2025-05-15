@@ -15,12 +15,13 @@ import Chat from "./views/chat/Chat";
 import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
-import HomeRouting from "./components/home_routing/HomeRouting";
 import FreelancerUserView from "./views/FreelancerProfile/FreelancerUserView";
-import FreelancerView from "./views/FreelancerProfile/FreelancerView
+import FreelancerView from "./views/FreelancerProfile/FreelancerView";
 import ProfileUser from './views/profile-user/ProfileUser';
 import { NotificationContext } from './contexts/NotificationContext';
 import HomeRouting from './components/home_routing/HomeRouting';
+
+import AddService from './components/add_service/AddService';
 
 export const socket = io.connect("http://localhost:5000");
 
@@ -29,7 +30,7 @@ const App = () => {
   const [ready, setReady] = useState(false);
   const { notificationList, setNotificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   useEffect(() => {
     const handleReceiveNotifications = (notificationsData) => {
       console.log("notifs data", notificationsData)
@@ -78,6 +79,8 @@ const App = () => {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/freelancer/:id" element={<FreelancerView />} />
         <Route path="/freelancer-profile/:id" element={<FreelancerUserView />} />
+
+        <Route path="/add-service" element={<AddService />} />
         {/* restrcted auth*/}
         {/* if auth default catalog && home is restricted then redirected to catalog */}
         <Route path="/detail/:gigId" element={<Detail />} />
