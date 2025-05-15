@@ -203,7 +203,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
 
   return (
     <>
-      <Navbar />
+      <Navbar alt/>
       <main className="flex flex-col min-h-screen bg-gray-50 pt-25">
         {/* Admin Actions Bar - Only visible for own profile in freelancer mode */}
         {isOwnProfile && currentMode === "freelancer" && (

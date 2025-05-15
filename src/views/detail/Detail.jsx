@@ -31,13 +31,13 @@ const Detail = () => {
   const [freelancer, setFreelancer] = useState(null);
   const [images, setImages] = useState([]);
   const detailScrollUp = useRef(null);
-  console.log("detail", gigDetail)
+
   const getDetail = async () => {
     try {
       const response = await axios.post(`${gigAPI}/get-gig/${gigId}`, {});
       const res = response.data.detail;
       setGigDetail(res);
-      setImages(res.image);
+      setImages(res.images);
       console.log("detail", res);
     } catch (error) {
       console.error('Error fetching detail:', error.response || error);
@@ -290,7 +290,7 @@ const Detail = () => {
       <Navbar alt />
 
       {/* Main content area */}
-      <div className="container mx-auto px-4 py-8 mt-30">
+      <div className="container mx-auto px-4 py-8 mt-27">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left column - takes 8/12 of the grid on large screens */}
           <div className="lg:col-span-8">
@@ -315,7 +315,7 @@ const Detail = () => {
 
             {/* Enhanced Animated Carousel */}
             <div
-              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-128 shadow-lg"
+              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-150 shadow-lg"
               onMouseEnter={() => {
                 handleMouseEnter();
                 setShowZoomOverlay(true);
@@ -517,9 +517,7 @@ const Detail = () => {
                       <div>
                         <h3 className="font-medium">{review.name}</h3>
                         <div className="flex items-center text-yellow-400">
-                          {"★★★★★".split("").map((star, i) => (
-                            <span key={i} className={i < Math.floor(review.rating) ? "" : "text-gray-300"}>{star}</span>
-                          ))}
+                          <DynamicStars number={review.rating}/>
                           <span className="ml-1 text-gray-700">{review.rating}</span>
                         </div>
                       </div>
@@ -534,7 +532,7 @@ const Detail = () => {
 
           {/* Right column - takes 4/12 of the grid on large screens */}
           <div className="lg:col-span-4">
-            <div className="sticky top-30">
+            <div className="sticky top-35">
               {/* Pricing Tabs & Card */}
               <div className="border rounded-lg shadow-sm overflow-hidden">
                 {/* Tab Navigation */}

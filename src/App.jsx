@@ -18,11 +18,14 @@ import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
 import ProfileUser from './views/profile-user/ProfileUser';
 import { NotificationContext } from './contexts/NotificationContext';
+import { baseAPI } from "./constants/APIRoutes";
+import { UserTypeContext } from "./contexts/UserTypeContext";
 
-export const socket = io.connect("http://localhost:5000");
+export const socket = io.connect(baseAPI);
 
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
+  const { isFreelancer } = useContext(UserTypeContext);
   const [ready, setReady] = useState(false);
   const { notificationList, setNotificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
@@ -30,9 +33,9 @@ const App = () => {
   useEffect(() => {
     const handleReceiveNotifications = (notificationsData) => {
       console.log("notifs data", notificationsData)
-      setNotificationList(notificationsData);
+      setNotificationList(notificationsData)
     };
-      socket.on("receive_notifications", handleReceiveNotifications);
+    socket.on("receive_notifications", handleReceiveNotifications);
 
     return () => {
       socket.off("receive_notifications", handleReceiveNotifications);
@@ -40,7 +43,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if(auth?.data?.auth?.id){
+    if (auth?.data?.auth?.id) {
       socket.emit("retrieve_notifications", auth?.data?.auth?.id)
     }
   }, [auth?.data?.auth?.id, location.pathname]);
@@ -64,20 +67,28 @@ const App = () => {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Navigate to="/home" />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/sign-in/forget" element={<ForgotPassword />} />
         <Route path="/sign-in/verify-otp" element={<InputOTP />} />
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
-        <Route path="/catalog" element={<CatalogPage />} />
-        {/* restrcted auth*/}
-        {/* if auth default catalog && home is restricted then redirected to catalog */}
-        <Route path="/detail/:gigId" element={<Detail />} />
-        <Route path="/freelancerProfile" element={<FreelancerProfile />} />
-        
+        {isFreelancer ? (
+          <>
+            <Route path="/" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
+            <Route path="/home" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
+            <Route path="/catalog" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
+            <Route path="/detail/:gigId" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<Navigate to="/home" />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/detail/:gigId" element={<Detail />} />
+          </>
+        )}
+        <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
         {/* Protected routes - require authentication */}
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />

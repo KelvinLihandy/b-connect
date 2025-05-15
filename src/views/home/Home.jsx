@@ -154,7 +154,7 @@ const Home = () => {
   }, []);
 
   const getGig = async (name, category) => {
-    setTimeout(() => { }, [2000])
+    // setTimeout(() => { }, 2000);
     try {
       const response = await axios.post(`${gigAPI}/get-gig`, { name, category });
       const res = response.data.filteredGigs;

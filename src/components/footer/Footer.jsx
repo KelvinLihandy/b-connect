@@ -8,6 +8,7 @@ import twitter_ball from '../../assets/twitter_ball.svg'
 import arrowhead_up from '../../assets/arrowhead_up.svg'
 import logo_gray from '../../assets/logo_gray.svg'
 import { Link, useNavigate } from 'react-router-dom'
+import { ChevronUp } from 'lucide-react'
 
 export const Footer = ({ refScrollUp = null, offset = 0 }) => {
   const navigate = useNavigate();
@@ -170,7 +171,23 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
               className="cursor-pointer"
             />
           </div>
-
+          <motion.div
+            whileHover={{ scale: 1.1, backgroundColor: '#333' }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              window.scrollTo({
+                top: refScrollUp.current.offsetTop - { offset },
+                behavior: "smooth",
+              });
+              console.log("scroll", refScrollUp.current);
+            }}
+            className='bg-black rounded-full aspect-square flex items-center justify-center w-[45px] md:w-[55px] h-auto cursor-pointer z-30'
+          >
+            <ChevronUp
+              color='white'
+              size={40}
+            />
+          </motion.div>
         </motion.div>
       </motion.div>
       <motion.img

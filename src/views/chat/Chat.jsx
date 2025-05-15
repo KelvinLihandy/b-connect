@@ -227,8 +227,8 @@ const Chat = () => {
             boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
           }}
         >
-          <div className="">
-            <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-[32px]">Messages</h2>
+          <div className="w-60">
+            <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-[32px] text-center">Messages</h2>
             <div className="space-y-0">
               {availableUsers.map((chat, i) => (
                 <div
@@ -250,7 +250,6 @@ const Chat = () => {
                   </div>
                   <div>
                     <div className='font-semibold text-3xl'>{chat.name}</div>
-                    <div className="text-[15px] font-medium text-[#000000] truncate w-60">{"sasdsasdasdasda"}</div>
                   </div>
                 </div>
               ))}

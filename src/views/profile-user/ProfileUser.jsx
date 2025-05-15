@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { CircularProgress } from "@mui/material";
 import aboutApp from "../../assets/profile_about_app.svg";
 import AccSecurity from "../../assets/profile_account_security.svg";
 import ClearCache from "../../assets/profile_clear_cache.svg";
@@ -73,7 +73,7 @@ const ProfileUser = () => {
   const { auth, getAuth } = useContext(AuthContext);
 
   // Add isImageLoading state
-  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   // Add a new state to track pending image deletion
   const [isPendingImageDelete, setIsPendingImageDelete] = useState(false);
