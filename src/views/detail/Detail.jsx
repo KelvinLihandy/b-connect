@@ -15,6 +15,7 @@ import axios from "axios";
 import { gigAPI, userAPI } from "../../constants/APIRoutes";
 import { DynamicStars } from "../../components/dynamic_stars/DynamicStars";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
+import { CircularProgress } from "@mui/material";
 
 const Detail = () => {
   const { auth } = useContext(AuthContext);
@@ -30,6 +31,7 @@ const Detail = () => {
   const [gigDetail, setGigDetail] = useState(null);
   const [freelancer, setFreelancer] = useState(null);
   const [images, setImages] = useState([]);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const detailScrollUp = useRef(null);
 
   const getDetail = async () => {
@@ -463,10 +465,16 @@ const Detail = () => {
             <div className="border-t pt-6 mt-6">
               <h2 className="text-xl font-bold mb-4">Freelancer Profile</h2>
               <div className="flex items-start space-x-4">
+                {isImageLoading && (
+                  <div className="w-[100px] h-[100px] flex items-center justify-center">
+                    <CircularProgress color="inherit" />
+                  </div>
+                )}
                 <img
                   src={`${imageShow}${freelancer?.picture}`}
                   alt={freelancer?.picture}
                   className="w-16 h-16 rounded-full object-cover"
+                  onLoad={() => {setIsImageLoading(false)}}
                 />
                 <div>
                   <div className="flex items-center">
@@ -517,7 +525,7 @@ const Detail = () => {
                       <div>
                         <h3 className="font-medium">{review.name}</h3>
                         <div className="flex items-center text-yellow-400">
-                          <DynamicStars number={review.rating}/>
+                          <DynamicStars number={review.rating} />
                           <span className="ml-1 text-gray-700">{review.rating}</span>
                         </div>
                       </div>
