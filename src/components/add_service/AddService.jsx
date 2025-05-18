@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import CancelIcon from "../../assets/addservice-cancel.svg";
 import SaveIcon from "../../assets/addservice-save.svg";
 import FinishBg from "../../assets/addservice-finishbg.svg";
+import Preview from "./Preview";
 
 const steps = ["Title", "Attachment", "Description", "Price", "Review", "Finish"];
 
@@ -44,6 +45,7 @@ const AddService = () => {
 
   const [basePrice, setBasePrice] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("3");
+  const [showPreview, setShowPreview] = useState(false);
   
   // Price Step form state
   const [basicPackage, setBasicPackage] = useState({
@@ -321,8 +323,7 @@ const AddService = () => {
       }
     }
   };
-
-  // Handle preview functionality buat back-end
+  // Handle preview functionality
   const handlePreview = () => {
     const previewData = {
       title,
@@ -337,9 +338,16 @@ const AddService = () => {
       }
     };
 
+    // Save to localStorage for potential backend use later
     localStorage.setItem('servicePreviewData', JSON.stringify(previewData));
     
-    window.open('/preview-service', '_blank');
+    // Show the preview modal instead of opening a new tab
+    setShowPreview(true);
+  };
+  
+  // Close the preview modal
+  const closePreview = () => {
+    setShowPreview(false);
   };
 
   return (
@@ -1019,8 +1027,24 @@ const AddService = () => {
               </button>
             )}
           </div>
-        )}
-      </div>
+        )}      </div>
+      
+      {/* Preview Modal */}
+      {showPreview && (
+        <Preview 
+          serviceData={{
+            title,
+            categories: selectedTags,
+            images: attachments,
+            description,
+            packages: {
+              basic: basicPackage,
+              advance: advancePackage
+            }
+          }} 
+          onClose={closePreview} 
+        />
+      )}
     </div>
   );
 };
