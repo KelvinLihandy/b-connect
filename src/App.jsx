@@ -20,6 +20,7 @@ import ProfileUser from './views/profile-user/ProfileUser';
 import { NotificationContext } from './contexts/NotificationContext';
 import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";
+import AddService from './components/add_service/AddService';
 
 export const socket = io.connect(baseAPI);
 
@@ -73,6 +74,7 @@ const App = () => {
         <Route path="/sign-in/forget" element={<ForgotPassword />} />
         <Route path="/sign-in/verify-otp" element={<InputOTP />} />
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
+        <Route path="/add-service" element={<AddService />} />
         {isFreelancer ? (
           <>
             <Route path="/" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
