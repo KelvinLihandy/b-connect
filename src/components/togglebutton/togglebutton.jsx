@@ -8,20 +8,34 @@ const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
   let localState = isFreelancer;
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("isFreelancer");
+    if (storedRole !== null) {
+      setIsFreelancer(storedRole === "true");
+    }
+  }, [setIsFreelancer]);
+
+  const handleClick = () => {
+    const newState = !isFreelancer;
+    localStorage.setItem("isFreelancer", newState);
+    if (location.pathname.startsWith("/chat")) {
+      setIsFreelancer(newState);
+      return;
+    }
+    if (newState) {
+      navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
+    } else {
+      navigate("/home");
+    }
+    setIsFreelancer(newState);
+  };
+
   return (
     <div className="flex justify-center items-center p-4">
       <div
         ref={containerRef}
-        onClick={() => {
-          localState = !localState;
-          if(location.pathname.startsWith('/chat')) {
-            setIsFreelancer((prev) => !prev);
-            return;
-          }
-          if (localState) navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
-          else navigate("/home");
-          setIsFreelancer((prev) => !prev);
-        }}
+        onClick={handleClick}
         className={`relative cursor-pointer px-3 py-3  flex items-center ${isFreelancer}`}
         style={{
           minWidth: "170px",

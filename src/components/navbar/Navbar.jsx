@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef, use } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -25,15 +25,13 @@ gsap.registerPlugin(MorphSVGPlugin);
 
 const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
-  console.log("fl state", isFreelancer);
   const { auth } = useContext(AuthContext);
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
-  console.log("notifs", notificationList)
   const list = Array.isArray(notificationList)
     ? notificationList
     : Object.values(notificationList);
-  const unreadCount = list.filter(n => n && !n.read).length;
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const imageUrl = auth?.data?.auth?.picture === "temp"
@@ -45,6 +43,13 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     img.src = imageUrl;
     img.onload = () => setImageLoading(false);
   }, [imageUrl]);
+
+  useEffect(() => {
+    const list = Array.isArray(notificationList)
+      ? notificationList
+      : Object.values(notificationList);
+    setUnreadCount(list.filter(n => n && !n.read).length)
+  }, [notificationList])
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -64,7 +69,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
       year: "numeric",
     });
   };
-
 
   let lastRenderedDate = null;
 
@@ -86,7 +90,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
           transition={{ type: "spring", stiffness: 100 }}
         >
           <div
-            className="flex items-center ml-15 cursor-pointer"
+            className="flex items-center ml-15 cursor-pointer w-1/10"
             onClick={() => {
               if (isFreelancer) navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
               else navigate("/home")
@@ -101,143 +105,153 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               transition={{ type: "spring", stiffness: 300 }}
             />
           </div>
+          <div className="w-6/10">
+            {search && !isFreelancer && (
+              <div className="relative flex items-center w-130 h-14 bg-white rounded-[14px] overflow-visible">
+                <input
+                  type="text"
+                  placeholder="Search For Our Services"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="relative left-3 w-full h-[40px] px-3 rounded-lg border-black outline-none text-black text-md font-medium"
+                />
+                <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-lg flex justify-center outline-none items-center cursor-pointer">
+                  <img src={searchBtn} alt="Search" className="w-full h-full" />
+                </button>
+              </div>
+            )}
+            {isFreelancer && (
+              <motion.p
+                className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
+                whileHover={{ scale: 1.1 }}
+                onClick={() => { navigate(`/freelancer-profile/${auth?.data?.auth?.id}`) }}
+              >
+                Dashboard
+              </motion.p>
+            )}
+          </div>
+          <div className="w-3/10 flex justify-end">
+            <motion.div className="flex items-center gap-6 text-white">
+              <div className="relative w-11">
+                <div className="cursor-pointer w-12">
+                  <motion.img
+                    src={bell}
+                    alt="Notifications"
+                    className="w-10 h-10"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+                  />
+                  {unreadCount > 0 && (
+                    <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-white font-bold text-xs flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </div>
+                  )}
+                </div>
+                <AnimatePresence>
+                  {showNotificationDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
+                    >
+                      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
+                        <h3 className="font-semibold text-white text-xl">Notifikasi</h3>
+                        {unreadCount > 0 && (
+                          <motion.span
+                            className="text-sm text-white cursor-pointer"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => socket.emit("read_all_notification", auth?.data?.auth?.id)}
+                          >
+                            Mark all as read
+                          </motion.span>
+                        )}
+                      </div>
 
-          {search && !isFreelancer && (
-            <div className="relative flex items-center w-130 h-14 bg-white rounded-[14px] overflow-visible">
-              <input
-                type="text"
-                placeholder="Search For Our Services"
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="relative left-3 w-full h-[40px] px-3 rounded-lg border-black outline-none text-black text-md font-medium"
-              />
-              <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-lg flex justify-center outline-none items-center cursor-pointer">
-                <img src={searchBtn} alt="Search" className="w-full h-full" />
-              </button>
-            </div>
-          )}
+                      <div className="max-h-96 overflow-y-auto">
+                        {notificationList.length > 0 ? (
+                          <motion.div initial="hidden" animate="visible">
+                            {notificationList.map((notification, index) => {
+                              const messageDate = new Date(notification.message.time);
+                              const messageMidnight = new Date(messageDate);
+                              messageMidnight.setHours(0, 0, 0, 0);
 
+                              let showDateLabel = false;
 
-          <motion.div className="flex items-center gap-6 text-white">
-            <div className="relative w-11">
-              <div className="cursor-pointer w-12">
-                <motion.img
-                  src={bell}
-                  alt="Notifications"
-                  className="w-10 h-10"
+                              if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
+                                showDateLabel = true;
+                                lastRenderedDate = messageMidnight;
+                              }
+
+                              const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
+
+                              return (
+                                <React.Fragment key={notification._id}>
+                                  {label && (
+                                    <div className="text-black font-Archivo p-3 text-lg font-semibold">
+                                      {label}
+                                    </div>
+                                  )}
+                                  <NotificationItem notification={notification} unreadCount={unreadCount} setUnreadCount={setUnreadCount} />
+                                </React.Fragment>
+                              );
+                            })}
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            className="p-8 text-center text-gray-500"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            No notifications yet
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+              </div>
+              {!isFreelancer &&
+                <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
-                />
-                {unreadCount > 0 && (
-                  <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-white font-bold text-xs flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </div>
-                )}
-              </div>
-              <AnimatePresence>
-                {showNotificationDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
-                  >
-                    <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
-                      <h3 className="font-semibold text-white text-xl">Notifikasi</h3>
-                      {unreadCount > 0 && (
-                        <motion.span
-                          className="text-sm text-white cursor-pointer"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => socket.emit("read_all_notification", auth?.data?.auth?.id)}
-                        >
-                          Mark all as read
-                        </motion.span>
-                      )}
-                    </div>
+                  onClick={() => navigate("/catalog")}
+                >
+                  Order
+                </motion.button>
+              }
 
-                    <div className="max-h-96 overflow-y-auto">
-                      {notificationList.length > 0 ? (
-                        <motion.div initial="hidden" animate="visible">
-                          {notificationList.map((notification, index) => {
-                            const messageDate = new Date(notification.message.time);
-                            const messageMidnight = new Date(messageDate);
-                            messageMidnight.setHours(0, 0, 0, 0);
+              <MorphToggleButton
+                isFreelancer={isFreelancer}
+                setIsFreelancer={setIsFreelancer}
+              />
 
-                            let showDateLabel = false;
-
-                            if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
-                              showDateLabel = true;
-                              lastRenderedDate = messageMidnight;
-                            }
-
-                            const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
-
-                            return (
-                              <React.Fragment key={notification._id}>
-                                {label && (
-                                  <div className="text-black font-Archivo p-3 text-lg font-semibold">
-                                    {label}
-                                  </div>
-                                )}
-                                <NotificationItem notification={notification} />
-                              </React.Fragment>
-                            );
-                          })}
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          className="p-8 text-center text-gray-500"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          No notifications yet
-                        </motion.div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-            </div>
-            {!isFreelancer &&
-              <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer ml-10"
+              <motion.div
+                className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/catalog")}
+                onClick={() => navigate("/profile-user")}
               >
-                Order
-              </motion.button>
-            }
-
-            <MorphToggleButton
-              isFreelancer={isFreelancer}
-              setIsFreelancer={setIsFreelancer}
-            />
-
-            <motion.div
-              className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/profile-user")}
-            >
-              {imageLoading ? (
-                <CircularProgress color="inherit" />
-              ) : (
-                <>
-                  <img
-                    src={imageUrl}
-                    alt="profile"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
-                </>
-              )}
+                {imageLoading ? (
+                  <CircularProgress color="inherit" />
+                ) : (
+                  <>
+                    <img
+                      src={imageUrl}
+                      alt="profile"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+                  </>
+                )}
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
         </motion.nav>
       ) : (
         <motion.header

@@ -16,7 +16,7 @@ import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
-import ProfileUser from './views/profile-user/ProfileUser';
+import ProfileUser from './views/profile_user/ProfileUser';
 import { NotificationContext } from './contexts/NotificationContext';
 import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";

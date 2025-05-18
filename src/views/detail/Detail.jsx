@@ -33,6 +33,8 @@ const Detail = () => {
   const [images, setImages] = useState([]);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const detailScrollUp = useRef(null);
+  const [showContractModal, setShowContractModal] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const getDetail = async () => {
     try {
@@ -153,47 +155,22 @@ const Detail = () => {
     opacity: { duration: 0.5 }
   };
 
-  // Reviews data
-  const reviews = [
-    {
-      id: 1,
-      name: "Siti warlok",
-      rating: 4.3,
-      comment: "Sangat direkomendasikan! Adam bekerja dengan detail dan memberikan hasil yang sangat memuaskan.",
-      daysAgo: 2
-    },
-    {
-      id: 2,
-      name: "Mandela",
-      rating: 4.3,
-      comment: "Desain logonya sangat elegant dan sesuai dengan branding bisnis saya. Terima kasih, Adam!",
-      daysAgo: 3
-    },
-    {
-      id: 3,
-      name: "Kevin Zuberi",
-      rating: 4.3,
-      comment: "Revisi dilakukan dengan cepat dan tepat. Komunikasinya juga sangat baik. Highly recommended!",
-      daysAgo: 5
-    }
-  ];
-
-  // Function to get reviewer profile image based on id
-  const getReviewerImage = (id) => {
-    switch (id) {
-      case 1: return profileReview1;
-      case 2: return profileReview2;
-      case 3: return profileReview3;
-      default: return profileReview1;
-    }
-  };
-
   const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
     return (price ?? 0).toLocaleString(locale, {
       minimumFractionDigits: minFraction,
       maximumFractionDigits: maxFraction,
     });
   };
+
+  const getDaysAgo = (date) => {
+    const today = new Date();
+    const inputDate = new Date(date);
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+    const diffTime = today - inputDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }
 
   // Progress indicator for carousel
   const ProgressIndicator = ({ current, total }) => {
@@ -474,7 +451,7 @@ const Detail = () => {
                   src={`${imageShow}${freelancer?.picture}`}
                   alt={freelancer?.picture}
                   className="w-16 h-16 rounded-full object-cover"
-                  onLoad={() => {setIsImageLoading(false)}}
+                  onLoad={() => { setIsImageLoading(false) }}
                 />
                 <div>
                   <div className="flex items-center">
@@ -514,26 +491,34 @@ const Detail = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="bg-gray-100 rounded-lg p-4">
-                    <div className="flex items-center space-x-2">
-                      <img
-                        src={getReviewerImage(review.id)}
-                        alt={review.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div>
-                        <h3 className="font-medium">{review.name}</h3>
-                        <div className="flex items-center text-yellow-400">
-                          <DynamicStars number={review.rating} />
-                          <span className="ml-1 text-gray-700">{review.rating}</span>
+                {reviews?.length > 0 ?
+                  reviews.map((review) => (
+                    <div key={review._id} className="bg-gray-100 rounded-lg p-4">
+                      <div className="flex items-center space-x-2">
+                        <img
+                          src={`${imageShow}${review.poster.picture}`}
+                          alt={review.poster.picture}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div>
+                          <h3 className="font-medium">{review.poster.name}</h3>
+                          <div className="flex items-center text-yellow-400">
+                            <DynamicStars number={review.rating} />
+                            <span className="ml-1 text-gray-700">{review.rating}</span>
+                          </div>
                         </div>
                       </div>
+                      <p className="text-gray-500 text-sm mt-1">{getDaysAgo(review.createdTime)} days ago</p>
+                      <p className="mt-2 text-gray-700">{review.comment}</p>
                     </div>
-                    <p className="text-gray-500 text-sm mt-1">{review.daysAgo} days ago</p>
-                    <p className="mt-2 text-gray-700">{review.comment}</p>
-                  </div>
-                ))}
+                  ))
+                  :
+                  (
+                    <div>
+                      <p>No review is currently available for this gig</p>
+                    </div>
+                  )
+                }
               </div>
             </div>
           </div>
@@ -570,41 +555,28 @@ const Detail = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex flex-row justify-between">
-                        <h3 className="font-medium uppercase">{gigDetail?.packages[activePackage]?.name}</h3>
                         <h3>Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
                       </div>
                       <p className="text-xl font-bold mt-1">{gigDetail?.packages[activePackage]?.description}</p>
 
                       <div className="text-gray-600 text-sm mt-3">
-                        {Array.isArray(gigDetail?.packages?.[activePackage]?.description) &&
-                          gigDetail.packages[activePackage].description.map((desc, idx) => (
-                            <p key={idx} className={idx > 0 ? "mt-1" : ""}>
-                              {desc}
-                            </p>
-                          ))}
-
-                      </div>
-
-                      <div className="flex flex-wrap mt-4 gap-4">
-                        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                          <Clock size={16} />
-                          {gigDetail?.packages[activePackage]?.deliveryDay} Days Delivery
+                        <div className="flex items-start gap-2">
+                          <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
+                          <span>Jumlah Batas Konsep: {gigDetail?.packages[activePackage]?.conceptLimit} Hari</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                          <RefreshCw size={16} />
-                          {gigDetail?.packages[activePackage]?.revision}
+                        <div className="flex items-start gap-2">
+                          <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
+                          <span>Durasi Pengerjaan: {gigDetail?.packages[activePackage]?.workDuration} Hari</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
+                          <span>Jumlah Batas Revisi: {gigDetail?.packages[activePackage]?.revisionLimit} Kali</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className={`${gigDetail?.packages[activePackage]?.sourceFile ? "text-green-500" : "text-gray-500"} mt-0.5 flex-shrink-0`} size={16} />
+                          <span>Source File</span>
                         </div>
                       </div>
-
-                      {/* Feature List */}
-                      <ul className="space-y-2 text-gray-700 mt-4">
-                        {gigDetail?.packages[activePackage]?.features.map((feature, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </motion.div>
                   </AnimatePresence>
 
@@ -613,6 +585,7 @@ const Detail = () => {
                     className="w-full mt-6 bg-blue-700 hover:bg-blue-800 text-white py-3 px-4 rounded-md font-medium flex items-center justify-center"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowContractModal(true)}
                   >
                     Continue
                     <ChevronRight size={18} className="ml-1" />
