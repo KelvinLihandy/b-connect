@@ -1,101 +1,459 @@
-import React, { useContext, useEffect, useState, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useContext, useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { CircularProgress } from "@mui/material";
+import aboutApp from "../../assets/profile_about_app.svg";
+import AccSecurity from "../../assets/profile_account_security.svg";
+import ClearCache from "../../assets/profile_clear_cache.svg";
+import HelpCenter from "../../assets/profile_help_center.svg";
+import Language from "../../assets/profile_languages.svg";
+import PaymentAcc from "../../assets/profile_payment_account.svg";
+import PersonalData from "../../assets/profile_personal_data.svg";
+import Picture from "../../assets/profile_picture.svg";
+import PrivacyPolicy from "../../assets/profile_privacy_policy.svg";
+import PushNotification from "../../assets/profile_push_notification.svg";
+import TermsCondition from "../../assets/profile_terms_condition.svg";
+import dropdownArrow from "../../assets/profile_dropdown_arrow.svg";
+import downArrow from "../../assets/profile_down_arrow_2.svg";
 
-import aboutApp from "../../assets/profile_about_app.svg"
-import AccSecurity from "../../assets/profile_account_security.svg"
-import ClearCache from "../../assets/profile_clear_cache.svg"
-import HelpCenter from "../../assets/profile_help_center.svg"
-import Language from "../../assets/profile_languages.svg"
-import PaymentAcc from "../../assets/profile_payment_account.svg"
-import PersonalData from "../../assets/profile_personal_data.svg"
-import Picture from "../../assets/profile_picture.svg"
-import PrivacyPolicy from "../../assets/profile_privacy_policy.svg"
-import PushNotification from "../../assets/profile_push_notification.svg"
-import TermsCondition from "../../assets/profile_terms_condition.svg"
-import dropdownArrow from "../../assets/profile_dropdown_arrow.svg"
-import downArrow from "../../assets/profile_down_arrow_2.svg"
+import Footer from "../../components/footer/Footer";
+import Navbar from "../../components/navbar/Navbar";
+import { userAPI } from "../../constants/APIRoutes";
+import { imageShow } from "../../constants/DriveLinkPrefixes";
+import axios from "axios";
+import { AuthContext } from "../../contexts/AuthContext";
+import { RememberContext } from "../../contexts/RememberContext";
 
-
-import Footer from '../../components/footer/Footer'
-import Navbar from '../../components/navbar/Navbar'
-import { authAPI } from "../../constants/APIRoutes"
-import axios from 'axios'
-import { AuthContext } from '../../contexts/AuthContext'
 
 // Constants for available languages
 const LANGUAGES = [
   // { code: 'en', name: 'English' },
-  { code: 'id', name: 'Bahasa Indonesia' }
+  { code: "id", name: "Bahasa Indonesia" },
 ];
 
 // Add this at the top with your other constants
 const NOTIFICATION_PREFERENCES = [
-  { id: 'emailPromo', label: 'Email Notification for promotions' },
-  { id: 'pushTransaction', label: 'Push notification for transactions' },
-  { id: 'newFeatures', label: 'Notify me of new features' }
+  { id: "emailPromo", label: "Email Notification for promotions" },
+  { id: "pushTransaction", label: "Push notification for transactions" },
+  { id: "newFeatures", label: "Notify me of new features" },
 ];
 
 const ProfileUser = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState('id');
-  const [activeContent, setActiveContent] = useState('personalData');
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+  const [saveLoad, setSaveLoad] = useState(false);
   const [paymentPhoneNumber, setPaymentPhoneNumber] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageUploadError, setImageUploadError] = useState("");
+  const [formErrors, setFormErrors] = useState({
+    email: "",
+    phoneNumber: "",
+  });
+  const [saveError, setSaveError] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("id");
+  const [activeContent, setActiveContent] = useState("personalData");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   const [cacheOptions, setCacheOptions] = useState({
     clearImageCache: false,
     clearSessionData: false,
-    clearSavedPreferences: false
+    clearSavedPreferences: false,
   });
   const dropdownRef = useRef(null);
 
-  const handleSave = () => {
-    // Save changes logic here (send to API)
+  const { auth, getAuth } = useContext(AuthContext);
+  const { remember } = useContext(RememberContext);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isPendingImageDelete, setIsPendingImageDelete] = useState(false);
+  const [paymentNumberError, setPaymentNumberError] = useState("");
+  const [isPaymentUpdating, setIsPaymentUpdating] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSave = async () => {
+    setFormErrors({
+      email: "",
+      phoneNumber: "",
+    });
+    if (contactEmail && !validateEmail(contactEmail)) {
+      setFormErrors(prev => ({
+        ...prev,
+        email: "Format email tidak valid"
+      }));
+      return;
+    }
+    if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
+      setFormErrors(prev => ({
+        ...prev,
+        phoneNumber: "Format nomor telepon tidak valid (format: +628xxx/628xxx/08xxx)"
+      }));
+      return;
+    }
+    const isFormEmpty = !firstName && !lastName && !contactEmail && !phoneNumber && !selectedFile && !isPendingImageDelete;
+    if (isFormEmpty) {
+      return;
+    }
+    try {
+      setSaveLoad(true);
+      const formData = new FormData();
+      let fullName = "";
+      if (firstName || lastName) {
+        fullName = `${firstName} ${lastName}`.trim();
+        formData.append('name', fullName);
+      }
+      if (contactEmail) {
+        formData.append('email', contactEmail);
+      }
+      if (phoneNumber) {
+        formData.append('phoneNumber', phoneNumber);
+      }
+      if (isPendingImageDelete) {
+        formData.append('deletePicture', 'true');
+      }
+      else if (selectedFile) {
+        formData.append('picture', selectedFile);
+      }
+      formData.append('remember', remember);
+      const response = await axios.patch(`${userAPI}/update-user-profile`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true
+      });
+      if (response.data && response.data.user) {
+        if (response.data.user.picture) {
+          setProfileImage(response.data.user.picture);
+        }
+        if (imagePreview) {
+          URL.revokeObjectURL(imagePreview);
+        }
+        setSelectedFile(null);
+        setImagePreview(null);
+        setIsPendingImageDelete(false);
+        setSaveError("");
+        await getAuth();
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        setSaveError("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else {
+        setSaveError("Gagal memperbarui profil. Silakan coba lagi.");
+      }
+    } 
+    setSaveLoad(false);
+    window.location.reload();
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
+    return email ? emailRegex.test(email) : true;
+  };
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
+    return phone ? phoneRegex.test(phone) : true;
   };
 
   const handleUploadPicture = () => {
-    console.log("Upload new picture clicked");
-    // Tambahkan logika untuk mengunggah gambar
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg, image/png';
+    fileInput.multiple = false;
+    fileInput.max = 1;
+    fileInput.onchange = async (e) => {
+      if (e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      const validTypes = ['image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        setImageUploadError("Format file tidak didukung. Harap unggah file dengan format PNG atau JPEG.");
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setImageUploadError("Ukuran file terlalu besar. Maksimal 15MB.");
+        return;
+      }
+      setSelectedFile(file);
+      const imageUrl = URL.createObjectURL(file);
+      setImagePreview(imageUrl);
+      setIsPendingImageDelete(false);
+    };
+    fileInput.click();
   };
 
   const handleDeletePicture = () => {
-    console.log("Delete picture clicked");
-    // Tambahkan logika untuk menghapus gambar
+    setIsPendingImageDelete(true);
+    setImagePreview(null);
   };
 
   // Account Security Constants
-  const handleChangeAccount = () => {
-    console.log("Change account clicked");
-    // Tambahkan logika untuk mengganti akun
+  const handleChangeAccount = async () => {
+    // Reset error state
+    setPaymentNumberError("");
+
+    // Validate payment number
+    if (!paymentPhoneNumber) {
+      setPaymentNumberError("Nomor pembayaran harus diisi");
+      return;
+    }
+
+    // Use phone number validation instead of digit-only validation
+    if (!validatePhoneNumber(paymentPhoneNumber)) {
+      setPaymentNumberError("Format nomor telepon tidak valid (format: +628xxx/628xxx/08xxx)");
+      return;
+    }
+
+    setIsPaymentUpdating(true);
+
+    try {
+      // Use same approach as handleSave function that's working with axios
+      const formData = new FormData();
+      formData.append('paymentNumber', paymentPhoneNumber);
+
+      // Use axios.post instead of fetch - similar to the handleSave function
+      const response = await axios.patch(`${userAPI}/update-payment-number`, { paymentNumber: paymentPhoneNumber }, {
+        withCredentials: true
+      });
+
+      // Handle response in the same style as handleSave
+      if (response.data && response.data.user) {
+        alert("Nomor pembayaran berhasil diperbarui");
+
+        // Update the local state if backend returned updated value
+        if (response.data.user.paymentNumber) {
+          setPaymentPhoneNumber(response.data.user.paymentNumber);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating payment number:", error);
+
+      // Use similar error handling as handleSave
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else if (error.response?.data?.error) {
+        setPaymentNumberError(error.response.data.error);
+      } else {
+        setPaymentNumberError("Gagal memperbarui nomor pembayaran. Silakan coba lagi.");
+      }
+    } finally {
+      setIsPaymentUpdating(false);
+    }
   };
 
-  const handleDisconnectAccount = () => {
-    console.log("Disconnect account clicked");
-    // Tambahkan logika untuk memutuskan koneksi akun
+  const handleDisconnectAccount = async () => {
+    // Ask for confirmation before disconnecting
+    if (!window.confirm("Apakah Anda yakin ingin memutuskan koneksi akun pembayaran?")) {
+      return;
+    }
+
+    setIsPaymentUpdating(true);
+
+    try {
+      // Send empty string as the payment number to disconnect the account
+      const response = await axios.patch(`${userAPI}/update-payment-number`,
+        { paymentNumber: "" },  // Send empty string to disconnect
+        { withCredentials: true }
+      );
+
+      // Handle response in the same style as handleChangeAccount
+      if (response.data && response.data.user) {
+        // Update the local state to empty string
+        setPaymentPhoneNumber("");
+        alert("Koneksi akun pembayaran telah diputus");
+      }
+    } catch (error) {
+      console.error("Error disconnecting payment account:", error);
+
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else if (error.response?.data?.error) {
+        setPaymentNumberError(error.response.data.error);
+      } else {
+        setPaymentNumberError("Gagal memutuskan koneksi. Silakan coba lagi.");
+      }
+    } finally {
+      setIsPaymentUpdating(false);
+    }
   };
 
-  const handleSavePassword = () => {
-    console.log("Save password clicked");
-    // Tambahkan logika untuk menyimpan password baru
-    const passwordData = {
-      currentPassword,
-      newPassword,
-      confirmPassword,
+  // Password validation function
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
+  // Handle new password change and validation
+  const handleNewPasswordChange = (e) => {
+    const value = e.target.value;
+    setNewPassword(value);
+
+    // Validate new password format
+    if (value && !validatePassword(value)) {
+      setPasswordErrors(prev => ({
+        ...prev,
+        newPassword: "Password harus minimal 8 karakter dan memuat huruf, angka, dan simbol (@$!%*?&)"
+      }));
+    } else {
+      setPasswordErrors(prev => ({
+        ...prev,
+        newPassword: ""
+      }));
+    }
+
+    // Check if confirm password matches
+    if (confirmPassword && value !== confirmPassword) {
+      setPasswordErrors(prev => ({
+        ...prev,
+        confirmPassword: "Password tidak sama"
+      }));
+    } else if (confirmPassword) {
+      setPasswordErrors(prev => ({
+        ...prev,
+        confirmPassword: ""
+      }));
+    }
+  };
+
+  // Handle confirm password change and matching validation
+  const handleConfirmPasswordChange = (e) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+
+    if (value !== newPassword) {
+      setPasswordErrors(prev => ({
+        ...prev,
+        confirmPassword: "Password tidak sama"
+      }));
+    } else {
+      setPasswordErrors(prev => ({
+        ...prev,
+        confirmPassword: ""
+      }));
+    }
+  };
+
+  const handleSavePassword = async () => {
+    // Reset error states
+    let errors = {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
     };
 
-    console.log("Password Data:", passwordData);
-    // Kirim data ke API atau tambahkan logika lainnya
+    // Validate password format based on backend requirements
+    // Password must have at least 8 characters, 1 letter, 1 number and 1 special character
+    if (!currentPassword) {
+      errors.currentPassword = "Password saat ini harus diisi";
+    } else if (!validatePassword(currentPassword)) {
+      errors.currentPassword = "Format password tidak valid";
+    }
+
+    if (!newPassword) {
+      errors.newPassword = "Password baru harus diisi";
+    } else if (!validatePassword(newPassword)) {
+      errors.newPassword = "Password harus minimal 8 karakter dan memuat huruf, angka, dan simbol (@$!%*?&)";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Konfirmasi password harus diisi";
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPassword = "Password dan konfirmasi berbeda";
+    }
+
+    // Update error state
+    setPasswordErrors(errors);
+
+    // Check if there are any errors
+    if (errors.currentPassword || errors.newPassword || errors.confirmPassword) {
+      return;
+    }
+
+    // Start loading state
+    setIsChangingPassword(true);
+
+    try {
+      // Call API to change password - matching the backend expecting email, password & passwordConf
+      const response = await axios.patch(`${userAPI}/change-password-profile`, {
+        password: currentPassword,  // Fix: Use currentPassword as the old password
+        newPassword: newPassword,             // Fix: renamed from 'password' to avoid duplicate keys
+        passwordConf: confirmPassword      // This is correct
+      }, {
+        withCredentials: true
+      });
+
+      // Reset form fields after successful update
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      // Show success message from the response or default
+      alert(response.data?.message || "Password berhasil diubah");
+
+      // Add delay before logging out to ensure the user sees the success message
+      setTimeout(() => {
+        alert("Anda akan keluar dan perlu login kembali dengan password baru.");
+        handleLogOut(); // Call the logout function after password change
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error changing password:", error);
+
+      // Better error handling based on backend responses
+      if (error.response?.data?.error) {
+        // Handle specific error messages from the backend
+        const errorMessage = error.response.data.error;
+
+        if (errorMessage.includes("Password lama tidak valid")) {
+          setPasswordErrors(prev => ({ ...prev, currentPassword: errorMessage }));
+        } else if (errorMessage.includes("Password baru tidak valid")) {
+          setPasswordErrors(prev => ({ ...prev, newPassword: errorMessage }));
+        } else if (errorMessage.includes("Password dan konfimasi berbeda")) {
+          setPasswordErrors(prev => ({ ...prev, confirmPassword: errorMessage }));
+        } else {
+          // General error alert
+          alert(errorMessage);
+        }
+      } else {
+        alert("Gagal mengubah password. Silakan coba lagi.");
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleLogOut = () => {
-    console.log("Log out clicked");
-    // Tambahkan logika untuk keluar dari akun
+    try {
+      // Clear localStorage
+      localStorage.clear();  // Remove all items from localStorage
+
+      // Clear sessionStorage
+      sessionStorage.clear();  // Remove all items from sessionStorage
+
+      // Clear cookies (a simple approach that works for most cookies)
+      document.cookie.split(';').forEach(cookie => {
+        const [name, _] = cookie.split('=');
+        document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+      });
+
+      // Show success message
+      alert("Berhasil logout");
+
+      // Redirect to login page
+      navigate('/sign-in');
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Terjadi masalah saat logout. Silakan coba lagi.");
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -115,23 +473,66 @@ const ProfileUser = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
+
+
+  // Replace useEffect to use fetch instead of axios.get
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch(`${userAPI}/get-user/${auth?.data?.auth.id}`, {
+          method: 'POST',
+          withCredentials: true,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data && data.user) {
+          if (data.user.picture) {
+            setProfileImage(data.user.picture);
+          }
+
+          // Also set payment number if available
+          if (data.user.paymentNumber) {
+            setPaymentPhoneNumber(data.user.paymentNumber);
+          }
+
+          // Set name and other fields if available
+          if (data.user.name) {
+            const nameParts = data.user.name.split(' ');
+            setFirstName(nameParts[0] || '');
+            setLastName(nameParts.slice(1).join(' ') || '');
+          }
+
+          if (data.user.email) setContactEmail(data.user.email);
+          if (data.user.phoneNumber) setPhoneNumber(data.user.phoneNumber);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   // Push Notification Constants
   const [notificationPrefs, setNotificationPrefs] = useState({
     emailPromo: false,
     pushTransaction: false,
-    newFeatures: false
+    newFeatures: false,
   });
 
   const handleCheckboxChange = (id) => {
-    setNotificationPrefs(prev => ({
+    setNotificationPrefs((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: !prev[id],
     }));
   };
 
@@ -142,9 +543,9 @@ const ProfileUser = () => {
 
   // Clear Cache Constants
   const handleCacheOptionChange = (id) => {
-    setCacheOptions(prev => ({
+    setCacheOptions((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: !prev[id],
     }));
   };
 
@@ -162,22 +563,25 @@ const ProfileUser = () => {
   // Array FAQ
   const FAQ_ITEMS = [
     {
-      question: 'Bagaimana cara mengubah password saya?',
-      answer: 'Anda dapat mengubah password melalui menu Account Security. Masukkan password lama Anda, lalu masukkan password baru dan konfirmasi. Klik tombol Save Changes untuk menyimpan perubahan.'
+      question: "Bagaimana cara mengubah password saya?",
+      answer:
+        "Anda dapat mengubah password melalui menu Account Security. Masukkan password lama Anda, lalu masukkan password baru dan konfirmasi. Klik tombol Save Changes untuk menyimpan perubahan.",
     },
     {
-      question: 'Bagaimana cara menghubungkan GoPay?',
-      answer: 'Masuk ke menu Payment Account, lalu klik tombol Tambah Akun GoPay atau Hubungkan Akun. Ikuti instruksi yang diberikan dan pastikan nomor GoPay Anda aktif dan sesuai dengan data akun.'
+      question: "Bagaimana cara menghubungkan GoPay?",
+      answer:
+        "Masuk ke menu Payment Account, lalu klik tombol Tambah Akun GoPay atau Hubungkan Akun. Ikuti instruksi yang diberikan dan pastikan nomor GoPay Anda aktif dan sesuai dengan data akun.",
     },
     {
-      question: 'Bagaimana cara menghapus akun?',
-      answer: 'Untuk menghapus akun, buka halaman Account Security, lalu scroll ke bawah dan klik tombol Delete Account. Anda akan diminta konfirmasi untuk memastikan tindakan ini. Setelah dihapus, semua data Anda akan dihapus secara permanen dan tidak dapat dikembalikan.'
-    }
+      question: "Bagaimana cara menghapus akun?",
+      answer:
+        "Untuk menghapus akun, buka halaman Account Security, lalu scroll ke bawah dan klik tombol Delete Account. Anda akan diminta konfirmasi untuk memastikan tindakan ini. Setelah dihapus, semua data Anda akan dihapus secara permanen dan tidak dapat dikembalikan.",
+    },
   ];
 
   const renderContent = () => {
     switch (activeContent) {
-      case 'personalData':
+      case "personalData":
         return (
           <div className="">
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Personal data</h1>
@@ -190,22 +594,40 @@ const ProfileUser = () => {
             <div className="">
               <h2 className="font-Archivo font-semibold text-[20px] mb-4">Personal Data</h2>
               <div className="relative flex items-center mb-6">
-                <div className="bg-[#9095A0] p-2 rounded-[20px] mr-4">
-                  <img src={Picture} alt="Profile Picture" className="w-[80px] h-[80px]" />
+                <div className="bg-[#9095A0] rounded-[20px] mr-4">
+                  {isImageLoading && (
+                    <div className="w-[100px] h-[100px] flex items-center justify-center">
+                      <CircularProgress color="inherit" />
+                    </div>
+                  )}
+                  <img
+                    src={
+                      isPendingImageDelete
+                        ? Picture
+                        : imagePreview || (profileImage ? `${imageShow}${profileImage}` : Picture)
+                    }
+                    alt="Profile Picture"
+                    className="w-[100px] h-[100px] object-cover rounded-[16px]"
+                    onLoad={() => setIsImageLoading(false)}
+                    onError={(e) => {
+                      console.error("Error loading image", e);
+                      e.target.src = Picture;
+                      setIsImageLoading(false);
+                    }}
+                    style={{ display: isImageLoading ? 'none' : 'block' }}
+                  />
                 </div>
-                <div className='flex-col gap-3'>
-                  <p className='text-[20px] font-Archivo mb-3'>Profile Picture</p>
-                  <p className="text-[12px] font-Archivo text-[#565E6D]">PNG, JPEG under 15MB</p>
+                <div className="flex-col gap-3">
+                  <p className="text-[20px] font-Archivo mb-3">Profile Picture</p>
+                  <p className="text-[12px] font-Archivo text-[#565E6D] mb-1">PNG, JPEG under 15MB</p>
                 </div>
                 <div className="absolute right-0 flex">
-                  {/* Upload Picture Button */}
                   <button
                     className="bg-[#565E6D] text-[#FFFFFF] text-[14px] font-inter px-6 py-2 mr-2 cursor-pointer"
                     onClick={handleUploadPicture}
                   >
                     Upload new picture
                   </button>
-                  {/* Delete Picture Button */}
                   <button
                     className="bg-[#565E6D] text-[#FFFFFF] text-[14px] font-inter px-4 py-2 cursor-pointer"
                     onClick={handleDeletePicture}
@@ -214,11 +636,14 @@ const ProfileUser = () => {
                   </button>
                 </div>
               </div>
-
-              {/* First Name and Last Name */}
+              {imageUploadError && (
+                <p className="text-red-500 text-sm mb-3">{imageUploadError}</p>
+              )}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-[16px] font-semibold text-[#424956] mb-1">First name</label>
+                  <label className="block text-[16px] font-semibold text-[#424956] mb-1">
+                    First name
+                  </label>
                   <input
                     type="text"
                     value={firstName}
@@ -228,7 +653,9 @@ const ProfileUser = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[16px] font-semibold text-[#424956] mb-1">Last name</label>
+                  <label className="block text-[16px] font-semibold text-[#424956] mb-1">
+                    Last name
+                  </label>
                   <input
                     type="text"
                     value={lastName}
@@ -238,52 +665,63 @@ const ProfileUser = () => {
                   />
                 </div>
               </div>
-
-              <div className='border-t border-[#ACACAC] w-full mb-6'></div>
-
-              {/* Contact Email */}
+              <div className="border-t border-[#ACACAC] w-full mb-6"></div>
               <div className="mb-6 mr-4">
-                <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">Contact email</label>
+                <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+                  Contact email
+                </label>
                 <p className="text-sm text-[#565E6D] mb-2">
                   Digunakan untuk identifikasi akun dan keperluan komunikasi.
                 </p>
-                <p className='text-[#424956] font-semibold text-[16px] mb-1'>Email</p>
+                <p className="text-[#424956] font-semibold text-[16px] mb-1">Email</p>
                 <input
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="example@email.com"
-                  className="w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm"
+                  className={`w-1/2 h-[50px] border ${formErrors.email ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
                 />
+                {formErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                )}
               </div>
-
-              {/* Phone Number */}
               <div className="mb-6 mr-4">
-                <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">Phone number</label>
+                <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+                  Phone number
+                </label>
                 <p className="text-sm text-[#565E6D] mb-2">
                   Pastikan nomor Anda benar agar klien dapat menghubungi Anda dengan mudah.
                 </p>
-                <p className='text-[#424956] font-semibold text-[16px] mb-1'>Phone Number</p>
+                <p className="text-[#424956] font-semibold text-[16px] mb-1">Phone Number</p>
                 <input
                   type="text"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+XX-XXX-XXX-XXXX"
-                  className="w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm"
+                  placeholder="+628XXXXXXXXXX"
+                  className={`w-1/2 h-[50px] border ${formErrors.phoneNumber ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
                 />
+                {formErrors.phoneNumber && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.phoneNumber}</p>
+                )}
               </div>
-
-              {/* Save Changes Button */}
               <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
+                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
                 onClick={handleSave}
+                disabled={saveLoad}
               >
-                Save Changes
+                {saveLoad ?
+                  <CircularProgress color="inherit" size={20} />
+                  :
+                  "Save Changes"
+                }
               </button>
+              {saveError && (
+                <p className="text-red-500 text-sm mb-3">{saveError}</p>
+              )}
             </div>
           </div>
         );
-      case 'paymentAccount':
+      case "paymentAccount":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Payment Account</h1>
@@ -293,37 +731,46 @@ const ProfileUser = () => {
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
             {/* Payment Phone Number */}
             <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">Status Akun</label>
-              <p className='text-[#424956] font-semibold text-[16px] mb-1'>Terhubung dengan nomor :</p>
+              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
+                Status Akun
+              </label>
+              <p className="text-[#424956] font-semibold text-[16px] mb-1">
+                Terhubung dengan nomor :
+              </p>
               <input
                 type="text"
                 value={paymentPhoneNumber}
                 onChange={(e) => setPaymentPhoneNumber(e.target.value)}
-                placeholder="+XX-XXX-XXX-XXXX"
-                className="w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm"
+                placeholder="+628XXXXXXXXXX"
+                className={`w-1/2 h-[50px] border ${paymentNumberError ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
               />
+              {paymentNumberError && (
+                <p className="text-red-500 text-sm mt-1">{paymentNumberError}</p>
+              )}
             </div>
 
             {/* Button */}
-            <div className=''>
+            <div className="">
               {/* Change Account Button */}
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
                 onClick={handleChangeAccount}
+                disabled={isPaymentUpdating}
               >
-                Ganti Akun
+                {isPaymentUpdating ? 'Memproses...' : 'Ganti Akun'}
               </button>
               {/* Disconnect Account Button */}
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
                 onClick={handleDisconnectAccount}
+                disabled={isPaymentUpdating}
               >
                 Putuskan Koneksi
               </button>
             </div>
           </div>
         );
-      case 'accountSecurity':
+      case "accountSecurity":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Account Security</h1>
@@ -333,70 +780,84 @@ const ProfileUser = () => {
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
             {/* Change Password */}
             <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">Change Password</label>
+              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
+                Change Password
+              </label>
 
               {/* Current Password Input */}
-              <p className='text-[#424956] font-semibold text-[16px] mb-1'>Current Password :</p>
+              <p className="text-[#424956] font-semibold text-[16px] mb-1">Current Password :</p>
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Current Password"
-                className="w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm mb-3"
+                className={`w-1/2 h-[50px] border ${passwordErrors.currentPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
               />
+              {passwordErrors.currentPassword && (
+                <p className="text-red-500 text-sm mb-3">{passwordErrors.currentPassword}</p>
+              )}
 
               {/* New Password Input */}
-              <p className='text-[#424956] font-semibold text-[16px] mb-1'>New Password :</p>
+              <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">New Password :</p>
               <input
                 type="password"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={handleNewPasswordChange}
                 placeholder="New Password"
-                className="w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm mb-3"
+                className={`w-1/2 h-[50px] border ${passwordErrors.newPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
               />
+              {passwordErrors.newPassword && (
+                <p className="text-red-500 text-sm mb-3">{passwordErrors.newPassword}</p>
+              )}
 
               {/* Confirm New Password Input */}
-              <p className='text-[#424956] font-semibold text-[16px] mb-1'>Confirm Password :</p>
+              <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">Confirm Password :</p>
               <input
                 type="password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={handleConfirmPasswordChange}
                 placeholder="Confirm Password"
-                className="w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm mb-3"
+                className={`w-1/2 h-[50px] border ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
               />
+              {passwordErrors.confirmPassword && (
+                <p className="text-red-500 text-sm mb-3">{passwordErrors.confirmPassword}</p>
+              )}
+
               {/* Save Password Button */}
-              <div>
+              <div className="mt-4">
                 <button
-                  className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
+                  className={`bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer ${isChangingPassword ? 'opacity-70' : ''}`}
                   onClick={handleSavePassword}
+                  disabled={isChangingPassword}
                 >
-                  Save Changes
+                  {isChangingPassword ? 'Processing...' : 'Save Changes'}
                 </button>
               </div>
             </div>
 
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
 
-            <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">Manage Account</label>
+            <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
+              Manage Account
+            </label>
             {/* Manage Account Button */}
-            <div className=''>
+            <div className="">
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
                 onClick={handleLogOut}
               >
                 Log out
               </button>
-              <button
+              {/* <button
                 className="bg-[#565E6D]  w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
                 onClick={handleDeleteAccount}
               >
                 Delete Account
-              </button>
+              </button> */}
             </div>
-
           </div>
         );
-      case 'languages':
+      case "languages":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Languages</h1>
@@ -407,16 +868,16 @@ const ProfileUser = () => {
 
             {/* Change Language Dropdown */}
             <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">Change Language</label>
-              <p className='text-[#424956] font-semibold text-[16px] mb-1'>Current Language :</p>
+              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
+                Change Language
+              </label>
+              <p className="text-[#424956] font-semibold text-[16px] mb-1">Current Language :</p>
 
               {/* Custom Dropdown */}
               <div className="relative inline-block w-1/2" ref={dropdownRef}>
                 <select
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)
-
-                  }
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
                   onClick={handleDropdownClick}
                   onBlur={() => setIsDropdownOpen(false)}
                   className="appearance-none w-full h-[50px] border border-[#ACACAC] px-3 py-2 text-sm pr-10"
@@ -433,7 +894,8 @@ const ProfileUser = () => {
                   <img
                     src={dropdownArrow}
                     alt="Dropdown Arrow"
-                    className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </div>
               </div>
@@ -443,6 +905,7 @@ const ProfileUser = () => {
                 <button
                   className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
                   onClick={() => console.log("Bahasa diubah menjadi:", selectedLanguage)}
+                  disabled={saveLoad}
                 >
                   Save Changes
                 </button>
@@ -450,7 +913,7 @@ const ProfileUser = () => {
             </div>
           </div>
         );
-      case 'pushNotification':
+      case "pushNotification":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Push notification</h1>
@@ -462,7 +925,9 @@ const ProfileUser = () => {
 
             {/* Notification Preferences */}
             <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">Notification Preferences</label>
+              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">
+                Notification Preferences
+              </label>
 
               {/* Checkbox Group */}
               <div className="w-full">
@@ -475,10 +940,7 @@ const ProfileUser = () => {
                       onChange={() => handleCheckboxChange(pref.id)}
                       className="w-4 h-4 mr-3 cursor-pointer"
                     />
-                    <label
-                      htmlFor={pref.id}
-                      className="text-[14px] text-[#444444] cursor-pointer"
-                    >
+                    <label htmlFor={pref.id} className="text-[14px] text-[#444444] cursor-pointer">
                       {pref.label}
                     </label>
                   </div>
@@ -496,7 +958,7 @@ const ProfileUser = () => {
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
           </div>
         );
-      case 'clearCache':
+      case "clearCache":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Clear Cache</h1>
@@ -507,7 +969,9 @@ const ProfileUser = () => {
 
             {/* Cache Options */}
             <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">Clear my cache</label>
+              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">
+                Clear my cache
+              </label>
 
               {/* Checkbox Group */}
               <div className="mb-6">
@@ -516,7 +980,7 @@ const ProfileUser = () => {
                     type="checkbox"
                     id="clearImageCache"
                     checked={cacheOptions.clearImageCache}
-                    onChange={() => handleCacheOptionChange('clearImageCache')}
+                    onChange={() => handleCacheOptionChange("clearImageCache")}
                     className="w-4 h-4 mr-3 cursor-pointer"
                   />
                   <label
@@ -531,7 +995,7 @@ const ProfileUser = () => {
                     type="checkbox"
                     id="clearSessionData"
                     checked={cacheOptions.clearSessionData}
-                    onChange={() => handleCacheOptionChange('clearSessionData')}
+                    onChange={() => handleCacheOptionChange("clearSessionData")}
                     className="w-4 h-4 mr-3 cursor-pointer"
                   />
                   <label
@@ -546,7 +1010,7 @@ const ProfileUser = () => {
                     type="checkbox"
                     id="clearSavedPreferences"
                     checked={cacheOptions.clearSavedPreferences}
-                    onChange={() => handleCacheOptionChange('clearSavedPreferences')}
+                    onChange={() => handleCacheOptionChange("clearSavedPreferences")}
                     className="w-4 h-4 mr-3 cursor-pointer"
                   />
                   <label
@@ -569,7 +1033,7 @@ const ProfileUser = () => {
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
           </div>
         );
-      case 'helpCenter':
+      case "helpCenter":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Help Center</h1>
@@ -587,34 +1051,30 @@ const ProfileUser = () => {
                     className="flex items-center justify-between py-4 cursor-pointer"
                     onClick={() => toggleItem(index)}
                   >
-                    <h3 className="font-Archivo font-semibold text-[18px]">
-                      {item.question}
-                    </h3>
+                    <h3 className="font-Archivo font-semibold text-[18px]">{item.question}</h3>
                     <img
                       src={downArrow}
                       alt="Expand"
-                      className={`w-5 h-5 transition-transform duration-300 ${expandedItem === index ? 'rotate-180' : ''
+                      className={`w-5 h-5 transition-transform duration-300 ${expandedItem === index ? "rotate-180" : ""
                         }`}
                     />
                   </div>
 
                   {/* Content - Expandable */}
-                  <div className={`overflow-hidden transition-all duration-300 ${expandedItem === index
-                    ? 'max-h-96 opacity-100 pb-4'
-                    : 'max-h-0 opacity-0'
-                    }`}>
-                    <p className="text-[16px] text-[#171A1F]">
-                      {item.answer}
-                    </p>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${expandedItem === index ? "max-h-96 opacity-100 pb-4" : "max-h-0 opacity-0"
+                      }`}
+                  >
+                    <p className="text-[16px] text-[#171A1F]">{item.answer}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         );
-      case 'privacyPolicy':
+      case "privacyPolicy":
         return <div>Privacy Policy Content</div>;
-      case 'aboutApp':
+      case "aboutApp":
         return (
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">About App</h1>
@@ -626,13 +1086,16 @@ const ProfileUser = () => {
             {/* App Description */}
             <div className="mt-2">
               <p className="text-[18px] leading-relaxed text-[#171A1F]">
-                B-Connect adalah platform digital yang dirancang untuk menghubungkan para freelancer profesional dengan klien secara cepat dan efisien. Aplikasi ini membantu mempertemukan talenta terbaik dengan proyek-proyek yang sesuai, baik dalam bidang teknologi, desain, pemasaran, dan lainnya.
+                B-Connect adalah platform digital yang dirancang untuk menghubungkan para freelancer
+                profesional dengan klien secara cepat dan efisien. Aplikasi ini membantu
+                mempertemukan talenta terbaik dengan proyek-proyek yang sesuai, baik dalam bidang
+                teknologi, desain, pemasaran, dan lainnya.
               </p>
             </div>
             <div className="border-t border-[#ACACAC] w-full mb-1 mt-4"></div>
           </div>
         );
-      case 'termsConditions':
+      case "termsConditions":
         return <div>Terms & Conditions Content</div>;
       default:
         return <div>Select a menu to view content</div>;
@@ -647,38 +1110,49 @@ const ProfileUser = () => {
         <div className="flex flex-col mt-[190px] mb-[50px] ml-[60px] mr-[60px] w-fit h-fit font-inter">
           {/* Personal Info Section */}
           <div className="mb-10 bg-[#FFFFFF] w-[276px] h-fit">
-            <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2 font-Archivo">Personal Info</h3>
+            <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2 font-Archivo">
+              Personal Info
+            </h3>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'personalData' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('personalData')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "personalData" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("personalData")}
             >
               <img src={PersonalData} alt="Personal Data" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'personalData' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "personalData"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Personal Data
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'paymentAccount' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('paymentAccount')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "paymentAccount" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("paymentAccount")}
             >
               <img src={PaymentAcc} alt="Payment Account" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'paymentAccount' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "paymentAccount"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Payment Account
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'accountSecurity' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('accountSecurity')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "accountSecurity" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("accountSecurity")}
             >
               <img src={AccSecurity} alt="Account Security" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'accountSecurity' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "accountSecurity"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Account Security
@@ -690,36 +1164,45 @@ const ProfileUser = () => {
           <div className="mb-10 bg-[#FFFFFF] w-[276px] h-fit">
             <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2">General</h3>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'languages' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('languages')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "languages" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("languages")}
             >
               <img src={Language} alt="Languages" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'languages' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "languages"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Languages
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'pushNotification' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('pushNotification')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "pushNotification" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("pushNotification")}
             >
               <img src={PushNotification} alt="Push Notification" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'pushNotification' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "pushNotification"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Push Notification
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'clearCache' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('clearCache')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "clearCache" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("clearCache")}
             >
               <img src={ClearCache} alt="Clear Cache" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'clearCache' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "clearCache"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Clear Cache
@@ -731,48 +1214,60 @@ const ProfileUser = () => {
           <div className="mb-10 bg-[#FFFFFF] w-[276px] h-fit">
             <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2">General</h3>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'helpCenter' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('helpCenter')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "helpCenter" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("helpCenter")}
             >
               <img src={HelpCenter} alt="Help Center" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'helpCenter' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "helpCenter"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Help Center
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'privacyPolicy' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('privacyPolicy')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "privacyPolicy" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("privacyPolicy")}
             >
               <img src={PrivacyPolicy} alt="Privacy Policy" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'privacyPolicy' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "privacyPolicy"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Privacy Policy
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'aboutApp' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('aboutApp')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "aboutApp" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("aboutApp")}
             >
               <img src={aboutApp} alt="About App" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'aboutApp' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "aboutApp"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 About App
               </span>
             </div>
             <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === 'termsConditions' ? 'bg-[#DFDFDF]' : ''}`}
-              onClick={() => setActiveContent('termsConditions')}
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "termsConditions" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("termsConditions")}
             >
               <img src={TermsCondition} alt="Terms & Conditions" className="w-5 h-5 mr-3" />
               <span
-                className={`text-[12px] ${activeContent === 'termsConditions' ? 'font-semibold text-[#171A1F]' : 'font-normal text-[#565E6D]'
+                className={`text-[12px] ${activeContent === "termsConditions"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
               >
                 Terms & Conditions
@@ -787,7 +1282,6 @@ const ProfileUser = () => {
         <div className="flex-1 flex flex-col mt-[180px] mb-[50px] ml-[80px] mr-[200px] w-fit h-fit font-inter">
           {renderContent()}
         </div>
-
       </div>
       <Footer />
     </div>

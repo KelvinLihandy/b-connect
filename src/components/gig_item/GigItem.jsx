@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { DynamicStars } from "../dynamic_stars/DynamicStars";
+import { CircularProgress } from '@mui/material'
+import { useState } from "react";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -26,6 +28,7 @@ const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 
 };
 
 const GigItem = ({ data, home = false, start = 0, end = 5 }) => {
+  const [imageLoading, setImageLoading] = useState(true);
   const navigate = useNavigate();
 
   return (
@@ -44,12 +47,18 @@ const GigItem = ({ data, home = false, start = 0, end = 5 }) => {
               >
                 {/* Product Image with hover effect */}
                 <div className="relative ">
+                  {imageLoading && (
+                    <div className="w-full text-center">
+                      <CircularProgress color="inherit" size={80} />
+                    </div>
+                  )}
                   <motion.img
                     src={gig.images[0] == "temp" ? product1 : `${imageShow}${gig.images[0]}`}
                     alt={gig.name}
-                    className="w-full h-48 object-cover bg-blue-600"
+                    className="w-full h-48 object-cover bg-white"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
+                    onLoad={() => { setImageLoading(false) }}
                   />
                 </div>
 

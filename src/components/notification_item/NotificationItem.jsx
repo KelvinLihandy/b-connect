@@ -6,7 +6,7 @@ import { Notebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../App";
 
-const NotificationItem = ({ notification }) => {
+const NotificationItem = ({ notification, unreadCount,setUnreadCount }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [read, setRead] = useState(notification.read);
@@ -44,7 +44,7 @@ const NotificationItem = ({ notification }) => {
   return (
     <motion.div
       whileHover="hover"
-      className={`border-b border-gray-400 cursor-pointer bg-white`}
+      className={`border-b border-gray-400 cursor-pointer bg-white px-4 py-2`}
       onClick={() => {
         socket.emit("view_notification", notification);
         setRead(true);
@@ -52,6 +52,7 @@ const NotificationItem = ({ notification }) => {
           setLocalRead(true);
           navigate(url);
         })
+        setUnreadCount(unreadCount-1);
       }}
     >
       <div className="flex text-black min-h-20">
@@ -59,7 +60,7 @@ const NotificationItem = ({ notification }) => {
           <div className="w-1 bg-black"></div>
         )}
 
-        <div className="px-2 flex flex-row gap-4 w-full">
+        <div className="flex flex-row gap-4 w-full">
           <div className="relative w-12 h-12 min-w-12 self-center">
             {!imageLoaded && !imageError && (
               <CircularProgress color='inherit' />

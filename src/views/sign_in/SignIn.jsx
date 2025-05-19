@@ -16,6 +16,7 @@ import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { AuthContext } from '../../contexts/AuthContext'
 import { CircularProgress } from '@mui/material'
+import { RememberContext } from '../../contexts/RememberContext'
 
 const SignIn = () => {
 	const [showPass, setShowPass] = useState(false)
@@ -24,6 +25,7 @@ const SignIn = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isChecked, setIsChecked] = useState(false);
 	const { auth, getAuth } = useContext(AuthContext);
+	const { setRemember } = useContext(RememberContext);
 	const [errorMessage, setErrorMessage] = useState("")
 	const navigate = useNavigate();
 
@@ -33,13 +35,6 @@ const SignIn = () => {
 	const switchEye = () => {
 		setShowPass((showPass) => !showPass)
 	}
-
-	// useEffect(() => {
-	// 	if(auth) navigate("/catalog");
-	// }, [auth]);
-	// kalau nanti user logout ada implementasinys
-	// jadi kalau belum logout (delete auth state) gabisa sign-in
-	// langsung redirect catalog
 
 	const login = async () => {
 		setIsLoading(true);
@@ -51,6 +46,7 @@ const SignIn = () => {
 			},
 				{ withCredentials: true }
 			);
+			setRemember(isChecked);
 			await getAuth();
 			navigate("/catalog");
 		} catch (error) {
