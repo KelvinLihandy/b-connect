@@ -55,7 +55,7 @@ const GigItem = ({ data, home = false, start = 0, end = 5 }) => {
                   <motion.img
                     src={gig.images[0] == "temp" ? product1 : `${imageShow}${gig.images[0]}`}
                     alt={gig.name}
-                    className="w-full h-48 object-cover bg-blue-600"
+                    className="w-full h-48 object-cover bg-white"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
                     onLoad={() => { setImageLoading(false) }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
-import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../../contexts/AuthContext";
 import { socket } from '../../App';
@@ -16,6 +16,7 @@ import { gigAPI, userAPI } from "../../constants/APIRoutes";
 import { DynamicStars } from "../../components/dynamic_stars/DynamicStars";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { CircularProgress } from "@mui/material";
+import Contract from "../../components/contract/Contract";
 
 const Detail = () => {
   const { auth } = useContext(AuthContext);
@@ -38,10 +39,9 @@ const Detail = () => {
 
   const getDetail = async () => {
     try {
-      const response = await axios.post(`${gigAPI}/get-gig/${gigId}`, {});
+      const response = await axios.post(`${gigAPI}/get-gig/${gigId}`);
       const res = response.data.detail;
       setGigDetail(res);
-      setImages(res.images);
       console.log("detail", res);
     } catch (error) {
       console.error('Error fetching detail:', error.response || error);
@@ -78,6 +78,9 @@ const Detail = () => {
   useEffect(() => {
     if (gigDetail?.creator) {
       getFreelancer();
+    }
+    if (gigDetail?.images) {
+      setImages(gigDetail.images);
     }
   }, [gigDetail]);
 
@@ -430,9 +433,6 @@ const Detail = () => {
                     <h3 className="font-medium">
                       {index + 1}. {flows.flow}
                     </h3>
-                    <p className="text-gray-600">
-                      {flows.description}
-                    </p>
                   </div>
                 ))}
               </div>
@@ -440,40 +440,38 @@ const Detail = () => {
 
             {/* Freelancer Profile Section */}
             <div className="border-t pt-6 mt-6">
-              <h2 className="text-xl font-bold mb-4">Freelancer Profile</h2>
+              <h2 className="text-xl font-bold mb-2">Freelancer Profile</h2>
               <div className="flex items-start space-x-4">
-                {isImageLoading && (
-                  <div className="w-[100px] h-[100px] flex items-center justify-center">
+                <div className="w-16 h-16 flex items-center justify-center">
+                  {/* {isImageLoading ? (
                     <CircularProgress color="inherit" />
-                  </div>
-                )}
-                <img
-                  src={`${imageShow}${freelancer?.picture}`}
-                  alt={freelancer?.picture}
-                  className="w-16 h-16 rounded-full object-cover"
-                  onLoad={() => { setIsImageLoading(false) }}
-                />
-                <div>
-                  <div className="flex items-center">
-                    <h3 className="font-medium">{freelancer?.name}</h3>
-                    <div className="flex items-center ml-2">
-                      <span className="text-yellow-400 font-semibold">
-                        {freelancer?.rating}
-                      </span>
-                      <span className="text-gray-500 ml-1">
-                        ({freelancer?.reviews} Reviews)
-                      </span>
-                    </div>
+                  ) : ( */}
+                  <img
+                    src={`${imageShow}${freelancer?.picture}`}
+                    alt={freelancer?.picture}
+                    className="w-16 h-16 rounded-full object-cover"
+                    onLoad={() => setIsImageLoading(false)}
+                  />
+                  {/* )} */}
+                </div>
+                <div className="flex flex-col items-start gap-2">
+                  <h3 className="font-medium">{freelancer?.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <DynamicStars number={freelancer?.rating} />
+                    <span className="text-yellow-400 font-semibold">{freelancer?.rating}</span>
+                    <span className="text-gray-500">({freelancer?.reviews?.length ?? "0"} Reviews)</span>
                   </div>
                   <p className="text-gray-700 text-md flex items-center">
                     <Clock size={14} className="mr-1" />
                     Member since {new Date(freelancer?.joinedDate).getFullYear()}
                   </p>
-                  <p className="mt-2 text-gray-700">
-                    {freelancer?.description}
-                  </p>
                 </div>
               </div>
+            </div>
+            <div className="border-t p-2">
+              <p className="text-gray-700">
+                {freelancer?.description}
+              </p>
             </div>
 
             {/* Reviews Section */}
@@ -608,11 +606,17 @@ const Detail = () => {
 
       <Footer refScrollUp={detailScrollUp} />
 
-      {/* Fullscreen view modal */}
       <AnimatePresence>
         {isFullscreen && <FullscreenView />}
       </AnimatePresence>
-    </div>
+
+        <Contract
+          isOpen={showContractModal}
+          onClose={() => setShowContractModal(false)}
+          gigId={gigId}
+          packages={gigDetail?.packages}
+        />
+    </div >
   );
 };
 
