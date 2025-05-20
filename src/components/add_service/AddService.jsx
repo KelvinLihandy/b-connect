@@ -4,9 +4,13 @@ import { useNavigate } from "react-router-dom";
 import CancelIcon from "../../assets/addservice-cancel.svg";
 import SaveIcon from "../../assets/addservice-save.svg";
 import FinishBg from "../../assets/addservice-finishbg.svg";
+import addFlow from "../../assets/addservice-addflow.svg";
 import Preview from "./Preview";
 
 const steps = ["Title", "Attachment", "Description", "Price", "Review", "Finish"];
+
+// Added new constant for default workflow
+const DEFAULT_WORKFLOW_COUNT = 3;
 
 const SERVICE_CATEGORIES = [
   "Graphics Design",
@@ -42,6 +46,7 @@ const AddService = () => {
   const [errors, setErrors] = useState({});
   const [attachments, setAttachments] = useState([]);
   const [description, setDescription] = useState("");
+  const [workFlows, setWorkFlows] = useState(Array(DEFAULT_WORKFLOW_COUNT).fill(""));
 
   const [basePrice, setBasePrice] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("3");
@@ -104,7 +109,16 @@ const AddService = () => {
       if (description.trim().length < 50) {
         newErrors.description = "Description must be at least 50 characters long";
         isValid = false;
-      }    } else if (step === 4) {
+      }
+      
+      // Validate all workflow inputs are not empty
+      workFlows.forEach((flow, index) => {
+        if (!flow.trim()) {
+          newErrors[`workflow_${index}`] = `Work flow ${index + 1} cannot be empty`;
+          isValid = false;
+        }
+      });
+    } else if (step === 4) {
       // Validate deliveryTime
       if (!deliveryTime) {
         newErrors.deliveryTime = "Please select a delivery time";
@@ -330,8 +344,7 @@ const AddService = () => {
       categories: selectedTags,
       images: attachments,
       description,
-      basePrice,
-      deliveryTime,
+      workFlows,
       packages: {
         basic: basicPackage,
         advance: advancePackage
@@ -348,6 +361,40 @@ const AddService = () => {
   // Close the preview modal
   const closePreview = () => {
     setShowPreview(false);
+  };
+
+  // Handle workflow input changes
+  const handleWorkFlowChange = (index, value) => {
+    const newWorkFlows = [...workFlows];
+    newWorkFlows[index] = value;
+    setWorkFlows(newWorkFlows);
+    
+    // Clear error for this workflow if it exists
+    if (errors[`workflow_${index}`]) {
+      const updatedErrors = {...errors};
+      delete updatedErrors[`workflow_${index}`];
+      setErrors(updatedErrors);
+    }
+  };
+
+  // Add a new workflow input
+  const addWorkFlow = () => {
+    setWorkFlows([...workFlows, ""]);
+  };
+
+  // Remove a workflow input (only for flows beyond the required 3)
+  const removeWorkFlow = (index) => {
+    if (index < DEFAULT_WORKFLOW_COUNT) return; // Prevent removing required flows
+    const newWorkFlows = [...workFlows];
+    newWorkFlows.splice(index, 1);
+    setWorkFlows(newWorkFlows);
+    
+    // Clear any errors associated with removed or shifted workflows
+    const updatedErrors = {...errors};
+    for (let i = index; i < workFlows.length; i++) {
+      delete updatedErrors[`workflow_${i}`];
+    }
+    setErrors(updatedErrors);
   };
 
   return (
@@ -659,35 +706,85 @@ const AddService = () => {
             </p>
 
             <div className="px-4 py-4 border border-gray-300 rounded-md">
-              <div className="mb-6">
-                <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                  Description:
-                </label>
-                <textarea
-                  className={`w-full px-3 py-2 border ${
-                    errors.description ? "border-red-500" : "border-gray-400"
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md min-h-[200px]`}
-                  placeholder="Describe your service in detail..."
-                  value={description}
-                  onChange={(e) => {
-                    const input = e.target.value;
-                    if (input.length <= 800) {
-                      setDescription(input);
-                    }
-                    if (errors.description) {
-                      setErrors({ ...errors, description: null });
-                    }
-                  }}
-                ></textarea>
-                {errors.description && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.description}
+              <div className="flex flex-col md:flex-row w-full gap-6">
+                {/* Work Flow Inputs - Left side */}
+                <div className="md:w-1/2">
+                  <label className="block font-inter text-[16px] text-[#424956] mb-3">
+                    Work flow:
+                  </label>
+                  
+                  {workFlows.map((flow, index) => (
+                    <div key={index} className="mb-3 relative">
+                      <input
+                        type="text"
+                        className={`w-full px-3 py-2 border rounded-md ${
+                          errors[`workflow_${index}`] ? "border-red-500" : "border-gray-400"
+                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                        placeholder={`${index === 0 ? 'First flow' : index === 1 ? 'Second flow' : index === 2 ? 'Third flow' : `Flow ${index + 1}`}`}
+                        value={flow}
+                        onChange={(e) => handleWorkFlowChange(index, e.target.value)}
+                      />
+                      {index >= DEFAULT_WORKFLOW_COUNT && (
+                        <button
+                          onClick={() => removeWorkFlow(index)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                          title="Remove flow"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                      {errors[`workflow_${index}`] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors[`workflow_${index}`]}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Add Workflow Button */}
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={addWorkFlow}
+                      className="flex items-center justify-center p-0 bg-transparent hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+                    >
+                      <img src={addFlow} alt="Add Flow" className="h-6 w-6" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Description - Right side */}
+                <div className="md:w-1/2">
+                  <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                    Description:
+                  </label>
+                  <textarea
+                    className={`w-full px-3 py-2 border ${
+                      errors.description ? "border-red-500" : "border-gray-400"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md min-h-[200px]`}
+                    placeholder="Describe your service in detail..."
+                    value={description}
+                    onChange={(e) => {
+                      const input = e.target.value;
+                      if (input.length <= 800) {
+                        setDescription(input);
+                      }
+                      if (errors.description) {
+                        setErrors({ ...errors, description: null });
+                      }
+                    }}
+                  ></textarea>
+                  {errors.description && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.description}
+                    </p>
+                  )}
+                  <p className={`text-sm mt-1 ${description.length >= 800 ? "text-red-500" : "text-gray-500"}`}>
+                    {description.length}/800 characters
+                    <span className="text-xs ml-1">(minimum 50)</span>
                   </p>
-                )}
-                <p className={`text-sm mt-1 ${description.length >= 800 ? "text-red-500" : "text-gray-500"}`}>
-                  {description.length}/800 characters
-                  <span className="text-xs ml-1">(minimum 50)</span>
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1037,6 +1134,7 @@ const AddService = () => {
             categories: selectedTags,
             images: attachments,
             description,
+            workFlows,
             packages: {
               basic: basicPackage,
               advance: advancePackage
