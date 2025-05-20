@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn, X, Minimize2 } from "lucide-react";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { DynamicStars } from "../dynamic_stars/DynamicStars";
 
@@ -11,6 +11,7 @@ const Preview = ({ serviceData, onClose }) => {
   const [activePackage, setActivePackage] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showZoomOverlay, setShowZoomOverlay] = useState(false);
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
 
   // Extract data from serviceData
   const { title, categories, images, description, packages } = serviceData;
@@ -71,6 +72,11 @@ const Preview = ({ serviceData, onClose }) => {
   // Toggle fullscreen mode for the carousel
   const toggleFullscreen = () => {
     setIsFullscreen(prev => !prev);
+  };
+
+  // Toggle preview fullscreen mode
+  const togglePreviewFullscreen = () => {
+    setIsPreviewFullscreen(prev => !prev);
   };
 
   // Format price with commas
@@ -172,51 +178,63 @@ const Preview = ({ serviceData, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 overflow-y-auto">
-      <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl w-full max-w-6xl shadow-2xl relative">
-          {/* Close button */}
-          <button
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10"
-            onClick={onClose}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-
+    <div className="fixed inset-0 bg-transparent-75 z-50">
+      <div className={`relative ${isPreviewFullscreen ? 'h-screen' : 'min-h-screen flex items-center justify-center p-4'}`}>
+        <div className={`bg-white ${isPreviewFullscreen ? 'w-full h-full' : 'rounded-xl w-full max-w-6xl'} shadow-2xl relative`}>
           {/* Preview Header */}
-          <div className="bg-gray-100 p-4 rounded-t-xl border-b">
-            <h2 className="text-xl font-bold text-center text-blue-800">
+          <div className={`bg-gray-100 ${isPreviewFullscreen ? '' : 'rounded-t-xl'} p-4 border-b flex justify-between items-center`}>
+            <h2 className="text-xl font-bold text-center text-red-500 font-Archivo flex-grow">
               ***This is Preview of Your Add Page Progress***
             </h2>
+            <div className="flex items-center space-x-2">
+              <motion.button
+                className="text-gray-600 hover:text-gray-800 p-1"
+                onClick={togglePreviewFullscreen}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title={isPreviewFullscreen ? "Exit fullscreen" : "View fullscreen"}
+              >
+                {isPreviewFullscreen ? (
+                  <Minimize2 size={20} />
+                ) : (
+                  <Maximize2 size={20} />
+                )}
+              </motion.button>
+              <motion.button
+                className="text-gray-500 hover:text-gray-800 p-1"
+                onClick={onClose}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X size={20} />
+              </motion.button>
+            </div>
           </div>
 
           {/* Main content area */}
-          <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className={`${isPreviewFullscreen ? 'h-[calc(100%-64px)] overflow-auto' : ''} p-6`}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 py-8 mx-[108px]">
               {/* Left column - takes 8/12 of the grid on large screens */}
-              <div className="lg:col-span-8">
-                {/* Title and Categories */}
+              <div className="lg:col-span-8">                {/* Title and Rating */}
                 <h1 className="text-4xl font-bold text-gray-800">
                   {title || "Service Title"}
                 </h1>
-                <div className="flex flex-wrap gap-2 mt-2 mb-6">
-                  {categories && categories.length > 0 ? (
-                    categories.map((category, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                        {category}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-gray-500">No categories selected</span>
-                  )}
-                </div>
-
-                {/* Enhanced Animated Carousel */}
+                <div className="flex items-center mt-2 mb-6">
+                  <span className="font-medium text-gray-700 mr-2">
+                    Service Provider
+                  </span>
+                  <div className="flex text-yellow-400">
+                    <DynamicStars number={4.5} />
+                  </div>
+                  <span className="text-yellow-500 ml-1">
+                    4.5
+                  </span>
+                  <span className="text-gray-500 ml-1">
+                    (Preview)
+                  </span>
+                </div>{/* Enhanced Animated Carousel */}
                 <div
-                  className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-96 shadow-lg"
+                  className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-150 shadow-lg"
                   onMouseEnter={() => {
                     setShowZoomOverlay(true);
                   }}
@@ -317,9 +335,7 @@ const Preview = ({ serviceData, onClose }) => {
                   {images && images.length > 1 && (
                     <ProgressIndicator current={currentImage} total={images.length} />
                   )}
-                </div>
-
-                {/* Thumbnail Images with active state */}
+                </div>                {/* Thumbnail Images with active state */}
                 {images && images.length > 0 && (
                   <div className="flex space-x-2 mb-8 overflow-x-auto pb-2">
                     {images.map((image, index) => (
@@ -345,14 +361,26 @@ const Preview = ({ serviceData, onClose }) => {
                       </motion.div>
                     ))}
                   </div>
-                )}
-
-                {/* Description Section */}
+                )}                {/* Description Section */}
                 <div className="border-t pt-6">
                   <h2 className="text-xl font-bold mb-4">Description</h2>
                   <p className="text-gray-700 mb-3">
                     {description || "No description provided"}
                   </p>
+                    {/* Workflow Overview section */}
+                  <div className="border-t pt-6 mt-6">
+                    <h2 className="text-xl font-bold mb-4">Workflow Overview</h2>
+                    <div className="space-y-4">
+                      {serviceData?.workFlows?.map((flow, index) => (
+                        <div key={index} className="">
+                          <h3 className="font-medium">{index + 1}. {flow}</h3>
+                        </div>
+                      ))}
+                      {(!serviceData?.workFlows || serviceData?.workFlows.length === 0) && (
+                        <p className="text-gray-500">No workflow steps provided</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
