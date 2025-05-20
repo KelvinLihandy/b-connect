@@ -1,6 +1,6 @@
-import React, { useContext, useState, useEffect, useRef, use } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from 'gsap';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
@@ -18,7 +18,6 @@ import MorphToggleButton from "../../components/togglebutton/togglebutton";
 import { NotificationContext } from "../../contexts/NotificationContext";
 import NotificationItem from "../notification_item/NotificationItem";
 import { CircularProgress } from '@mui/material'
-import { set } from "lodash";
 import { UserTypeContext } from "../../contexts/UserTypeContext";
 
 gsap.registerPlugin(MorphSVGPlugin);
@@ -28,12 +27,17 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { auth } = useContext(AuthContext);
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const list = Array.isArray(notificationList)
     ? notificationList
-    : Object.values(notificationList);
+    : Object.values(notificationList || {});
+    
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  
   const imageUrl = auth?.data?.auth?.picture === "temp"
     ? default_avatar
     : `${imageShow}${auth?.data?.auth.picture}`;
@@ -47,9 +51,25 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   useEffect(() => {
     const list = Array.isArray(notificationList)
       ? notificationList
-      : Object.values(notificationList);
+      : Object.values(notificationList || {});
     setUnreadCount(list.filter(n => n && !n.read).length)
-  }, [notificationList])
+  }, [notificationList]);
+
+  const handleClickOutside = (event) => {
+    if (showNotificationDropdown) {
+      setShowNotificationDropdown(false);
+    }
+    if (showUserDropdown) {
+      setShowUserDropdown(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNotificationDropdown, showUserDropdown]);
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -76,14 +96,14 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     <>
       {(auth || alt) && (
         <div
-          className="fixed top-0 left-0 w-full h-[100px] z-40"
+          className="fixed top-0 left-0 w-full h-[100px] z-30"
           style={{ backgroundColor: "#2f5379" }}
         />
       )}
 
       {auth ? (
         <motion.nav
-          className="fixed top-0 left-0 w-full z-50 flex items-center justify-between text-white p-4 shadow-md h-[100px]"
+          className="fixed top-0 left-0 w-full z-40 flex items-center justify-between text-white p-4 shadow-md h-[100px]"
           style={{ backgroundColor: "#2f5379" }}
           initial={{ y: -100 }}
           animate={{ y: 0 }}
@@ -120,13 +140,29 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               </div>
             )}
             {isFreelancer && (
-              <motion.p
-                className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
-                whileHover={{ scale: 1.1 }}
-                onClick={() => { navigate(`/freelancer-profile/${auth?.data?.auth?.id}`) }}
-              >
-                Dashboard
-              </motion.p>
+              <div className="flex items-center gap-8">
+                <motion.p
+                  className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => { navigate(`/freelancer-profile/${auth?.data?.auth?.id}`) }}
+                >
+                  Dashboard
+                </motion.p>
+                <motion.p
+                  className="inline-block text-xl cursor-pointer transition-colors duration-300"
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => { navigate(`/freelancer-gigs`) }}
+                >
+                  My Gigs
+                </motion.p>
+                <motion.p
+                  className="inline-block text-xl cursor-pointer transition-colors duration-300"
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => { navigate(`/freelancer-orders`) }}
+                >
+                  Orders
+                </motion.p>
+              </div>
             )}
           </div>
           <div className="w-3/10 flex justify-end">
@@ -140,7 +176,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 300 }}
-                    onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowNotificationDropdown(!showNotificationDropdown);
+                    }}
                   />
                   {unreadCount > 0 && (
                     <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-white font-bold text-xs flex items-center justify-center">
@@ -156,6 +195,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
                       className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
                         <h3 className="font-semibold text-white text-xl">Notifikasi</h3>
@@ -172,9 +212,11 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       </div>
 
                       <div className="max-h-96 overflow-y-auto">
-                        {notificationList.length > 0 ? (
+                        {notificationList && notificationList.length > 0 ? (
                           <motion.div initial="hidden" animate="visible">
                             {notificationList.map((notification, index) => {
+                              if (!notification) return null;
+                              
                               const messageDate = new Date(notification.message.time);
                               const messageMidnight = new Date(messageDate);
                               messageMidnight.setHours(0, 0, 0, 0);
@@ -214,8 +256,8 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-
               </div>
+              
               {!isFreelancer &&
                 <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer"
                   whileHover={{ scale: 1.1 }}
@@ -235,7 +277,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/profile-user")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUserDropdown(!showUserDropdown);
+                }}
               >
                 {imageLoading ? (
                   <CircularProgress color="inherit" />
@@ -248,6 +293,67 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                     />
                     <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
                   </>
+                )}
+                
+                {/* User dropdown menu */}
+                {showUserDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="py-2 px-4 border-b border-gray-100">
+                      <p className="text-gray-800 font-medium">{auth?.data?.auth?.name || "User"}</p>
+                      <p className="text-gray-500 text-xs">{auth?.data?.auth?.email}</p>
+                    </div>
+                    
+                    <div className="py-1">
+                      {isFreelancer ? (
+                        <>
+                          <button 
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => navigate(`/freelancer-profile/${auth?.data?.auth?.id}`)}
+                          >
+                            My Freelancer Profile
+                          </button>
+                          <button 
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => navigate(`/freelancer-gigs/create`)}
+                          >
+                            Create New Gig
+                          </button>
+                        </>
+                      ) : (
+                        <button 
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => navigate(`/profile-user`)}
+                        >
+                          My Profile
+                        </button>
+                      )}
+                      
+                      <button 
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => navigate(`/settings`)}
+                      >
+                        Settings
+                      </button>
+                      
+                      <div className="border-t border-gray-100 my-1"></div>
+                      
+                      <button 
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        onClick={() => {
+                          // Logout logic here
+                          navigate('/sign-in');
+                        }}
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </motion.div>
                 )}
               </motion.div>
             </motion.div>

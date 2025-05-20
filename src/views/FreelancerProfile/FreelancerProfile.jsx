@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Heart,
   MessageCircle,
@@ -13,27 +15,51 @@ import {
   PlusCircle,
   Settings,
   AlertCircle,
-  Eye
+  Eye,
+  Home,
+  User
 } from "lucide-react";
-import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+
+// Import contexts
+import { AuthContext } from "../../contexts/AuthContext";
+import { UserTypeContext } from "../../contexts/UserTypeContext";
+
+// Import components
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 
-// Import service images
+// Import service images (replace with your actual imports)
 import product1 from "../../assets/image.png";
-import product2 from "../../assets/image 35.png";
+import product2 from "../../assets/image.png";
 
-export default function FreelancerProfileView({ currentUser, currentMode }) {
+const FreelancerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { auth } = useContext(AuthContext);
+  const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
+  
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [favoriteServices, setFavoriteServices] = useState([]);
   const [redirectModalOpen, setRedirectModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Determine if the profile belongs to the current user
-  const isOwnProfile = currentUser?.id === id;
-
+  const isOwnProfile = String(auth?.data?.auth?.id) === String(id);
+  
+  // Is viewing own freelancer profile
+  const isOwnFreelancerProfile = isFreelancer && isOwnProfile;
+  
+  // The portfolio URL to share/copy
+  const portfolioUrl = `https://freelancer.com/profile/${id}`;
+  
+  // Copy portfolio URL to clipboard
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(portfolioUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
   // Toggle favorite status for a service
   const toggleFavorite = (serviceId) => {
     if (favoriteServices.includes(serviceId)) {
@@ -53,40 +79,44 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
     setRedirectModalOpen(!redirectModalOpen);
   };
 
-  // Switch to freelancer view mode
+  // Switch to freelancer mode
   const switchToFreelancerMode = () => {
-    navigate(`/freelancer/${id}`);
+    localStorage.setItem("isFreelancer", "true");
+    setIsFreelancer(true);
+    navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
   };
 
-  // Switch to user view mode
+  // Switch to user mode
   const switchToUserMode = () => {
-    navigate(`/user/freelancer/${id}`);
+    localStorage.setItem("isFreelancer", "false");
+    setIsFreelancer(false);
+    navigate("/home");
   };
 
   // Navigate to edit profile page
   const navigateToEditProfile = () => {
-    if (currentMode === "user" && isOwnProfile) {
+    if (!isFreelancer && isOwnProfile) {
       toggleRedirectModal();
     } else {
-      navigate(`/freelancer/edit/${id}`);
+      navigate(`/freelancer-edit/${id}`);
     }
   };
 
   // Navigate to create new gig page
   const navigateToCreateGig = () => {
-    navigate("/freelancer/gigs/create");
+    navigate("/freelancer-gigs/create");
   };
 
   // Navigate to edit specific gig
   const navigateToEditGig = (gigId) => {
-    navigate(`/freelancer/gigs/edit/${gigId}`);
+    navigate(`/freelancer-gigs/edit/${gigId}`);
   };
 
-  // Freelancer data
+  // Freelancer data - in a real app, this would come from API
   const freelancerData = {
-    name: "Adam Warlok",
+    name: auth?.data?.auth?.name || "Adam Warlok",
     title: "Video Editor",
-    email: "AdamWarlok@gmail.com",
+    email: auth?.data?.auth?.email || "user@example.com",
     rating: 4.9,
     totalReviews: "4.8k",
     online: true,
@@ -98,7 +128,8 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
     openForWork: true,
     overview:
       "Hi there! My name is Adam and I offer Professional Video Editing services here on Fiverr. In the last 6 years, I have over 6000 completed orders. I have had previous experience working on a TV station for over 4 years, so I know my stuff! I can do professional video editing and post-production...",
-    portfolio: [
+    // Only show portfolio items for own profile in freelancer mode
+    portfolio: isOwnProfile && isFreelancer ? [
       {
         id: 1,
         title: "I will do professional video editing",
@@ -117,17 +148,9 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
         image: product2,
         category: "Social Media",
       },
-      {
-        id: 3,
-        title: "I will create professional real estate videos",
-        price: "From $25",
-        rating: 4.8,
-        reviewCount: 320,
-        image: product1,
-        category: "Real Estate",
-      },
-    ],
-    reviews: [
+    ] : [], // Empty for other users viewing profile
+    // Only show reviews for own profile in freelancer mode
+    reviews: isOwnProfile && isFreelancer ? [
       {
         id: 1,
         client: {
@@ -139,18 +162,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
         comment:
           "Great video editing work! The result was professional, clear, and matched exactly what I was looking for. Highly recommended for any video editing needs.",
       },
-      {
-        id: 2,
-        client: {
-          name: "sarah",
-          avatar: "/avatar-2.jpg",
-          rating: 5.0,
-        },
-        date: "1 month ago",
-        comment:
-          "Excellent work on my social media video ads. The engagement has increased significantly since I started using Srecko's services. Will definitely work with him again!",
-      },
-    ],
+    ] : [], // Empty for other users viewing profile
     ratingBreakdown: {
       1: 1,
       2: 2,
@@ -199,92 +211,35 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
       : freelancerData.portfolio.filter((item) => item.category === selectedCategory);
 
   // Determine if we should show gigs based on mode and ownership
-  const showGigs = !(currentMode === "freelancer" && !isOwnProfile);
+  const showGigs = isFreelancer || !isFreelancer;
 
   return (
     <>
-      <Navbar alt/>
-      <main className="flex flex-col min-h-screen bg-gray-50 pt-25">
-        {/* Admin Actions Bar - Only visible for own profile in freelancer mode */}
-        {isOwnProfile && currentMode === "freelancer" && (
-          <div className="bg-white border-b border-gray-200 shadow-sm">
-            <div className="container mx-auto px-5 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <h2 className="font-medium text-gray-800">My Freelancer Profile</h2>
-                  <span className="mx-2 text-gray-300">|</span>
-                  <span className="text-green-600 text-sm font-medium flex items-center">
-                    <div className="w-2 h-2 rounded-full mr-1 bg-green-500"></div>
-                    Public & Visible
-                  </span>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => navigate("/freelancer/settings")}
-                    className="flex items-center text-gray-700 hover:text-blue-600 text-sm"
-                  >
-                    <Settings className="h-4 w-4 mr-1" />
-                    Settings
-                  </button>
-                  <button
-                    onClick={switchToUserMode}
-                    className="px-3 py-1 border border-gray-300 text-sm rounded-md hover:bg-gray-50"
-                  >
-                    <Eye className="h-4 w-4 mr-1 inline" />
-                    Preview Public View
-                  </button>
-                </div>
-              </div>
-            </div>
+      <Navbar alt={true} />
+      
+      {/* Freelancer Mode Banners - Positioned right below navbar */}
+      <div className="relative w-full" style={{ marginTop: "100px" }}>
+        {isFreelancer && (
+          <div className="w-full bg-amber-500 text-white text-center py-1 font-medium">
+            You are currently in Freelancer Mode. Your profile appears different than to normal users.
           </div>
         )}
-
-        {/* Mode switcher for own profile in user mode */}
-        {isOwnProfile && currentMode === "user" && (
-          <div className="bg-blue-50 border-b border-blue-100">
-            <div className="container mx-auto px-5 py-3">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-blue-600 mr-2" />
-                <p className="text-blue-800 text-sm">
-                  You're viewing your profile in user mode.
-                  <button
-                    onClick={switchToFreelancerMode}
-                    className="ml-2 text-blue-600 font-medium hover:underline"
-                  >
-                    Switch to freelancer mode
-                  </button>
-                  to edit your profile and gigs.
-                </p>
-              </div>
-            </div>
+        
+        {isOwnFreelancerProfile && (
+          <div className="w-full bg-red-500 text-white text-center py-1 font-medium">
+            Your profile is unpublished. Add gigs and complete your profile to become visible to users.
           </div>
         )}
-
-        {/* Warning for freelancer viewing other freelancer profiles */}
-        {!isOwnProfile && currentMode === "freelancer" && (
-          <div className="bg-amber-50 border-b border-amber-100">
-            <div className="container mx-auto px-5 py-3">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
-                <p className="text-amber-800 text-sm">
-                  You're currently in freelancer mode. To view this freelancer's gigs,
-                  <button
-                    onClick={switchToUserMode}
-                    className="ml-2 text-amber-600 font-medium hover:underline"
-                  >
-                    switch to user mode
-                  </button>.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
+      </div>
+      
+      <main className="flex flex-col min-h-screen bg-gray-50" style={{ 
+        paddingTop: isFreelancer && isOwnFreelancerProfile ? "56px" : (isFreelancer ? "28px" : "0") 
+      }}>
         {/* Main profile section */}
         <div className="container mx-auto px-5 mt-8">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Left section - Profile and content */}
-            <div className="w-8/12">
+            <div className="w-full lg:w-8/12">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                 <div className="flex flex-col md:flex-row">
                   {/* Left side with profile photo */}
@@ -306,7 +261,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                     </div>
 
                     {/* Show appropriate action button based on mode and ownership */}
-                    {isOwnProfile && currentMode === "freelancer" ? (
+                    {isOwnProfile && isFreelancer ? (
                       <button
                         onClick={navigateToEditProfile}
                         className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -314,7 +269,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Profile
                       </button>
-                    ) : isOwnProfile && currentMode === "user" ? (
+                    ) : isOwnProfile && !isFreelancer ? (
                       <button
                         onClick={toggleRedirectModal}
                         className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -351,14 +306,18 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                         <div className="flex items-center mb-3">
                           <div className="flex items-center">
                             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="ml-1 font-medium">{freelancerData.rating}</span>
+                            <span className="ml-1 font-medium">
+                              {(!isOwnProfile || !isFreelancer) ? "0.0" : freelancerData.rating}
+                            </span>
                             <span className="ml-1 text-gray-500 text-sm">
-                              ({freelancerData.totalReviews})
+                              ({(!isOwnProfile || !isFreelancer) ? "0" : freelancerData.totalReviews})
                             </span>
                           </div>
-                          <span className="mx-3 px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded">
-                            Top Rated ⭐⭐⭐
-                          </span>
+                          {isOwnProfile && isFreelancer && (
+                            <span className="mx-3 px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded">
+                              Unpublished
+                            </span>
+                          )}
                         </div>
 
                         <p className="text-gray-800 font-medium mb-3">{freelancerData.title}</p>
@@ -389,7 +348,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                           Share
                         </button>
 
-                        {!isOwnProfile && currentMode === "user" && (
+                        {!isOwnProfile && !isFreelancer && (
                           <button className="ml-2 p-2 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-50 transition-colors">
                             <Heart 
                               className={`h-4 w-4 ${favoriteServices.includes("profile") ? "text-red-500 fill-red-500" : "text-gray-700"}`}
@@ -408,7 +367,9 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Project Completion</p>
-                          <p className="text-lg font-medium">98%</p>
+                          <p className="text-lg font-medium">
+                            {(!isOwnProfile || !isFreelancer) ? "0%" : "98%"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -426,14 +387,14 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                 </div>
               </div>
 
-              {/* Gigs/Services section - Only show if in user mode or freelancer's own profile */}
+              {/* Gigs/Services section */}
               {showGigs && (
                 <div className="mt-8">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">
                       {isOwnProfile ? "My Gigs" : "Available Gigs"}
                     </h2>
-                    {isOwnProfile && currentMode === "freelancer" && (
+                    {isOwnProfile && isFreelancer && (
                       <button
                         onClick={navigateToCreateGig}
                         className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
@@ -445,7 +406,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                   </div>
 
                   {/* Category filter - Only for non-owner in user mode */}
-                  {!isOwnProfile && currentMode === "user" && (
+                  {!isOwnProfile && !isFreelancer && categories.length > 0 && (
                     <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
                       <button
                         onClick={() => setSelectedCategory("All")}
@@ -473,100 +434,112 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                     </div>
                   )}
 
-                  <motion.div
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    {filteredPortfolio.map((item, index) => (
-                      <motion.div
-                        key={item.id}
-                        custom={index}
-                        variants={cardVariants}
-                        className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-                      >
-                        <div className="relative">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-48 object-cover"
-                          />
+                  {filteredPortfolio.length > 0 ? (
+                    <motion.div
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {filteredPortfolio.map((item, index) => (
+                        <motion.div
+                          key={item.id}
+                          custom={index}
+                          variants={cardVariants}
+                          className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                          <div className="relative">
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-48 object-cover"
+                            />
 
-                          {/* Action buttons for gig cards */}
-                          <div className="absolute top-2 right-2 flex gap-1">
-                            {/* Edit button - Only visible for owner in freelancer mode */}
-                            {isOwnProfile && currentMode === "freelancer" ? (
-                              <button
-                                onClick={() => navigateToEditGig(item.id)}
-                                className="p-1.5 bg-white rounded-md shadow-sm hover:bg-gray-100"
-                              >
-                                <Edit className="w-4 h-4 text-gray-700" />
-                              </button>
-                            ) : !isOwnProfile && currentMode === "user" ? (
-                              <button
-                                className="p-1.5 bg-white rounded-md shadow-sm hover:bg-gray-100"
-                                onClick={() => toggleFavorite(item.id)}
-                              >
-                                <Heart
-                                  className={`w-4 h-4 ${
-                                    favoriteServices.includes(item.id)
-                                      ? "text-red-500 fill-red-500"
-                                      : "text-gray-700"
-                                  }`}
-                                />
-                              </button>
-                            ) : null}
+                            {/* Action buttons for gig cards */}
+                            <div className="absolute top-2 right-2 flex gap-1">
+                              {/* Edit button - Only visible for owner in freelancer mode */}
+                              {isOwnProfile && isFreelancer ? (
+                                <button
+                                  onClick={() => navigateToEditGig(item.id)}
+                                  className="p-1.5 bg-white rounded-md shadow-sm hover:bg-gray-100"
+                                >
+                                  <Edit className="w-4 h-4 text-gray-700" />
+                                </button>
+                              ) : !isOwnProfile && !isFreelancer ? (
+                                <button
+                                  className="p-1.5 bg-white rounded-md shadow-sm hover:bg-gray-100"
+                                  onClick={() => toggleFavorite(item.id)}
+                                >
+                                  <Heart
+                                    className={`w-4 h-4 ${
+                                      favoriteServices.includes(item.id)
+                                        ? "text-red-500 fill-red-500"
+                                        : "text-gray-700"
+                                    }`}
+                                  />
+                                </button>
+                              ) : null}
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="p-4">
-                          <h3 className="text-gray-800 font-medium mb-2 line-clamp-2 h-12">
-                            {item.title}
-                          </h3>
-                          <div className="flex items-center mb-3">
-                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="ml-1 text-sm">{item.rating}</span>
-                            <span className="ml-1 text-gray-500 text-xs">({item.reviewCount})</span>
+                          <div className="p-4">
+                            <h3 className="text-gray-800 font-medium mb-2 line-clamp-2 h-12">
+                              {item.title}
+                            </h3>
+                            <div className="flex items-center mb-3">
+                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                              <span className="ml-1 text-sm">{item.rating}</span>
+                              <span className="ml-1 text-gray-500 text-xs">({item.reviewCount})</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <p className="text-gray-800 font-semibold">{item.price}</p>
+                              {isOwnProfile && isFreelancer ? (
+                                <button
+                                  onClick={() => navigateToEditGig(item.id)}
+                                  className="text-blue-600 text-sm font-medium hover:underline"
+                                >
+                                  Edit
+                                </button>
+                              ) : (
+                                <button className="text-blue-600 text-sm font-medium hover:underline">
+                                  View Details
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center">
-                            <p className="text-gray-800 font-semibold">{item.price}</p>
-                            {isOwnProfile && currentMode === "freelancer" ? (
-                              <button
-                                onClick={() => navigateToEditGig(item.id)}
-                                className="text-blue-600 text-sm font-medium hover:underline"
-                              >
-                                Edit
-                              </button>
-                            ) : (
-                              <button className="text-blue-600 text-sm font-medium hover:underline">
-                                View Details
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                </div>
-              )}
-
-              {/* No gigs message for freelancer viewing other freelancer */}
-              {!showGigs && (
-                <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
-                  <div className="mb-4 flex justify-center">
-                    <AlertCircle className="h-12 w-12 text-amber-500" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-800 mb-2">Gigs Not Available</h3>
-                  <p className="text-gray-600 mb-4">
-                    You're currently in freelancer mode and cannot view other freelancers' gigs.
-                  </p>
-                  <button
-                    onClick={switchToUserMode}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Switch to User Mode
-                  </button>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  ) : (
+                    // Empty state for gigs
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
+                      <div className="mb-4 flex justify-center">
+                        {!isOwnProfile ? (
+                          <AlertCircle className="h-12 w-12 text-gray-400" />
+                        ) : (
+                          <PlusCircle className="h-12 w-12 text-blue-500" />
+                        )}
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">
+                        {!isOwnProfile
+                          ? "No Gigs Available"
+                          : "Add Your First Gig"}
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        {!isOwnProfile
+                          ? "This freelancer hasn't published any gigs yet."
+                          : "Create your first gig to start offering your services to potential clients."}
+                      </p>
+                      {isOwnProfile && isFreelancer && (
+                        <button
+                          onClick={navigateToCreateGig}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          Create New Gig
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -577,7 +550,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                     <h2 className="font-semibold text-xl">Reviews</h2>
 
                     {/* Add review button - Only for non-owners in user mode */}
-                    {!isOwnProfile && currentMode === "user" && (
+                    {!isOwnProfile && !isFreelancer && (
                       <button className="flex items-center text-sm px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
                         <Star className="h-4 w-4 mr-1" />
                         Add Review
@@ -586,16 +559,24 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                   </div>
 
                   {freelancerData.reviews.length === 0 ? (
-                    // Empty reviews state
+                    // Empty reviews state - Always show for new profiles
                     <div className="flex flex-col items-center justify-center py-8">
-                      <p className="text-gray-500 text-sm mb-1">
-                        No reviews yet for this freelancer.
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Star className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-700 font-medium mb-1">
+                        No reviews yet
                       </p>
-                      <p className="text-gray-500 text-sm">
+                      <p className="text-gray-500 text-sm mb-4">
                         {isOwnProfile
                           ? "Complete more gigs to get reviews!"
                           : "Be the first to leave a review!"}
                       </p>
+                      {!isOwnProfile && !isFreelancer && (
+                        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
+                          Write a Review
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div>
@@ -676,7 +657,7 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                             <p className="text-sm text-gray-700 mt-2">{review.comment}</p>
                             
                             {/* Review response option - Only for owner */}
-                            {isOwnProfile && (
+                            {isOwnProfile && isFreelancer && (
                               <div className="mt-3">
                                 <button className="text-blue-600 text-xs hover:underline">
                                   Respond to review
@@ -699,147 +680,88 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
               </div>
             </div>
 
-            {/* Right sidebar - Different for different modes */}
-            <div className="lg:w-4/12">
+            {/* Right sidebar - Profile card as shown in screenshot */}
+            <div className="w-full lg:w-4/12">
               <div className="sticky top-20">
-                {isOwnProfile && currentMode === "freelancer" ? (
-                  // Freelancer mode own profile - Settings panel
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="border-b border-gray-100 p-4">
-                      <h3 className="font-medium text-gray-800">Profile Settings</h3>
+                {/* Profile Card */}
+                <div className="bg-blue-50 rounded-lg shadow-sm border border-blue-100 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <div className="w-16 h-16 bg-gray-300 rounded-md flex items-center justify-center mb-2">
+                          <User className="h-8 w-8 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800">{freelancerData.name}</h3>
+                        <div className="flex items-center mt-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                          <span className="text-sm text-green-600">Open for work</span>
+                        </div>
+                      </div>
+                      <button className="p-1.5 bg-blue-100 rounded-full">
+                        <Share2 className="w-4 h-4 text-blue-600" />
+                      </button>
                     </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                        <div>
-                          <span className="text-gray-800 text-sm font-medium">
-                            Available for Work
-                          </span>
-                          <p className="text-gray-500 text-xs mt-1">Show you're open to offers</p>
-                        </div>
-                        <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            defaultChecked
-                            name="toggle"
-                            id="work-toggle"
-                            className="sr-only"
-                          />
-                          <div className="block bg-green-500 w-10 h-6 rounded-full"></div>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-gray-800 text-sm font-medium">
-                            Email Notifications
-                          </span>
-                          <p className="text-gray-500 text-xs mt-1">Receive new request alerts</p>
-                        </div>
-                        <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                          <input
-                            type="checkbox"
-                            defaultChecked
-                            name="toggle"
-                            id="email-toggle"
-                            className="sr-only"
-                          />
-                          <div className="block bg-green-500 w-10 h-6 rounded-full"></div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-gray-100">
-                        <button
-                          onClick={() => navigate("/freelancer/settings")}
-                          className="w-full py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium flex items-center justify-center"
+                    <div className="mt-4">
+                      <p className="text-gray-700 text-sm font-medium mb-2">
+                        {isOwnProfile ? "Your portfolio link" : "Checkout my portfolio"}
+                      </p>
+                      <div className="bg-white rounded-md p-3 border border-gray-200 flex">
+                        <input
+                          type="text"
+                          value={portfolioUrl}
+                          readOnly
+                          className="w-full text-gray-500 text-sm bg-transparent outline-none"
+                        />
+                        <button 
+                          className="text-blue-600 text-sm font-medium"
+                          onClick={copyToClipboard}
                         >
-                          <Settings className="w-4 h-4 mr-1" />
-                          Manage Settings
+                          {copied ? "Copied!" : "Copy"}
                         </button>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  // User mode or viewing someone else - Profile card
-                  <div className="bg-blue-50 rounded-lg shadow-sm border border-blue-100 overflow-hidden">
-                    <div className="p-6">
-                      <div className="flex items-start mb-4">
-                        <div className="w-16 h-16 rounded-full bg-gray-300 mr-4 flex items-center justify-center relative">
-                          <img
-                            src="/api/placeholder/64/64"
-                            alt="Profile"
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold">{freelancerData.name}</h3>
-                          <div className="flex items-center mt-1">
-                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="ml-1 text-sm">{freelancerData.rating}</span>
-                          </div>
-                        </div>
-                        <button className="ml-auto">
-                          <Share2 className="w-5 h-5 text-blue-600" />
-                        </button>
-                      </div>
 
-                      <div className="mt-4">
-                        <p className="text-gray-700 font-medium mb-2">
-                          {isOwnProfile ? "Your portfolio link" : "Checkout my portfolio"}
-                        </p>
-                        <div className="bg-white rounded-md p-3 border border-gray-200 flex">
-                          <input
-                            type="text"
-                            value="https://freelancer.com/adamwarlok"
-                            readOnly
-                            className="w-full text-gray-500 text-sm bg-transparent outline-none"
-                          />
-                          <button className="text-blue-600 text-sm font-medium">Copy</button>
-                        </div>
-                      </div>
-
+                    {/* Call-to-action buttons */}
+                    {!isOwnProfile ? (
                       <div className="mt-6 space-y-3">
-                        {!isOwnProfile ? (
-                          <>
-                            <button className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center">
-                              <MessageCircle className="w-4 h-4 mr-2" />
-                              Hire me
-                            </button>
-                            <button className="w-full py-2.5 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium">
-                              View Full Profile
-                            </button>
-                          </>
-                        ) : currentMode === "user" ? (
-                          <button
-                            onClick={switchToFreelancerMode}
-                            className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Switch to Freelancer Mode
-                          </button>
-                        ) : null}
+                        <button 
+                          className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                          onClick={toggleContactModal}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Hire me
+                        </button>
                       </div>
-
-                      {/* Available for */}
-                      <div className="mt-6">
-                        <h4 className="font-medium mb-3">Available for</h4>
-                        <div className="bg-white rounded-lg p-3 border border-gray-200">
-                          <div className="flex items-center">
-                            <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                            <span className="text-sm">Full-time work</span>
-                          </div>
-                          <div className="flex items-center mt-2">
-                            <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                            <span className="text-sm">Contract work</span>
-                          </div>
-                          <div className="flex items-center mt-2">
-                            <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                            <span className="text-sm">Freelance projects</span>
-                          </div>
-                        </div>
+                    ) : !isFreelancer ? (
+                      <div className="mt-6 space-y-3">
+                        <button
+                          onClick={switchToFreelancerMode}
+                          className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                        >
+                          <Edit className="w-4 w-4 mr-2" />
+                          Switch to Freelancer Mode
+                        </button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="mt-6 space-y-3">
+                        <button
+                          onClick={navigateToCreateGig}
+                          className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                        >
+                          <PlusCircle className="w-4 h-4 mr-2" />
+                          Create New Gig
+                        </button>
+                        <button
+                          onClick={switchToUserMode}
+                          className="w-full py-2.5 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium"
+                        >
+                          Back to User Mode
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -922,7 +844,10 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
                 Cancel
               </button>
               <button 
-                onClick={switchToFreelancerMode}
+                onClick={() => {
+                  toggleRedirectModal();
+                  switchToFreelancerMode();
+                }}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Switch to Freelancer Mode
@@ -933,4 +858,6 @@ export default function FreelancerProfileView({ currentUser, currentMode }) {
       )}
     </>
   );
-}
+};
+
+export default FreelancerProfile;
