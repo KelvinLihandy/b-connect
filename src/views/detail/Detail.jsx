@@ -285,13 +285,13 @@ const Detail = () => {
                 {freelancer?.name}
               </span>
               <div className="flex text-yellow-400">
-                <DynamicStars number={freelancer?.rating} type={"service"} />
+                <DynamicStars number={gigDetail?.rating} type={"service"} />
               </div>
               <span className="text-yellow-500 ml-1">
-                {freelancer?.rating}
+                {gigDetail?.rating}
               </span>
               <span className="text-gray-500 ml-1">
-                {freelancer?.reviews}
+                {gigDetail?.reviewCount}
               </span>
             </div>
 
@@ -454,7 +454,7 @@ const Detail = () => {
                   />
                   {/* )} */}
                 </div>
-                <div className="flex flex-col items-start gap-2">
+                <div className="flex flex-col items-start py-3">
                   <h3 className="font-medium">{freelancer?.name}</h3>
                   <div className="flex items-center gap-2">
                     <DynamicStars number={freelancer?.rating} />
@@ -583,7 +583,13 @@ const Detail = () => {
                     className="w-full mt-6 bg-blue-700 hover:bg-blue-800 text-white py-3 px-4 rounded-md font-medium flex items-center justify-center"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setShowContractModal(true)}
+                    onClick={() => {
+                      if (!auth) {
+                        navigate("/sign-in");
+                        return;
+                      }
+                      setShowContractModal(true)
+                    }}
                   >
                     Continue
                     <ChevronRight size={18} className="ml-1" />
@@ -610,12 +616,12 @@ const Detail = () => {
         {isFullscreen && <FullscreenView />}
       </AnimatePresence>
 
-        <Contract
-          isOpen={showContractModal}
-          onClose={() => setShowContractModal(false)}
-          gigId={gigId}
-          packages={gigDetail?.packages}
-        />
+      <Contract
+        isOpen={showContractModal}
+        onClose={() => setShowContractModal(false)}
+        gigId={gigId}
+        packages={gigDetail?.packages}
+      />
     </div >
   );
 };
