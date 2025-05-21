@@ -108,18 +108,18 @@ const CarouselTrending = ({ data }) => {
                       <img className='cursor-pointer'
                         src={arrow_right}
                         alt="arrow right"
-                        onClick={() => { navigate(`/profile-user/${partner._id}`) }}
+                        onClick={() => { navigate(`/freelancer-profile/${partner._id}`) }}
                       />
                     }
                   </div>
                 </div>
                 <div className='w-50 h-50 ml-auto bg-blue-300 flex items-center justify-center'>
                   <div className="w-full h-full aspect-square overflow-hidden">
-                    {loadingImages[partner.id] && (
+                    {/* {loadingImages[partner.id] && (
                       <div className='w-full h-full flex justify-center items-center'>
                         <CircularProgress color="inherit" size={80} />
                       </div>
-                    )}
+                    )} */}
                     <img
                       className="w-full h-full object-cover"
                       src={partner.picture === "temp" ? default_avatar : `${imageShow}${partner.picture}`}
