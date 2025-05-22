@@ -1,11 +1,10 @@
-import { useRef, useEffect, useState, useContext } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useRef, useEffect, useContext } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext";
 
-const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
+const MorphToggleButton = ({ isFreelancer, setIsFreelancer }) => {
   const { auth } = useContext(AuthContext);
   const containerRef = useRef(null);
-  let localState = isFreelancer;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,15 +18,20 @@ const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
   const handleClick = () => {
     const newState = !isFreelancer;
     localStorage.setItem("isFreelancer", newState);
+    
+    // Don't navigate if in chat
     if (location.pathname.startsWith("/chat")) {
       setIsFreelancer(newState);
       return;
     }
+    
+    // Navigate based on new state
     if (newState) {
       navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
     } else {
       navigate("/home");
     }
+    
     setIsFreelancer(newState);
   };
 
@@ -36,7 +40,7 @@ const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
       <div
         ref={containerRef}
         onClick={handleClick}
-        className={`relative cursor-pointer px-3 py-3  flex items-center ${isFreelancer}`}
+        className={`relative cursor-pointer px-3 py-3 flex items-center ${isFreelancer}`}
         style={{
           minWidth: "170px",
         }}
@@ -75,16 +79,20 @@ const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
             </svg>
           )}
         </div>
+        
+        {/* Labels with sliding animation */}
         <div className="flex-grow relative h-6 overflow-hidden">
           <div
-            className={`absolute w-full transition-transform duration-300 ease-in-out ${isFreelancer ? "translate-y-0" : "-translate-y-full"
-              }`}
+            className={`absolute w-full transition-transform duration-300 ease-in-out ${
+              isFreelancer ? "translate-y-0" : "-translate-y-full"
+            }`}
           >
             <span className="text-white font-medium">FREELANCER</span>
           </div>
           <div
-            className={`absolute w-full transition-transform duration-300 ease-in-out ${isFreelancer ? "translate-y-full" : "translate-y-0"
-              }`}
+            className={`absolute w-full transition-transform duration-300 ease-in-out ${
+              isFreelancer ? "translate-y-full" : "translate-y-0"
+            }`}
           >
             <span className="text-white font-medium">USER</span>
           </div>
@@ -94,4 +102,4 @@ const togglebutton = ({ isFreelancer, setIsFreelancer }) => {
   );
 };
 
-export default togglebutton;
+export default MorphToggleButton;
