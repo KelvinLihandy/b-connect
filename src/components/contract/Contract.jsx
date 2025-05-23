@@ -24,19 +24,19 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2 },
     },
     exit: {
       opacity: 0,
       scale: 0.8,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 0.75, transition: { duration: 0.2 } },
-    exit: { opacity: 0, transition: { duration: 0.2 } }
+    exit: { opacity: 0, transition: { duration: 0.2 } },
   };
 
   const preventClose = (e) => {
@@ -44,15 +44,15 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
   };
 
   const handleStepClick = (stepNum) => {
-    console.log("step", step, "stepnum", stepNum)
+    console.log("step", step, "stepnum", stepNum);
     if (step === steps.length) {
       setStep(1);
       return;
     }
-    if (stepNum < step || (stepNum === step + 1)) {
+    if (stepNum < step || stepNum === step + 1) {
       setStep(stepNum);
     } else if (stepNum === step) {
-      return
+      return;
     }
   };
 
@@ -133,7 +133,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                   <div>
                     <div className="py-4 px-6 text-center sm:text-left bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)] flex flex-row justify-between w-full items-center select-none">
                       <h3 className="text-2xl text-white font-bold">Contract Page</h3>
-                      {!finishPay &&
+                      {!finishPay && (
                         <motion.img
                           src={cancel}
                           whileHover={{ scale: 1.1 }}
@@ -143,7 +143,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                             finishPay ? null : onClose();
                           }}
                         />
-                      }
+                      )}
                     </div>
                     <div className="p-6 flex flex-col h-200 gap-10">
                       <>
@@ -276,7 +276,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                     {selectedPackage?.type}
                                   </div>
                                 </div>
-                                <div className='bg-white h-13/20 px-4 py-8 text-xl'>
+                                <div className="bg-white h-13/20 px-4 py-8 text-xl">
                                   <div className="flex items-center gap-2">
                                     <Check className="text-green-500 mt-0.5 flex-shrink-0" size={32} />
                                     <span>Jumlah Batas Konsep: {selectedPackage?.conceptLimit} Hari</span>
@@ -294,7 +294,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                     <span>Source File</span>
                                   </div>
                                 </div>
-                                <div className='border-t border-gray-300 h-4/20 flex font-bold items-center justify-center rounded-b-lg overflow-hidden'>
+                                <div className="border-t border-gray-300 h-4/20 flex font-bold items-center justify-center rounded-b-lg overflow-hidden">
                                   <motion.button
                                     className='bg-[#1E617A] h-7/10 w-full mx-10 rounded-full text-white text-2xl'
                                   >
