@@ -47,18 +47,20 @@ const GigItem = ({ data, home = false, start = 0, end = 5 }) => {
               >
                 {/* Product Image with hover effect */}
                 <div className="relative ">
-                  {imageLoading && (
+                  {/* {imageLoading && (
                     <div className="w-full text-center">
                       <CircularProgress color="inherit" size={80} />
                     </div>
-                  )}
+                  )} */}
                   <motion.img
                     src={gig.images[0] == "temp" ? product1 : `${imageShow}${gig.images[0]}`}
                     alt={gig.name}
                     className="w-full h-48 object-cover bg-white"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
-                    onLoad={() => { setImageLoading(false) }}
+                    onLoad={() => { 
+                      console.log("image load", gig.name)
+                      setImageLoading(false) }}
                   />
                 </div>
 
