@@ -22,7 +22,12 @@ import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from './components/add_service/AddService';
 
-export const socket = io.connect(baseAPI);
+// export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
+//   path: "/clients/socketio/hubs/Hub",
+//   transports: ["polling"],
+// });
+
+export const socket = io("http://localhost:5000");
 
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);

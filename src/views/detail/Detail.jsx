@@ -80,7 +80,7 @@ const Detail = () => {
       getFreelancer();
     }
     if (gigDetail?.images) {
-      setImages(gigDetail.images);
+      setImages(gigDetail?.images);
     }
   }, [gigDetail]);
 
@@ -443,16 +443,16 @@ const Detail = () => {
               <h2 className="text-xl font-bold mb-2">Freelancer Profile</h2>
               <div className="flex items-start space-x-4">
                 <div className="w-16 h-16 flex items-center justify-center">
-                  {/* {isImageLoading ? (
+                  {isImageLoading ? (
                     <CircularProgress color="inherit" />
-                  ) : ( */}
-                  <img
-                    src={`${imageShow}${freelancer?.picture}`}
-                    alt={freelancer?.picture}
-                    className="w-16 h-16 rounded-full object-cover"
-                    onLoad={() => setIsImageLoading(false)}
-                  />
-                  {/* )} */}
+                  ) : (
+                    <img
+                      src={`${imageShow}${freelancer?.picture}`}
+                      alt={freelancer?.picture}
+                      className="w-16 h-16 rounded-full object-cover"
+                      onLoad={() => setIsImageLoading(false)}
+                    />
+                  )}
                 </div>
                 <div className="flex flex-col items-start py-3">
                   <h3 className="font-medium">{freelancer?.name}</h3>

@@ -90,9 +90,6 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
           <motion.div variants={fadeInUp}>
             <div onClick={() => navigate("/catalog")} className="hover:text-blue-600 transition-colors duration-300">Services</div>
           </motion.div>
-          <motion.div variants={fadeInUp}>
-            <Link to='' className="hover:text-blue-600 transition-colors duration-300">Tournaments</Link>
-          </motion.div>
         </div>
         <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
         <motion.p

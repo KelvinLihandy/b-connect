@@ -150,7 +150,7 @@ const Chat = () => {
       socket.emit("get_room_message", roomId);
     }
   }, [roomId]);
-  
+
   console.log("available rooms", availableRooms)
   console.log("index", roomIndex);
 
@@ -209,7 +209,7 @@ const Chat = () => {
       year: "numeric",
     });
   };
-
+  console.log(availableUsers);
   let lastRenderedDate = null;
 
   return (
@@ -227,7 +227,7 @@ const Chat = () => {
             boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
           }}
         >
-          <div className="w-60">
+          <div className="max-w-60 min-w-60">
             <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-[32px] text-center">Messages</h2>
             <div className="space-y-0">
               {availableUsers.map((chat, i) => (
@@ -243,13 +243,21 @@ const Chat = () => {
                 >
                   <div className="w-[65px] h-[65px]">
                     <img
-                      src={chat.picture == "temp" ? default_avatar : `${imageShow}${chat.picture}`}
+                      src={
+                        !chat.picture || chat.picture === "temp"
+                          ? default_avatar
+                          : `${imageShow}${chat.picture}`
+                      }
                       alt={chat.name}
                       className="w-full h-full rounded-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = default_avatar;
+                      }}
                     />
                   </div>
                   <div>
-                    <div className='font-semibold text-3xl'>{chat.name}</div>
+                    <div className='font-semibold text-2xl'>{chat.name}</div>
                   </div>
                 </div>
               ))}
