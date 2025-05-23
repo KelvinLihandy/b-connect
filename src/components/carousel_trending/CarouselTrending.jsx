@@ -128,6 +128,7 @@ const CarouselTrending = ({ data }) => {
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = default_avatar;
+                        console.log("image user", partner._id, "fail load")
                       }}
                     />
                   </div>

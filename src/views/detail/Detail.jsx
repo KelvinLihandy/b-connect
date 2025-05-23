@@ -7,6 +7,8 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { socket } from '../../App';
 
 // Import images directly
+import default_avatar from '../../assets/default-avatar.png'
+import profile_square from "../../assets/user-profile-square.svg"
 import profileReview1 from "../../assets/profileReview1.png";
 import profileReview2 from "../../assets/profileReview2.png";
 import profileReview3 from "../../assets/profileReview3.png";
@@ -280,18 +282,19 @@ const Detail = () => {
             <h1 className="text-4xl font-bold text-gray-800">
               {gigDetail?.name}
             </h1>
-            <div className="flex items-center mt-2 mb-6">
-              <span className="font-medium text-gray-700 mr-2">
+            <div className="flex items-center mt-2 mb-6 text-lg font-bold">
+              <span className="font-bold text-gray-700 mr-2">
                 {freelancer?.name}
               </span>
+              <span className="px-2">|</span>
               <div className="flex text-yellow-400">
                 <DynamicStars number={gigDetail?.rating} type={"service"} />
               </div>
               <span className="text-yellow-500 ml-1">
                 {gigDetail?.rating}
               </span>
-              <span className="text-gray-500 ml-1">
-                {gigDetail?.reviewCount}
+              <span className="text-gray-500 ml-1 font-medium">
+                ({gigDetail?.reviewCount})
               </span>
             </div>
 
@@ -415,70 +418,70 @@ const Detail = () => {
                 </motion.div>
               ))}
             </div>
-
-            {/* Description Section */}
-            <div className="border-t pt-6">
-              <h2 className="text-xl font-bold mb-4">Description</h2>
-              <p className="text-gray-700 mb-3">
+            <div className="border-t my-6">
+              <h2 className="text-xl font-bold my-2">Description</h2>
+              <p className="text-gray-700 font-medium">
                 {gigDetail?.description}
               </p>
             </div>
-
-            {/* Workflow Section */}
-            <div className="border-t pt-6 mt-6">
-              <h2 className="text-xl font-bold mb-4">Workflow Overview</h2>
-              <div className="space-y-4">
+            <div className="border-t my-6">
+              <h2 className="text-xl font-bold my-2">Workflow Overview</h2>
+              <div className="flex flex-col gap-1">
                 {gigDetail?.workflow.map((flows, index) => (
-                  <div className="border-l-4 border-blue-500 pl-4">
-                    <h3 className="font-medium">
-                      {index + 1}. {flows.flow}
-                    </h3>
-                  </div>
+                  <h3 className="font-bold text-lg">
+                    {index + 1}. {flows.flow}
+                  </h3>
                 ))}
               </div>
             </div>
-
-            {/* Freelancer Profile Section */}
-            <div className="border-t pt-6 mt-6">
-              <h2 className="text-xl font-bold mb-2">Freelancer Profile</h2>
-              <div className="flex items-start space-x-4">
-                <div className="w-16 h-16 flex items-center justify-center">
-                  {isImageLoading ? (
-                    <CircularProgress color="inherit" />
-                  ) : (
-                    <img
-                      src={`${imageShow}${freelancer?.picture}`}
-                      alt={freelancer?.picture}
-                      className="w-16 h-16 rounded-full object-cover"
-                      onLoad={() => setIsImageLoading(false)}
-                    />
-                  )}
+            <div className="border-t my-6 h-40">
+              <h2 className="text-xl font-bold my-2">Freelancer Profile</h2>
+              <div className="flex gap-3 h-26">
+                <div className="w-20 h-full flex items-center justify-center">
+                  <img
+                    className="w-20 h-20 rounded-full object-cover"
+                    src={
+                      !freelancer?.picture || freelancer.picture === "temp"
+                        ? default_avatar
+                        : `${imageShow}${freelancer.picture}`
+                    }
+                    alt="freelancer"
+                    onLoad={() => setIsImageLoading(false)}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = default_avatar;
+                      console.log("Image load failed for freelancer:", freelancer?._id);
+                    }}
+                  />
                 </div>
-                <div className="flex flex-col items-start py-3">
-                  <h3 className="font-medium">{freelancer?.name}</h3>
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col justify-center gap-1 py-3">
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <img src={profile_square} alt="profile" className="w-6 h-6" />
+                    {freelancer?.name}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xl">
                     <DynamicStars number={freelancer?.rating} />
-                    <span className="text-yellow-400 font-semibold">{freelancer?.rating}</span>
+                    <span className="text-yellow-400 font-bold">{freelancer?.rating}</span>
                     <span className="text-gray-500">({freelancer?.reviews?.length ?? "0"} Reviews)</span>
                   </div>
-                  <p className="text-gray-700 text-md flex items-center">
-                    <Clock size={14} className="mr-1" />
+                  <p className="text-gray-700 text-lg flex gap-2 items-center">
+                    <Clock size={20} className="" />
                     Member since {new Date(freelancer?.joinedDate).getFullYear()}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="border-t p-2">
-              <p className="text-gray-700">
-                {freelancer?.description}
+            <div className="border-t my-6">
+              <p className="text-gray-700 my-2 font-medium text-base">
+                {freelancer?.description?.trim()
+                  ? freelancer.description
+                  : "No description is set"}
               </p>
             </div>
-
-            {/* Reviews Section */}
-            <div className="border-t pt-6 mt-6">
+            <div className="border-t mt-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Reviews</h2>
-                <div className="flex space-x-2">
+                <h2 className="text-xl font-bold my-2">Reviews</h2>
+                <div className="flex gap-3">
                   <button className="p-2 rounded-full bg-gray-100">
                     <ChevronLeft size={16} />
                   </button>
@@ -487,7 +490,6 @@ const Detail = () => {
                   </button>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {reviews?.length > 0 ?
                   reviews.map((review) => (
@@ -553,24 +555,22 @@ const Detail = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex flex-row justify-between">
-                        <h3>Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
+                        <h3 className="text-3xl font-bold font-inter">Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
                       </div>
-                      <p className="text-xl font-bold mt-1">{gigDetail?.packages[activePackage]?.description}</p>
-
-                      <div className="text-gray-600 text-sm mt-3">
-                        <div className="flex items-start gap-2">
+                      <div className="text-gray-600 text-sm mt-3 border-t">
+                        <div className="flex items-start gap-2 mt-4">
                           <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
                           <span>Jumlah Batas Konsep: {gigDetail?.packages[activePackage]?.conceptLimit} Hari</span>
                         </div>
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2 mt-2">
                           <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
                           <span>Durasi Pengerjaan: {gigDetail?.packages[activePackage]?.workDuration} Hari</span>
                         </div>
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2 mt-2">
                           <Check className="text-green-500 mt-0.5 flex-shrink-0" size={16} />
                           <span>Jumlah Batas Revisi: {gigDetail?.packages[activePackage]?.revisionLimit} Kali</span>
                         </div>
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2 mt-2">
                           <Check className={`${gigDetail?.packages[activePackage]?.sourceFile ? "text-green-500" : "text-gray-500"} mt-0.5 flex-shrink-0`} size={16} />
                           <span>Source File</span>
                         </div>

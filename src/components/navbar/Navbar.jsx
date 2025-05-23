@@ -132,7 +132,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                   type="text"
                   placeholder="Search For Our Services"
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="relative left-3 w-full h-[40px] px-3 rounded-lg border-black outline-none text-black text-md font-medium"
+                  className="relative left-3 w-full h-[40px] px-3 rounded-lg border-black outline-none text-black text-base font-medium"
                 />
                 <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-lg flex justify-center outline-none items-center cursor-pointer">
                   <img src={searchBtn} alt="Search" className="w-full h-full" />
@@ -380,7 +380,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 type="text"
                 placeholder="Search For Our Services"
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-md font-medium"
+                className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-base font-medium"
               />
               <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
                 <img src={searchBtn} alt="Search" className="w-[83px] h-[64px]" />

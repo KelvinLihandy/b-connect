@@ -128,7 +128,7 @@ const CatalogPage = () => {
       name,
       category,
       minPrice,
-      maxPrice: maxPrice*1000,
+      maxPrice: maxPrice * 1000,
       rating,
     });
     try {
@@ -136,7 +136,7 @@ const CatalogPage = () => {
         name,
         category,
         minPrice,
-        maxPrice: maxPrice*1000,
+        maxPrice: maxPrice * 1000,
         rating,
       });
       const res = response.data.filteredGigs;
@@ -495,7 +495,7 @@ const CatalogPage = () => {
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
                     onClick={() => {
-                      if(selectedCategory == category) setSelectedCategory("");
+                      if (selectedCategory == category) setSelectedCategory("");
                       else setSelectedCategory(category);
                     }}
                   >
@@ -568,7 +568,7 @@ const CatalogPage = () => {
                       className="mr-3 accent-blue-600 h-4 w-4"
                       checked={selectedRating === stars}
                       onClick={() => {
-                        if(selectedRating == stars) setSelectedRating(0)
+                        if (selectedRating == stars) setSelectedRating(0)
                         else setSelectedRating(stars)
                       }}
                     />
@@ -619,13 +619,14 @@ const CatalogPage = () => {
             initial="hidden"
             animate="visible"
           >
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <GigItem
                 start={start}
                 end={end}
                 data={gigs}
               />
             </div>
+
 
             {/* Pagination with Animation */}
             {gigs.length > 0 &&

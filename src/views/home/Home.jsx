@@ -114,7 +114,7 @@ const Home = () => {
         servicesSection.current?.scrollIntoView({ behavior: 'smooth' });
       }}
     >
-      <p className='self-center font-medium text-md'>
+      <p className='self-center font-medium text-lg'>
         {text}
       </p>
       <img src={trending_symbol} alt="trending" className="animate-pulse" />
@@ -251,7 +251,7 @@ const Home = () => {
             Hire a Person To Help Your Problem.
           </motion.p>
           <motion.p
-            className='text-md text-[#D5D5D5C2] opacity-80 text-wrap max-w-xl'
+            className='text-lg text-[#D5D5D5C2] opacity-80 text-wrap max-w-xl'
             variants={fadeIn}
           >
             In the ever-evolving landscape of skills and knowledge, the choice between hiring an expert is a pivotal decision.
@@ -528,47 +528,13 @@ const Home = () => {
         </motion.div>
 
         <motion.div
-          className='flex flex-wrap gap-3 justify-center'
+          className="grid grid-cols-4 grid-rows-2 gap-6 justify-center"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <motion.div
-            className="w-sm flex flex-row h-90 font-inter bg-[#F3F3F3] relative items-center rounded-lg shadow-md overflow-hidden"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className='flex flex-row items-center justify-center p-3'>
-              <p className='text-wrap font-Archivo font-bold text-3xl self-start -mt-4 text-gray-800'>
-                Our Best Sellers
-              </p>
-              <motion.img
-                className='mt-10'
-                src={mr_pink_hair}
-                alt="mr pink hair"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </div>
-            <motion.button
-              className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/catalog")}
-            >
-              <p className='font-Archivo text-3xl font-bold text-[#565E6D]'>
-                Shop Now
-              </p>
-              <motion.img
-                src={arrow_right}
-                alt="arrow right"
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-            </motion.button>
-          </motion.div>
-          <GigItem data={gigs} home />
+          <GigItem data={gigs} home start={0} end={8} starter/>
         </motion.div>
       </motion.section>
 
