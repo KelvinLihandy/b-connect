@@ -22,6 +22,7 @@ import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
+import UserProfile from "./views/User_profile/UserProfile";
 export const socket = io.connect(baseAPI);
 
 const App = () => {
@@ -107,6 +108,7 @@ const App = () => {
         {/* Protected routes - require authentication */}
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
+        <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />
       </Routes>
     </>
   );
