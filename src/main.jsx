@@ -8,19 +8,22 @@ import EmailProvider from './contexts/EmailContext.jsx';
 import NotificationProvider from './contexts/NotificationContext.jsx';
 import UserTypeProvider from './contexts/UserTypeContext.jsx';
 import RememberProvider from './contexts/RememberContext.jsx';
+import { DisabledGigsProvider } from './contexts/DisabledGigsContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <RememberProvider>
-          <UserTypeProvider>
-            <NotificationProvider>
-              <EmailProvider>
-                <App />
-              </EmailProvider>
-            </NotificationProvider>
-          </UserTypeProvider>
+          <DisabledGigsProvider>
+            <UserTypeProvider>
+              <NotificationProvider>
+                <EmailProvider>
+                  <App />
+                </EmailProvider>
+              </NotificationProvider>
+            </UserTypeProvider>
+          </DisabledGigsProvider>
         </RememberProvider>
       </AuthProvider>
     </BrowserRouter>

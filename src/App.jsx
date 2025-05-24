@@ -23,6 +23,7 @@ import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
+import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
 //   path: "/clients/socketio/hubs/Hub",
@@ -36,6 +37,7 @@ const App = () => {
   const { isFreelancer } = useContext(UserTypeContext);
   const [ready, setReady] = useState(false);
   const { notificationList, setNotificationList } = useContext(NotificationContext);
+  const { getDisabledGigs } = useContext(DisabledGigsContext);
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
@@ -65,8 +67,18 @@ const App = () => {
       await getAuth();
       setReady(true);
     };
+
     initAuth();
   }, [auth?.data?.auth?.id]);
+
+  useEffect(() => {
+    const checkDisabled = async () => {
+      if (!ready) return;
+      await getDisabledGigs();
+    }
+
+    checkDisabled();
+  }, [ready, auth?.data?.auth?.id])
 
   if (!ready) {
     return <></>;

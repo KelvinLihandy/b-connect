@@ -19,9 +19,11 @@ import { DynamicStars } from "../../components/dynamic_stars/DynamicStars";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { CircularProgress } from "@mui/material";
 import Contract from "../../components/contract/Contract";
+import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
 
 const Detail = () => {
   const { auth } = useContext(AuthContext);
+  const { disabledGigs } = useContext(DisabledGigsContext);
   const { gigId } = useParams();
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
@@ -38,6 +40,23 @@ const Detail = () => {
   const detailScrollUp = useRef(null);
   const [showContractModal, setShowContractModal] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const reasons = disabledGigs[gigId];
+  let isDisabled = false;
+  let reasonText = "";
+
+  if (reasons && reasons.length > 0) {
+    isDisabled = true;
+    if (reasons.includes("contract-in-progress")) {
+      reasonText = "Contract in progress";
+    } else if (reasons.includes("transaction-pending")) {
+      reasonText = "Transaction pending";
+    } else {
+      reasonText = reasons.join(", ");
+    }
+  } else {
+    isDisabled = false;
+    reasonText = "";
+  }
 
   const getDetail = async () => {
     try {
@@ -577,21 +596,26 @@ const Detail = () => {
                       </div>
                     </motion.div>
                   </AnimatePresence>
-
-                  {/* Buttons */}
                   <motion.button
-                    className="w-full mt-6 bg-blue-700 hover:bg-blue-800 text-white py-3 px-4 rounded-md font-medium flex items-center justify-center"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={isDisabled}
+                    className={`w-full mt-6 py-3 px-4 rounded-md font-medium flex items-center justify-center cursor-pointer text-white 
+                      ${isDisabled ? 'bg-gray-600 hover:bg-gray-800' : 'bg-blue-700 hover:bg-blue-800'}`}
+                    whileHover={isDisabled ? {} : { scale: 1.02 }}
+                    whileTap={isDisabled ? {} : { scale: 0.98 }}
                     onClick={() => {
+                      if (isDisabled) {
+                        // navigate()
+                        // nav to budi
+                        return;
+                      }
                       if (!auth) {
                         navigate("/sign-in");
                         return;
                       }
-                      setShowContractModal(true)
+                      setShowContractModal(true);
                     }}
                   >
-                    Continue
+                    {isDisabled ? reasonText : "Continue"}
                     <ChevronRight size={18} className="ml-1" />
                   </motion.button>
 
