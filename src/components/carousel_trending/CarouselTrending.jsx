@@ -93,24 +93,20 @@ const CarouselTrending = ({ data }) => {
                     <p className='text-4xl font-semibold'>{partner.name.split(/ (.+)/)[1] ? partner.name.split(/ (.+)/)[1] : "\u00A0"}</p>
                     <p>{console.log(partner.name.split(' '))}</p>
                   </div>
-                  <div className='flex flex-col gap-2'>
-                    <div>
-                      <DynamicStars number={partner.rating} />
-                    </div>
+                  <div className='flex flex-row gap-1 items-center'>
+                    <DynamicStars number={partner.rating} />
                     <div className='flex flex-row'>
                       <p className='text-xl font-inter mx-1'>{partner.rating}</p>
                       <p className='text-xl font-inter'>({partner.reviews})</p>
                     </div>
                   </div>
                   <div className='flex flex-row font-inter gap-2'>
-                    <p className='text-lg'>{partner.type}</p>
-                    {auth &&
-                      <img className='cursor-pointer'
-                        src={arrow_right}
-                        alt="arrow right"
-                        onClick={() => { navigate(`/freelancer-profile/${partner._id}`) }}
-                      />
-                    }
+                    <p className='text-lg'>{partner.type[0]}</p>
+                    <img className='cursor-pointer'
+                      src={arrow_right}
+                      alt="arrow right"
+                      onClick={() => { navigate(`/freelancer-profile/${partner._id}`) }}
+                    />
                   </div>
                 </div>
                 <div className='w-50 h-50 ml-auto bg-blue-300 flex items-center justify-center'>
@@ -122,9 +118,18 @@ const CarouselTrending = ({ data }) => {
                     )} */}
                     <img
                       className="w-full h-full object-cover"
-                      src={partner.picture === "temp" ? default_avatar : `${imageShow}${partner.picture}`}
+                      src={
+                        !partner.picture || partner.picture === "temp"
+                          ? default_avatar
+                          : `${imageShow}${partner.picture}`
+                      }
                       alt="picture"
                       onLoad={() => handleImageLoad(partner.id)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = default_avatar;
+                        console.log("image user", partner._id, "fail load")
+                      }}
                     />
                   </div>
                 </div>

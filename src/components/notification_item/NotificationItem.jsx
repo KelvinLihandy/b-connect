@@ -84,7 +84,7 @@ const NotificationItem = ({ notification, unreadCount,setUnreadCount }) => {
           </div>
           <div className="flex flex-col w-full h-full">
             <div className="flex flex-row justify-between gap-3">
-              <p className="text-md font-semibold self-start">{notification.sender.name}</p>
+              <p className="text-base font-semibold self-start">{notification.sender.name}</p>
               <p className="text-sm text-gray-600">{getRelativeTimeLabel(notification.message.time)}</p>
             </div>
             <p className="text-sm">{notification.message.content}</p>

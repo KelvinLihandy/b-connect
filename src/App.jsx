@@ -23,13 +23,21 @@ import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
-export const socket = io.connect(baseAPI);
+import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
+
+// export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
+//   path: "/clients/socketio/hubs/Hub",
+//   transports: ["polling"],
+// });
+
+export const socket = io("http://localhost:5000");
 
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
   const { isFreelancer } = useContext(UserTypeContext);
   const [ready, setReady] = useState(false);
   const { notificationList, setNotificationList } = useContext(NotificationContext);
+  const { getDisabledGigs } = useContext(DisabledGigsContext);
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
@@ -59,8 +67,18 @@ const App = () => {
       await getAuth();
       setReady(true);
     };
+
     initAuth();
   }, [auth?.data?.auth?.id]);
+
+  useEffect(() => {
+    const checkDisabled = async () => {
+      if (!ready) return;
+      await getDisabledGigs();
+    }
+
+    checkDisabled();
+  }, [ready, auth?.data?.auth?.id])
 
   if (!ready) {
     return <></>;
@@ -106,6 +124,7 @@ const App = () => {
         )}
         <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
         {/* Protected routes - require authentication */}
+        <Route path="/chat" element={<Navigate to="/chat/def" replace />} />
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
         <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />

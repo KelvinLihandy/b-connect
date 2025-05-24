@@ -5,7 +5,6 @@ import linkedin_ball from '../../assets/linkedin_ball.svg'
 import youtube_ball from '../../assets/youtube_ball.svg'
 import facebook_ball from '../../assets/facebook_ball.svg'
 import twitter_ball from '../../assets/twitter_ball.svg'
-import arrowhead_up from '../../assets/arrowhead_up.svg'
 import logo_gray from '../../assets/logo_gray.svg'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronUp } from 'lucide-react'
@@ -89,9 +88,6 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
           </motion.div>
           <motion.div variants={fadeInUp}>
             <div onClick={() => navigate("/catalog")} className="hover:text-blue-600 transition-colors duration-300">Services</div>
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <Link to='' className="hover:text-blue-600 transition-colors duration-300">Tournaments</Link>
           </motion.div>
         </div>
         <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />

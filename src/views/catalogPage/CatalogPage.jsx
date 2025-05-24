@@ -128,7 +128,7 @@ const CatalogPage = () => {
       name,
       category,
       minPrice,
-      maxPrice: maxPrice*1000,
+      maxPrice: maxPrice * 1000,
       rating,
     });
     try {
@@ -136,7 +136,7 @@ const CatalogPage = () => {
         name,
         category,
         minPrice,
-        maxPrice: maxPrice*1000,
+        maxPrice: maxPrice * 1000,
         rating,
       });
       const res = response.data.filteredGigs;
@@ -495,7 +495,7 @@ const CatalogPage = () => {
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
                     onClick={() => {
-                      if(selectedCategory == category) setSelectedCategory("");
+                      if (selectedCategory == category) setSelectedCategory("");
                       else setSelectedCategory(category);
                     }}
                   >
@@ -568,7 +568,7 @@ const CatalogPage = () => {
                       className="mr-3 accent-blue-600 h-4 w-4"
                       checked={selectedRating === stars}
                       onClick={() => {
-                        if(selectedRating == stars) setSelectedRating(0)
+                        if (selectedRating == stars) setSelectedRating(0)
                         else setSelectedRating(stars)
                       }}
                     />
@@ -619,13 +619,14 @@ const CatalogPage = () => {
             initial="hidden"
             animate="visible"
           >
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <GigItem
                 start={start}
                 end={end}
                 data={gigs}
               />
             </div>
+
 
             {/* Pagination with Animation */}
             {gigs.length > 0 &&
@@ -697,54 +698,6 @@ const CatalogPage = () => {
         </div>
       </div>
 
-      {/* Featured Categories Section */}
-      <motion.div
-        className="bg-gray-50 py-16"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-gray-800">Featured Categories</h2>
-            <p className="text-gray-600 mt-2">Explore our most popular service categories</p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-5"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {[
-              { name: "UI/UX Design", icon: "🎨", count: "1,201 services" },
-              { name: "Web Development", icon: "💻", count: "842 services" },
-              { name: "Video Editing", icon: "📱", count: "633 services" },
-              { name: "Translation", icon: "✏️", count: "921 services" },
-            ].map((category, i) => (
-              <motion.div
-                key={category.name}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center hover:shadow-md transition-all duration-300"
-                variants={cardVariants}
-                custom={i}
-                whileHover={{ y: -5 }}
-              >
-                <span className="text-4xl mb-4">{category.icon}</span>
-                <h3 className="font-medium text-gray-800 mb-2">{category.name}</h3>
-                <p className="text-sm text-gray-500">{category.count}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.div>
       <Footer refScrollUp={catalogScrollUp} />
     </div>
   );
