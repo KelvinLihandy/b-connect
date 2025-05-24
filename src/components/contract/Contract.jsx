@@ -15,6 +15,8 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
   const [step, setStep] = useState(1);
   const [selectedPackage, setSelectedPackage] = useState();
   const [finishPay, setFinishPay] = useState(false);
+  const [pendingPay, setPendingPay] = useState(false);
+  const [failPay, setFailPay] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const { snapEmbed } = UseSnap();
   const navigate = useNavigate();
@@ -66,33 +68,33 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
   const initiateTransaction = async () => {
     if (!selectedPackage && finishPay) return;
     try {
-      const res = await axios.post(`${contractAPI}/create-transaction`,
-        {
-          gigId: gigId,
-          selectedPackage: selectedPackage
-        },
-        { withCredentials: true }
-      )
-      if (res && res.data.status === "success") {
-        console.log(res);
-        snapEmbed(res.data.transaction.snap_token, "snap-container", {
-          onSuccess: function (result) {
-            console.log("success", result);
-            setFinishPay(true);
-          },
-          onPending: function (result) {
-            console.log("pending", result);
-            setFinishPay(true);
-          },
-          onClose: function (result) {
-            console.log("close", result);
-            setFinishPay(true);
-          }
-        })
-      }
-      else {
-        console.log("error api midtrans", res);
-      }
+      // const res = await axios.post(`${contractAPI}/create-transaction`,
+      //   {
+      //     gigId: gigId,
+      //     selectedPackage: selectedPackage
+      //   },
+      //   { withCredentials: true }
+      // )
+      // if (res && res.data.status === "success transaction create") {
+      //   console.log(res);
+      //   snapEmbed(res.data.transaction.snap_token, "snap-container", {
+      //     onSuccess: function (result) {
+      //       console.log("success", result);
+      //       setFinishPay(true);
+      //     },
+      //     onPending: function (result) {
+      //       console.log("pending", result);
+      //       setPendingPay(true);
+      //     },
+      //     onClose: function (result) {
+      //       console.log("close", result);
+      //       setFailPay(true);
+      //     }
+      //   })
+      // }
+      // else {
+      //   console.log("error api midtrans", res);
+      // }
     } catch (error) {
       console.log("error initiate transaction", error);
     }
@@ -147,7 +149,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                     </div>
                     <div className="p-6 flex flex-col h-200 gap-10">
                       <>
-                        {!finishPay &&
+                        {!finishPay && !pendingPay && !failPay &&
                           <div className="w-full px-100 static">
                             <div className="flex flex-col justify-center">
                               <div className="flex justify-between items-center w-full relative">
@@ -364,11 +366,47 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                         }
                         <div id="snap-container" className='flex justify-center'>
                         </div>
-                        {step === 3 && finishPay &&
+                        {step === 3 && !finishPay &&
                           <>
                             <div className='flex flex-col items-center font-Archivo justify-between h-full py-20'>
                               <div className='flex flex-col items-center gap-4'>
                                 <p className='text-5xl font-bold'>Great! You just Ordered!</p>
+                                <p className='font-[#636363]'>Selamat! Pesanan Anda telah berhasil diproses dan akan diteruskan ke B-Partner kami🎊</p>
+                              </div>
+                              <motion.img
+                                className='select-none cursor-pointer grab'
+                                src={contract_done}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                draggable={false}
+                                onClick={() => { }}//nav ke user history
+                              />
+                            </div>
+                          </>
+                        }
+                        {step === 3 && !pendingPay &&
+                          <>
+                            <div className='flex flex-col items-center font-Archivo justify-between h-full py-20'>
+                              <div className='flex flex-col items-center gap-4'>
+                                <p className='text-5xl font-bold'>pending</p>
+                                <p className='font-[#636363]'>Selamat! Pesanan Anda telah berhasil diproses dan akan diteruskan ke B-Partner kami🎊</p>
+                              </div>
+                              <motion.img
+                                className='select-none cursor-pointer grab'
+                                src={contract_done}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                draggable={false}
+                                onClick={() => { }}//nav ke user history
+                              />
+                            </div>
+                          </>
+                        }
+                        {step === 3 && failPay &&
+                          <>
+                            <div className='flex flex-col items-center font-Archivo justify-between h-full py-20'>
+                              <div className='flex flex-col items-center gap-4'>
+                                <p className='text-5xl font-bold'>fail</p>
                                 <p className='font-[#636363]'>Selamat! Pesanan Anda telah berhasil diproses dan akan diteruskan ke B-Partner kami🎊</p>
                               </div>
                               <motion.img
