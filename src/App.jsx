@@ -16,11 +16,13 @@ import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
-import ProfileUser from './views/profile_user/ProfileUser';
-import { NotificationContext } from './contexts/NotificationContext';
+import ProfileUser from "./views/profile_user/ProfileUser";
+import { NotificationContext } from "./contexts/NotificationContext";
 import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";
-import AddService from './components/add_service/AddService';
+import AddService from "./components/add_service/AddService";
+import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
+import UserProfile from "./views/User_profile/UserProfile";
 
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
 //   path: "/clients/socketio/hubs/Hub",
@@ -38,8 +40,8 @@ const App = () => {
   const location = useLocation();
   useEffect(() => {
     const handleReceiveNotifications = (notificationsData) => {
-      console.log("notifs data", notificationsData)
-      setNotificationList(notificationsData)
+      console.log("notifs data", notificationsData);
+      setNotificationList(notificationsData);
     };
     socket.on("receive_notifications", handleReceiveNotifications);
 
@@ -50,12 +52,12 @@ const App = () => {
 
   useEffect(() => {
     if (auth?.data?.auth?.id) {
-      socket.emit("retrieve_notifications", auth?.data?.auth?.id)
+      socket.emit("retrieve_notifications", auth?.data?.auth?.id);
     }
   }, [auth?.data?.auth?.id, location.pathname]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
 
   useEffect(() => {
@@ -80,12 +82,25 @@ const App = () => {
         <Route path="/sign-in/verify-otp" element={<InputOTP />} />
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
         <Route path="/add-service" element={<AddService />} />
+        <Route path="/become-freelancer" element={<FreelancerReg />} />
         {isFreelancer ? (
           <>
-            <Route path="/" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
-            <Route path="/home" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
-            <Route path="/catalog" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
-            <Route path="/detail/:gigId" element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />} />
+            <Route
+              path="/"
+              element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
+            />
+            <Route
+              path="/home"
+              element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
+            />
+            <Route
+              path="/catalog"
+              element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
+            />
+            <Route
+              path="/detail/:gigId"
+              element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
+            />
           </>
         ) : (
           <>
@@ -99,6 +114,7 @@ const App = () => {
         {/* Protected routes - require authentication */}
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
+        <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />
       </Routes>
     </>
   );
