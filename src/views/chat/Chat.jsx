@@ -219,7 +219,6 @@ const Chat = () => {
       <Navbar />
 
       <div className='flex'>
-        {/* Side Bar */}
         <div className='flex mt-[150px] mb-[50px] ml-[20px] mr-[10px] h-[800px] w-fit font-inter'
           style={{
             borderRadius: "12px 12px 0px 0px",
@@ -228,39 +227,44 @@ const Chat = () => {
           }}
         >
           <div className="max-w-60 min-w-60">
-            <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-[32px] text-center">Messages</h2>
+            <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-2xl">Messages</h2>
             <div className="space-y-0">
-              {availableUsers.map((chat, i) => (
-                <div
-                  key={chat._id}
-                  className={`flex items-center space-x-2 p-2 hover:bg-gray-300 cursor-pointer 
-                                border-b border-gray-300 ${roomIndex === i ? "bg-gray-300" : "bg-[#F3F3F3]"
-                    }`}
-                  onClick={() => {
-                    setRoomIndex(i);
-                    joinRoom(i);
-                  }}
-                >
-                  <div className="w-[65px] h-[65px]">
-                    <img
-                      src={
-                        !chat.picture || chat.picture === "temp"
-                          ? default_avatar
-                          : `${imageShow}${chat.picture}`
-                      }
-                      alt={chat.name}
-                      className="w-full h-full rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = default_avatar;
-                      }}
-                    />
+              {Array.isArray(availableUsers) && availableUsers.length > 0 ? (
+                availableUsers.map((chat, i) => (
+                  <div
+                    key={chat?._id}
+                    className={`flex items-center space-x-2 p-2 hover:bg-gray-300 cursor-pointer 
+                    border-b border-gray-300 ${roomIndex === i ? "bg-gray-300" : "bg-[#F3F3F3]"}`}
+                    onClick={() => {
+                      setRoomIndex(i);
+                      joinRoom(i);
+                    }}
+                  >
+                    <div className="w-[65px] h-[65px]">
+                      <img
+                        src={
+                          !chat?.picture || chat?.picture === "temp"
+                            ? default_avatar
+                            : `${imageShow}${chat?.picture}`
+                        }
+                        alt={chat?.name}
+                        className="w-full h-full rounded-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = default_avatar;
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div className='font-semibold text-2xl'>{chat?.name}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className='font-semibold text-2xl'>{chat.name}</div>
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-10 text-xl h-180 flex items-center justify-center px-5">
+                  Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
                   </div>
-                </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -272,76 +276,80 @@ const Chat = () => {
             boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
           }}
         >
-          {availableUsers[roomIndex] &&
-            <div className="flex items-center bg-[#F3F3F3] p-4 mb-2 shadow-md"
-              style={{
-                borderRadius: "12px 12px 0px 0px",
-                background: "#F3F3F3",
-                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-              }}
-            >
-              <div className="w-[67px] h-[67px]">
-                <img
-                  src={availableUsers[roomIndex]?.picture == "temp" ? default_avatar : `${imageShow}${availableUsers[roomIndex]?.picture}`}
-                  alt={availableUsers[roomIndex]?.name}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              </div>
-              <div className="ml-4">
-                <div className="font-bold text-[32px]">{availableUsers[roomIndex]?.name}</div>
-                {
-                  availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
-                    (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}</div>)
-                    :
-                    (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}</div>)
-                }
-              </div>
-            </div>
-          }
-
-          {/* Chat Messages */}
+          <div className="flex items-center bg-[#F3F3F3] p-4 mb-2 shadow-md h-25"
+            style={{
+              borderRadius: "12px 12px 0px 0px",
+              background: "#F3F3F3",
+              boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+            }}
+          >
+            {availableUsers[roomIndex] &&
+              <>
+                <div className="w-20 h-20">
+                  <img
+                    src={availableUsers[roomIndex]?.picture == "temp" ? default_avatar : `${imageShow}${availableUsers[roomIndex]?.picture}`}
+                    alt={availableUsers[roomIndex]?.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </div>
+                <div className="ml-4">
+                  <div className="font-bold text-3xl">{availableUsers[roomIndex]?.name}</div>
+                  {
+                    availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
+                      (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}</div>)
+                      :
+                      (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}</div>)
+                  }
+                </div>
+              </>
+            }
+          </div>
           <ScrollToBottom
-            className="flex-1 bg-[#F9F9F9] pt-1 overflow-y-auto"
+            className="flex-1 pt-1 overflow-y-auto"
             style={{
               backgroundImage: `url(${logo})`,
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
               backgroundSize: "contain",
+              width: "100%",
+              height: "100%",
             }}
           >
-            {/* Chat Content */}
             <div className="flex flex-col gap-2 text-[15px] space-y-4 px-10 py-5">
-              {Array.isArray(currentRoomMessageList) && currentRoomMessageList.map((message, index) => {
-                const messageDate = new Date(message.time);
-                const messageMidnight = new Date(messageDate);
-                messageMidnight.setHours(0, 0, 0, 0);
+              {Array.isArray(currentRoomMessageList) && currentRoomMessageList.length === 0 ? (
+                <div className="flex justify-center items-center h-160 w-full py-20">
+                  <p className="text-center text-gray-400 w-80 text-2xl">
+                    Ayo, mulai percakapanmu dengan freelancer yg kamu inginkan segera.
+                  </p>
+                </div>
+              ) : (
+                currentRoomMessageList?.map((message, index) => {
+                  const messageDate = new Date(message.time);
+                  const messageMidnight = new Date(messageDate);
+                  messageMidnight.setHours(0, 0, 0, 0);
 
-                let showDateLabel = false;
+                  let showDateLabel = false;
+                  if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
+                    showDateLabel = true;
+                    lastRenderedDate = messageMidnight;
+                  }
 
-                if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
-                  showDateLabel = true;
-                  lastRenderedDate = messageMidnight;
-                }
+                  const label = showDateLabel ? getRelativeDateLabel(message.time) : null;
 
-                const label = showDateLabel ? getRelativeDateLabel(message.time) : null;
-                return (
-                  <React.Fragment key={index}>
-                    {/* Chat Date */}
-                    {label && (
-                      <div className="flex items-center justify-center -space-x-1">
-                        <div className="flex-1 h-[1px] max-w-[50px] bg-black"></div>
-                        <span className="px-3 text-gray-500">
-                          {label}
-                        </span>
-                        <div className="flex-1 h-[1px] max-w-[50px] bg-black"></div>
-                      </div>
-                    )}
-
-                    {/* Message */}
-                    <Message message={message} roomId={availableRooms[roomIndex]?._id} />
-                  </React.Fragment>
-                );
-              })}
+                  return (
+                    <React.Fragment key={index}>
+                      {label && (
+                        <div className="flex items-center justify-center my-4">
+                          <div className="flex-1 h-[1px] bg-black max-w-[50px]" />
+                          <span className="px-3 text-gray-500 text-sm">{label}</span>
+                          <div className="flex-1 h-[1px] bg-black max-w-[50px]" />
+                        </div>
+                      )}
+                      <Message message={message} roomId={availableRooms[roomIndex]?._id} />
+                    </React.Fragment>
+                  );
+                })
+              )}
             </div>
           </ScrollToBottom>
 

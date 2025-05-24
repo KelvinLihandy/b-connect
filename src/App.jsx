@@ -112,6 +112,7 @@ const App = () => {
         )}
         <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
         {/* Protected routes - require authentication */}
+        <Route path="/chat" element={<Navigate to="/chat/def" replace />} />
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
         <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />

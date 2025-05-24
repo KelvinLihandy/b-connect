@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import cancel from "../../assets/icons8-cancel (1).svg";
 import contract_done from "../../assets/contract_done.svg";
+import contract_pending from "../../assets/newsletter.svg";
+import contract_fail from "../../assets/asking-question.svg";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { contractAPI } from "../../constants/APIRoutes";
-import UseSnap from "../../hooks/UseSnap";
 import { AuthContext } from "../../contexts/AuthContext";
 
 const Contract = ({ isOpen, onClose, gigId, packages }) => {
@@ -18,7 +19,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
   const [pendingPay, setPendingPay] = useState(false);
   const [failPay, setFailPay] = useState(false);
   const [phoneError, setPhoneError] = useState("");
-  const { snapEmbed } = UseSnap();
+  const [showProgress, setShowProgress] = useState(true);
   const navigate = useNavigate();
 
   const contractModalVariants = {
@@ -40,7 +41,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
     visible: { opacity: 0.75, transition: { duration: 0.2 } },
     exit: { opacity: 0, transition: { duration: 0.2 } },
   };
-
+ 
   const preventClose = (e) => {
     e.stopPropagation();
   };
@@ -49,6 +50,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
     console.log("step", step, "stepnum", stepNum);
     if (step === steps.length) {
       setStep(1);
+      setShowProgress(true);
       return;
     }
     if (stepNum < step || stepNum === step + 1) {
@@ -65,36 +67,55 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
     });
   };
 
+  useEffect(() => {
+  const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';  
+
+  let scriptTag = document.createElement('script');
+  scriptTag.src = midtransScriptUrl;
+  // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
+  const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
+  scriptTag.setAttribute('data-client-key', myMidtransClientKey);
+
+  document.body.appendChild(scriptTag);
+
+  return () => {
+    document.body.removeChild(scriptTag);
+  }
+}, []);
+
   const initiateTransaction = async () => {
     if (!selectedPackage && finishPay) return;
     try {
-      // const res = await axios.post(`${contractAPI}/create-transaction`,
-      //   {
-      //     gigId: gigId,
-      //     selectedPackage: selectedPackage
-      //   },
-      //   { withCredentials: true }
-      // )
-      // if (res && res.data.status === "success transaction create") {
-      //   console.log(res);
-      //   snapEmbed(res.data.transaction.snap_token, "snap-container", {
-      //     onSuccess: function (result) {
-      //       console.log("success", result);
-      //       setFinishPay(true);
-      //     },
-      //     onPending: function (result) {
-      //       console.log("pending", result);
-      //       setPendingPay(true);
-      //     },
-      //     onClose: function (result) {
-      //       console.log("close", result);
-      //       setFailPay(true);
-      //     }
-      //   })
-      // }
-      // else {
-      //   console.log("error api midtrans", res);
-      // }
+      const res = await axios.post(`${contractAPI}/create-transaction`,
+        {
+          gigId: gigId,
+          selectedPackage: selectedPackage
+        },
+        { withCredentials: true }
+      )
+      if (res && res.data.status === "success transaction create") {
+        console.log(res);
+        window.snap.pay(res.data.transaction.snap_token, {
+          onSuccess: function (result) {
+            console.log("success", result);
+            setFinishPay(true);
+            setShowProgress(false)
+          },
+          onPending: function (result) {
+            console.log("pending", result);
+            setPendingPay(true);
+            setShowProgress(false)
+          },
+          onClose: function (result) {
+            console.log("close", result);
+            setFailPay(true);
+            setShowProgress(false)
+          }
+        })
+      }
+      else {
+        console.log("error api midtrans", res);
+      }
     } catch (error) {
       console.log("error initiate transaction", error);
     }
@@ -142,34 +163,22 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                           className="w-10 h-10 cursor-pointer"
                           onClick={() => {
                             setStep(1);
-                            finishPay ? null : onClose();
+                            showProgress ? onClose() : null;
                           }}
                         />
                       )}
                     </div>
-                    <div className="p-6 flex flex-col h-200 gap-10">
+                    <div className="p-6 flex flex-col h-200 gap-5">
                       <>
-                        {!finishPay && !pendingPay && !failPay &&
+                        {showProgress &&
                           <div className="w-full px-100 static">
                             <div className="flex flex-col justify-center">
-                              <div className="flex justify-between items-center w-full relative">
-                                <div className="absolute left-0 right-0 h-1 top-5 flex">
-                                  <div className="w-1/2 flex justify-end">
-                                    <div className="bg-gray-200 h-1 w-full">
-                                      <div
-                                        className="h-1 bg-green-500 transition-all duration-300"
-                                        style={{ width: step > 1 ? "100%" : "0%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="w-1/2">
-                                    <div className="bg-gray-200 h-1 w-full">
-                                      <div
-                                        className="h-1 bg-green-500 transition-all duration-300"
-                                        style={{ width: step > 2 ? "100%" : "0%" }}
-                                      />
-                                    </div>
-                                  </div>
+                              <div className="grid grid-cols-3 items-center relative">
+                                <div className="absolute left-[15%] right-[15%] h-1 top-5 bg-gray-200 z-0">
+                                  <div
+                                    className="h-1 bg-blue-500 transition-all duration-300"
+                                    style={{ width: `${((step - 1) / 2) * 100}%` }}
+                                  />
                                 </div>
                                 {steps.map((label, index) => {
                                   const current = index + 1;
@@ -178,25 +187,23 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                   const isClickable = current <= step;
 
                                   return (
-                                    <div key={index} className="flex flex-col items-center z-10">
+                                    <div className="flex-1 flex flex-col items-center z-10 text-center" key={index}>
                                       <div
-                                        className={`flex flex-col items-center z-10 ${
-                                          isClickable
-                                            ? "cursor-pointer"
-                                            : "cursor-default pointer-events-none"
-                                        }`}
+                                        className={`flex flex-col items-center ${isClickable
+                                          ? "cursor-pointer"
+                                          : "cursor-default pointer-events-none"
+                                          }`}
                                         onClick={() => handleStepClick(current)}
                                       >
                                         <div
-                                          className={`rounded-full flex items-center justify-center w-11 h-11 mb-2
-                                        ${
-                                          isActive
-                                            ? "bg-blue-500 border-2 border-[#2E5077]"
-                                            : isCompleted
-                                            ? "bg-green-500"
-                                            : "bg-gray-200"
-                                        }
-                                      ${isClickable ? "hover:shadow-md transition-shadow" : ""}`}
+                                          className={`w-10 h-10 rounded-full flex items-center justify-center mb-2
+                                            ${isActive
+                                              ? "bg-blue-500 border-2 border-[#2E5077]"
+                                              : isCompleted
+                                                ? "bg-blue-500"
+                                                : "bg-gray-200"}
+                                            ${isClickable ? "hover:shadow-md transition-shadow cursor-pointer" : "cursor-default pointer-events-none"}`}
+                                          onClick={() => isClickable && handleStepClick(current)}
                                         >
                                           <span
                                             className={
@@ -208,24 +215,19 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                             {isCompleted ? "✓" : current}
                                           </span>
                                         </div>
-                                        <span
-                                          className={`text-sm w-20 text-center ${
-                                            isActive ? "text-blue-500 font-bold" : "text-gray-500"
-                                          }`}
-                                        >
-                                          {label}
-                                        </span>
+
                                       </div>
+                                      <span className="text-sm">{label}</span>
                                     </div>
                                   );
                                 })}
                               </div>
                             </div>
                           </div>
-                        )}
+                        }
                         {step == 1 && (
                           <>
-                            <div className="flex flex-col text-center font-Archivo">
+                            <div className="flex flex-col text-center font-Archivo mt-5">
                               <p className="text-3xl font-bold">Choose The Package</p>
                               <p className="">Konfirmasi paket mana yang ingin kamu pilih</p>
                             </div>
@@ -261,9 +263,8 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <Check
-                                        className={`${
-                                          pkg?.sourceFile ? "text-green-500" : "text-gray-500"
-                                        } mt-0.5 flex-shrink-0`}
+                                        className={`${pkg?.sourceFile ? "text-green-500" : "text-gray-500"
+                                          } mt-0.5 flex-shrink-0`}
                                         size={32}
                                       />
                                       <span>Source File</span>
@@ -289,7 +290,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                         )}
                         {step == 2 && (
                           <>
-                            <div className="flex flex-col text-center font-Archivo">
+                            <div className="flex flex-col text-center font-Archivo mt-5">
                               <p className="text-3xl font-bold">Checkout Order</p>
                               <p className="">Periksa ulang pesanan anda</p>
                             </div>
@@ -330,11 +331,10 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Check
-                                      className={`${
-                                        selectedPackage?.sourceFile
-                                          ? "text-green-500"
-                                          : "text-gray-500"
-                                      } mt-0.5 flex-shrink-0`}
+                                      className={`${selectedPackage?.sourceFile
+                                        ? "text-green-500"
+                                        : "text-gray-500"
+                                        } mt-0.5 flex-shrink-0`}
                                       size={32}
                                     />
                                     <span>Source File</span>
@@ -382,9 +382,9 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                       Rp.{" "}
                                       {formattedPrice(
                                         selectedPackage?.price +
-                                          ((0.7 / 100) * selectedPackage?.price <= 1
-                                            ? 0
-                                            : (0.7 / 100) * selectedPackage?.price)
+                                        ((0.7 / 100) * selectedPackage?.price <= 1
+                                          ? 0
+                                          : (0.7 / 100) * selectedPackage?.price)
                                       )}
                                     </p>
                                   </div>
@@ -425,10 +425,10 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                               </div>
                             </div>
                           </>
-                        }
-                        <div id="snap-container" className='flex justify-center'>
-                        </div>
-                        {step === 3 && !finishPay &&
+                        )}
+                        {/* <div id="snap-container" className='flex justify-center'>
+                        </div> */}
+                        {step === 3 && finishPay &&
                           <>
                             <div className="flex flex-col items-center font-Archivo justify-between h-full py-20">
                               <div className="flex flex-col items-center gap-4">
@@ -439,26 +439,28 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                 </p>
                               </div>
                               <motion.img
-                                className="select-none cursor-pointer grab"
+                                className="select-none cursor-pointer grab w-100 h-100"
                                 src={contract_done}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 draggable={false}
-                                onClick={() => {}} //nav ke user history
+                                onClick={() => { }} //nav ke user history
                               />
                             </div>
                           </>
                         }
-                        {step === 3 && !pendingPay &&
+                        {step === 3 && pendingPay &&
                           <>
                             <div className='flex flex-col items-center font-Archivo justify-between h-full py-20'>
                               <div className='flex flex-col items-center gap-4'>
-                                <p className='text-5xl font-bold'>pending</p>
-                                <p className='font-[#636363]'>Selamat! Pesanan Anda telah berhasil diproses dan akan diteruskan ke B-Partner kami🎊</p>
+                                <p className='text-5xl font-bold'>Thanks! Your Order is Pending</p>
+                                <p className='font-[#636363]'>
+                                  Terima kasih! Kami sedang menunggu konfirmasi dari pihak penyedia pembayaran. Pesanan Anda akan segera diteruskan ke B-Partner kami 🎉
+                                </p>
                               </div>
                               <motion.img
-                                className='select-none cursor-pointer grab'
-                                src={contract_done}
+                                className='select-none cursor-pointer grab w-100 h-100'
+                                src={contract_pending}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 draggable={false}
@@ -471,16 +473,18 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                           <>
                             <div className='flex flex-col items-center font-Archivo justify-between h-full py-20'>
                               <div className='flex flex-col items-center gap-4'>
-                                <p className='text-5xl font-bold'>fail</p>
-                                <p className='font-[#636363]'>Selamat! Pesanan Anda telah berhasil diproses dan akan diteruskan ke B-Partner kami🎊</p>
+                                <p className='text-5xl font-bold'>Something Went Wrong</p>
+                                <p className='font-[#636363]'>
+                                  Ups, ada kendala saat memproses pembayaranmu. Yuk, coba lagi!
+                                  </p>
                               </div>
                               <motion.img
-                                className='select-none cursor-pointer grab'
-                                src={contract_done}
+                                className='select-none cursor-pointer grab w-100 h-100'
+                                src={contract_fail}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 draggable={false}
-                                onClick={() => { }}//nav ke user history
+                                onClick={() => {navigate("/catalog")}}
                               />
                             </div>
                           </>
