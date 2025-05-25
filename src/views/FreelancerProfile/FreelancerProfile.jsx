@@ -545,11 +545,11 @@ const FreelancerProfile = () => {
                         </div>
                       </div>
 
-                      <div className="flex-row gap-2">
+                      <div className="flex flex-col gap-2 overflow-y-auto h-105">
                         {reviews?.map((review) => (
                           <div
                             key={review._id}
-                            className="p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 w-full"
                           >
                             <div className="flex justify-between mb-2">
                               <div className="flex items-center">
@@ -580,7 +580,6 @@ const FreelancerProfile = () => {
                                         </span>
                                       </div>
                                     </div>
-
                                   </div>
                                   <span className="text-xs text-gray-500">
                                     {new Date(review.createdDate).toLocaleDateString("en-GB", {
