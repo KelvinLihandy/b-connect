@@ -293,10 +293,7 @@ const FreelancerProfile = () => {
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start">
                       <div>
                         <div className="flex items-center mb-1">
-                          <h1 className="text-2xl font-semibold">{freelancerData.name}</h1>
-                          {freelancerData.verified && (
-                            <CheckCircle className="w-5 h-5 text-blue-500 ml-2" />
-                          )}
+                          <h1 className="text-2xl font-semibold">{auth?.data?.auth?.name}</h1>
                         </div>
 
                         <span className="text-gray-500 text-sm block mb-2">

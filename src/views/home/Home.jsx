@@ -528,7 +528,7 @@ const Home = () => {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-4 grid-rows-2 gap-6 justify-center"
+          className={`grid grid-cols-4 gap-6 justify-center`}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}

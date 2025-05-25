@@ -80,7 +80,7 @@ const ProfileUser = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSave = async () => {
+  const handleSave = async () => {//REVISION: update refresh auth info
     setFormErrors({
       email: "",
       phoneNumber: "",
