@@ -534,7 +534,7 @@ const Home = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <GigItem data={gigs} home start={0} end={8} starter/>
+          <GigItem data={gigs?.slice(0, 8)} home start={0} end={8} starter/>
         </motion.div>
       </motion.section>
 
