@@ -23,6 +23,8 @@ import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
+import ManageOrder from "./views/manage_order/manageOrder";
+import Invoice from "./views/invoice/Invoice";
 export const socket = io.connect(baseAPI);
 
 const App = () => {
@@ -77,6 +79,9 @@ const App = () => {
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
         <Route path="/add-service" element={<AddService />} />
         <Route path="/become-freelancer" element={<FreelancerReg />} />
+        <Route path="/manage-order" element={<ManageOrder />} />
+        <Route path="/invoice" element={<Invoice />} />
+
         {isFreelancer ? (
           <>
             <Route

@@ -108,11 +108,14 @@ const SignIn = () => {
 						onChange={(event) => setPassword(event.target.value)}
 					>
 					</input>
-					<Link to="/sign-in/forget">
-						<span className='flex w-full text-[#111111] text-base font-normal underline justify-end text-right '>
+					<div className='flex justify-end text-right'>
+						<Link to="/sign-in/forget">
+						<span className=' text-[#111111] text-base font-normal underline'>
 							Forget your password
 						</span>
-					</Link>
+						</Link>
+					</div>
+					
 
 					<label className="flex items-center space-x-3">
 						<input
