@@ -9,10 +9,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { contractAPI } from "../../constants/APIRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
+import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
 
-const Contract = ({ isOpen, onClose, gigId, packages }) => {
+const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
   const steps = ["Select", "Payment", "Checkout"];
   const { auth } = useContext(AuthContext);
+  const { getDisabledGigs } = useContext(DisabledGigsContext);
   const [step, setStep] = useState(1);
   const [selectedPackage, setSelectedPackage] = useState();
   const [finishPay, setFinishPay] = useState(false);
@@ -41,7 +43,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
     visible: { opacity: 0.75, transition: { duration: 0.2 } },
     exit: { opacity: 0, transition: { duration: 0.2 } },
   };
- 
+
   const preventClose = (e) => {
     e.stopPropagation();
   };
@@ -68,20 +70,20 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
   };
 
   useEffect(() => {
-  const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';  
+    const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';
 
-  let scriptTag = document.createElement('script');
-  scriptTag.src = midtransScriptUrl;
-  // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
-  const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
-  scriptTag.setAttribute('data-client-key', myMidtransClientKey);
+    let scriptTag = document.createElement('script');
+    scriptTag.src = midtransScriptUrl;
+    // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
+    const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
+    scriptTag.setAttribute('data-client-key', myMidtransClientKey);
 
-  document.body.appendChild(scriptTag);
+    document.body.appendChild(scriptTag);
 
-  return () => {
-    document.body.removeChild(scriptTag);
-  }
-}, []);
+    return () => {
+      document.body.removeChild(scriptTag);
+    }
+  }, []);
 
   const initiateTransaction = async () => {
     if (!selectedPackage && finishPay) return;
@@ -119,6 +121,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
     } catch (error) {
       console.log("error initiate transaction", error);
     }
+    getDisabledGigs();
   };
 
   return (
@@ -131,7 +134,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
           aria-modal="true"
           onClick={() => {
             setStep(1);
-            finishPay ? null : onClose();
+            onClose();
           }}
           initial="hidden"
           animate="visible"
@@ -163,7 +166,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                           className="w-10 h-10 cursor-pointer"
                           onClick={() => {
                             setStep(1);
-                            showProgress ? onClose() : null;
+                            onClose();
                           }}
                         />
                       )}
@@ -476,7 +479,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                 <p className='text-5xl font-bold'>Something Went Wrong</p>
                                 <p className='font-[#636363]'>
                                   Ups, ada kendala saat memproses pembayaranmu. Yuk, coba lagi!
-                                  </p>
+                                </p>
                               </div>
                               <motion.img
                                 className='select-none cursor-pointer grab w-100 h-100'
@@ -484,7 +487,7 @@ const Contract = ({ isOpen, onClose, gigId, packages }) => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 draggable={false}
-                                onClick={() => {navigate("/catalog")}}
+                                onClick={() => { navigate("/catalog") }}
                               />
                             </div>
                           </>
