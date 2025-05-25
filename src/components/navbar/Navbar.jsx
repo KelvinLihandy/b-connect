@@ -162,15 +162,15 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 >
                   Dashboard
                 </motion.p>
-                <motion.p
+                {/* <motion.p
                   className="inline-block text-xl cursor-pointer transition-colors duration-300"
                   whileHover={{ scale: 1.1 }}
                   onClick={() => { navigate(`/freelancer-gigs`) }}
                 >
                   My Gigs
-                </motion.p>
+                </motion.p> */}
                 <motion.p
-                  className="inline-block text-xl cursor-pointer transition-colors duration-300"
+                  className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
                   whileHover={{ scale: 1.1 }}
                   onClick={() => { navigate(`/freelancer-orders`) }}
                 >
@@ -370,7 +370,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            navigate(`/profile-user`);
+                            navigate(`/profile`);
                             setShowUserDropdown(false);
                           }}
                         >

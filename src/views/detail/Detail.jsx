@@ -494,7 +494,8 @@ const Detail = () => {
               <p className="text-gray-700 my-2 font-medium text-base">
                 {freelancer?.description?.trim()
                   ? freelancer.description
-                  : "No description is set"}
+                  : `${freelancer?.name} has not set a description`
+                }
               </p>
             </div>
             <div className="border-t mt-6">
