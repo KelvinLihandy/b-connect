@@ -16,7 +16,7 @@ import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
-import ProfileUser from "./views/profile_user/ProfileUser";
+import Profile from "./views/profile/Profile";
 import { NotificationContext } from "./contexts/NotificationContext";
 import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";
@@ -126,7 +126,7 @@ const App = () => {
         {/* Protected routes - require authentication */}
         <Route path="/chat" element={<Navigate to="/chat/def" replace />} />
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
-        <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
+        <Route path="/profile" element={<AuthRouting component={Profile} />} />
         <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />
       </Routes>
     </>
