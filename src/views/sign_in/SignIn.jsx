@@ -37,7 +37,6 @@ const SignIn = () => {
 	}
 
 	const login = async () => {
-		setIsLoading(true);
 		try {
 			const response = await axios.post(`${authAPI}/login`, {
 				email: email,
@@ -62,17 +61,17 @@ const SignIn = () => {
 				<p className='text-3xl font-semibold'>Log in</p>
 			</div>
 
-			<div className='flex flex-col text-lg justify-center gap-4 min-w-140 max-w-170'>
+			{/* <div className='flex flex-col text-lg justify-center gap-4 min-w-140 max-w-170'>
 				<button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
 					<img className='h-5 self-center' src={google} alt="" />
 					<div>Continue with Google</div>
 				</button>
-			</div>
+			</div> */}
 
-			<Divider
+			{/* <Divider
 				className="!flex-[0_0_auto] !w-[560px] pt-7 pb-6"
 				divClassName="!text-[#111111] !text-xl"
-			/>
+			/> */}
 
 			{/* Bagian Textbox */}
 			<div className='font-poppins inline-flex flex-col gap-4 items-center mb-8'>
@@ -130,7 +129,10 @@ const SignIn = () => {
 				{/* Button Login */}
 				<div className='mt-3 mb-3'>
 					<button className='bg-[#111111]/25 text-xl text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90'
-						onClick={() => login()}
+						onClick={() => {
+							setIsLoading(true);
+							login()}
+						}
 					>
 						{isLoading ?
 							<CircularProgress color='inherit' />

@@ -605,7 +605,7 @@ const Detail = () => {
                     onClick={() => {
                       if (isDisabled) {
                         // navigate()
-                        // nav to budi
+                        // nav to history order
                         return;
                       }
                       if (!auth) {

@@ -12,6 +12,7 @@ import bg_right from "../../assets/bg_image_right.svg"
 import bg_dots from "../../assets/bg_dots.svg"
 import { authAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
+import { CircularProgress } from '@mui/material'
 
 const SignUp = () => {
 	const [showPass, setShowPass] = useState(false)
@@ -20,6 +21,8 @@ const SignUp = () => {
 	const [password, setPassword] = useState("")
 	const [hideReq, setHideReq] = useState(false);
 	const navigate = useNavigate();
+	const [errorMessage, setErrorMessage] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
 	const switchEye = () => {
 		setShowPass((showPass) => !showPass)
@@ -27,7 +30,7 @@ const SignUp = () => {
 
 	const validateEmail = (email) => {
 		const rfcEmailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
-		if(!rfcEmailRegex.test(email)) return false;
+		if (!rfcEmailRegex.test(email)) return false;
 		else return true;
 	}
 
@@ -50,11 +53,14 @@ const SignUp = () => {
 		})
 			.then(response => {
 				console.log(response.data);
+				alert("Success Sign Up");
 				navigate('/sign-in', { replace: true });
 			})
 			.catch(error => {
 				console.error('Error register:', error.response);
+				setErrorMessage(error.response.data.error)
 			});
+		setIsLoading(false);
 	}
 
 	return (
@@ -173,25 +179,37 @@ const SignUp = () => {
 						.
 					</label>
 					<button className='text-lg bg-[#111111]/25 text-white font-bold rounded-full h-18 transition cursor-pointer hover:text-black hover:opacity-90'
-						onClick={() => register()}>
-						Create an account
+						onClick={() => {
+							setIsLoading(true);
+							register()
+						}}>
+						{isLoading ?
+							<CircularProgress color='inherit' />
+							:
+							"Sign Up"
+						}
 					</button>
+					{
+						<p className='text-red-400 text-base text-wrap text-center'>
+							{errorMessage}
+						</p>
+					}
 				</div>
 
-				<div className='h-10' />
+				{/* <div className='h-10' />
 
 				<div className='flex flex-col gap-1 font-nunito min-w-180 max-w-200 items-center'>
 					<label className='text-[#666666] text-2xl'>
 						OR Continue with
 					</label>
 					<div className='flex flex-row justify-between'>
-						{/* <button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
+						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
 							onClick={() => console.log("facebook")}>
 							<img
 								className='h-5 self-center'
 								src={facebook} />
 							<div className=''>Facebook</div>
-						</button> */}
+						</button>
 						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-80 h-15 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
 							onClick={() => console.log("google")}>
 							<img className='h-auto self-center'
@@ -201,15 +219,15 @@ const SignUp = () => {
 								Google
 							</p>
 						</button>
-						{/* <button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
+						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
 							onClick={() => console.log("apple")}>
 							<img
 								className='h-5 self-center'
 								src={apple} />
 							<p>Apple</p>
-						</button> */}
+						</button>
 					</div>
-				</div>
+				</div> */}
 			</div>
 		</div >
 	)
