@@ -19,34 +19,26 @@ import { NotificationContext } from "../../contexts/NotificationContext";
 import NotificationItem from "../notification_item/NotificationItem";
 import { CircularProgress } from '@mui/material'
 import { UserTypeContext } from "../../contexts/UserTypeContext";
+import axios from "axios";
+import { authAPI } from "../../constants/APIRoutes";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
 const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
-  const { auth } = useContext(AuthContext);
+  const { auth, setAuth } = useContext(AuthContext);
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const list = Array.isArray(notificationList)
     ? notificationList
     : Object.values(notificationList || {});
-    
+
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  
-  const imageUrl = auth?.data?.auth?.picture === "temp"
-    ? default_avatar
-    : `${imageShow}${auth?.data?.auth.picture}`;
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => setImageLoading(false);
-  }, [imageUrl]);
 
   useEffect(() => {
     const list = Array.isArray(notificationList)
@@ -56,10 +48,15 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   }, [notificationList]);
 
   const handleClickOutside = (event) => {
-    if (showNotificationDropdown) {
+    const isNotificationClick = event.target.closest('.notification-dropdown') ||
+      event.target.closest('[data-notification-trigger]');
+    const isUserClick = event.target.closest('.user-dropdown') ||
+      event.target.closest('[data-user-trigger]');
+
+    if (!isNotificationClick && showNotificationDropdown) {
       setShowNotificationDropdown(false);
     }
-    if (showUserDropdown) {
+    if (!isUserClick && showUserDropdown) {
       setShowUserDropdown(false);
     }
   };
@@ -89,6 +86,13 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
       year: "numeric",
     });
   };
+
+  const cookieClear = async () => {
+    await axios.post(`${authAPI}/clear-cookie`,
+      {},
+      { withCredentials: true }
+    )
+  }
 
   let lastRenderedDate = null;
 
@@ -132,7 +136,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                   type="text"
                   placeholder="Search For Our Services"
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="relative left-3 w-full h-[40px] px-3 rounded-lg border-black outline-none text-black text-md font-medium"
+                  className="relative left-3 w-full h-[40px] px-3 rounded-lg border-black outline-none text-black text-base font-medium"
                 />
                 <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-lg flex justify-center outline-none items-center cursor-pointer">
                   <img src={searchBtn} alt="Search" className="w-full h-full" />
@@ -148,15 +152,15 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 >
                   Dashboard
                 </motion.p>
-                <motion.p
+                {/* <motion.p
                   className="inline-block text-xl cursor-pointer transition-colors duration-300"
                   whileHover={{ scale: 1.1 }}
                   onClick={() => { navigate(`/freelancer-gigs`) }}
                 >
                   My Gigs
-                </motion.p>
+                </motion.p> */}
                 <motion.p
-                  className="inline-block text-xl cursor-pointer transition-colors duration-300"
+                  className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
                   whileHover={{ scale: 1.1 }}
                   onClick={() => { navigate(`/freelancer-orders`) }}
                 >
@@ -180,6 +184,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       e.stopPropagation();
                       setShowNotificationDropdown(!showNotificationDropdown);
                     }}
+                    data-notification-trigger
                   />
                   {unreadCount > 0 && (
                     <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-white font-bold text-xs flex items-center justify-center">
@@ -194,7 +199,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-10 overflow-hidden"
+                      className="absolute top-15 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-[99998] overflow-hidden notification-dropdown"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
@@ -216,7 +221,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                           <motion.div initial="hidden" animate="visible">
                             {notificationList.map((notification, index) => {
                               if (!notification) return null;
-                              
+
                               const messageDate = new Date(notification.message.time);
                               const messageMidnight = new Date(messageDate);
                               messageMidnight.setHours(0, 0, 0, 0);
@@ -257,7 +262,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                   )}
                 </AnimatePresence>
               </div>
-              
+
               {!isFreelancer &&
                 <motion.button className="bg-white text-l text-blue-900 px-7 py-3 rounded-lg font-semibold cursor-pointer"
                   whileHover={{ scale: 1.1 }}
@@ -275,86 +280,121 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
 
               <motion.div
                 className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowUserDropdown(!showUserDropdown);
+                  setShowUserDropdown(prev => !prev);
                 }}
+                data-user-trigger
               >
-                {imageLoading ? (
-                  <CircularProgress color="inherit" />
-                ) : (
-                  <>
-                    <img
-                      src={imageUrl}
-                      alt="profile"
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
-                  </>
-                )}
-                
-                {/* User dropdown menu */}
-                {showUserDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="py-2 px-4 border-b border-gray-100">
-                      <p className="text-gray-800 font-medium">{auth?.data?.auth?.name || "User"}</p>
-                      <p className="text-gray-500 text-xs">{auth?.data?.auth?.email}</p>
-                    </div>
-                    
-                    <div className="py-1">
-                      {isFreelancer ? (
-                        <>
-                          <button 
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => navigate(`/freelancer-profile/${auth?.data?.auth?.id}`)}
+                <motion.img
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full h-full object-cover rounded-full"
+                  src={auth?.data?.auth?.picture === "temp"
+                    ? default_avatar
+                    : `${imageShow}${auth?.data?.auth.picture}`}
+                  alt="profile"
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = default_avatar;
+                    console.log("Image load failed for freelancer:", auth?.data?.auth?.id);
+                  }}
+                />
+                <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+                <AnimatePresence>
+                  {showUserDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-[99999]"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ position: 'absolute', zIndex: 99999 }}
+                    >
+                      <div className="py-2 px-4 border-b border-gray-100 cursor-default">
+                        <p className="text-gray-800 font-medium">{auth?.data?.auth?.name || "User"}</p>
+                        <p className="text-gray-500 text-xs">{auth?.data?.auth?.email}</p>
+                      </div>
+
+                      <div className="py-1">
+                        {isFreelancer ? (
+                          <>
+                            <button
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
+                                setShowUserDropdown(false);
+                              }}
+                            >
+                              My Freelancer Profile
+                            </button>
+                            <button
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/freelancer-gigs/create`);
+                                setShowUserDropdown(false);
+                              }}
+                            >
+                              Create New Gig
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              navigate(`/user-profile/${auth?.data?.auth?.id}`);
+                              setShowUserDropdown(false);
+                            }}
                           >
-                            My Freelancer Profile
+                            My Profile
                           </button>
-                          <button 
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => navigate(`/freelancer-gigs/create`)}
-                          >
-                            Create New Gig
-                          </button>
-                        </>
-                      ) : (
-                        <button 
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => navigate(`/profile-user`)}
+                        )}
+
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate(`/profile`);
+                            setShowUserDropdown(false);
+                          }}
                         >
-                          My Profile
+                          Settings
                         </button>
-                      )}
-                      
-                      <button 
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => navigate(`/settings`)}
-                      >
-                        Settings
-                      </button>
-                      
-                      <div className="border-t border-gray-100 my-1"></div>
-                      
-                      <button 
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        onClick={() => {
-                          // Logout logic here
-                          navigate('/sign-in');
-                        }}
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
+
+                        <div className="border-t border-gray-100 my-1"></div>
+
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            document.cookie.split(";").forEach((cookie) => {
+                              const name = cookie.split("=")[0].trim();
+                              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+                            });
+                            await cookieClear();
+                            setAuth(null);
+                            setIsFreelancer(false);
+                            navigate('/home');
+                            setShowUserDropdown(false);
+                          }}
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             </motion.div>
           </div>
@@ -380,7 +420,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 type="text"
                 placeholder="Search For Our Services"
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-md font-medium"
+                className="relative left-3 w-full h-[40px] px-3 rounded-[14px] border-black outline-none text-black text-base font-medium"
               />
               <button className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[14px] flex justify-center outline-none items-center cursor-pointer">
                 <img src={searchBtn} alt="Search" className="w-[83px] h-[64px]" />

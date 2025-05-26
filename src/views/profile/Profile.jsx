@@ -37,7 +37,7 @@ const NOTIFICATION_PREFERENCES = [
   { id: "newFeatures", label: "Notify me of new features" },
 ];
 
-const ProfileUser = () => {
+const Profile = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -80,7 +80,7 @@ const ProfileUser = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSave = async () => {
+  const handleSave = async () => {//REVISION: update refresh auth info
     setFormErrors({
       email: "",
       phoneNumber: "",
@@ -1288,4 +1288,4 @@ const ProfileUser = () => {
   );
 };
 
-export default ProfileUser;
+export default Profile;

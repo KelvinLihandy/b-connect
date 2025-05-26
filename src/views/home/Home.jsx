@@ -56,19 +56,6 @@ const staggerContainer = {
   }
 }
 
-const TrendingServiceButton = ({ text }) => (
-  <motion.div
-    className='flex flex-row border rounded-full gap-7 py-4 px-6 bg-white/10 backdrop-blur-sm w-50 max-w-50 hover:bg-white/20 transition-all duration-300 cursor-pointer'
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-  >
-    <p className='self-center font-medium'>
-      {text}
-    </p>
-    <img src={trending_symbol} alt="trending" className="animate-pulse" />
-  </motion.div>
-)
-
 const FeatureCard = ({ image, title, description }) => (
   <motion.div
     className='w-[300px] flex flex-col items-center gap-3 bg-white/5 backdrop-blur-sm p-6 rounded-xl hover:shadow-lg hover:shadow-blue-400/20 transition-all duration-300'
@@ -115,19 +102,49 @@ const Home = () => {
   const servicesSection = useRef(null);
   const [isFetchingGig, setIsFetchingGig] = useState(false);
   const homeScrollUp = useRef(null);
+  const [gigCountSorted, setGigCountSorted] = useState([]);
+
+  const TrendingServiceButton = ({ text }) => (
+    <motion.div
+      className='flex flex-row border justify-between rounded-full gap-1 py-4 px-6 bg-white/10 backdrop-blur-sm w-70 hover:bg-white/20 transition-all duration-200 cursor-pointer'
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => {
+        setCurrentCategory(text);
+        servicesSection.current?.scrollIntoView({ behavior: 'smooth' });
+      }}
+    >
+      <p className='self-center font-medium text-lg'>
+        {text}
+      </p>
+      <img src={trending_symbol} alt="trending" className="animate-pulse" />
+    </motion.div>
+  )
 
   useEffect(() => {
     const getTrendingUsers = async () => {
       try {
         const response = await axios.post(`${userAPI}/get-trending-users`, {});
-        console.log(response);
-        const res = response.data.topUsers;
+        const res = response.data;
+        console.log(res)
         setTrendingUsers(res);
       } catch (error) {
         console.error('Error fetching top users:', error.response || error);
       }
     };
+    const getCountSorted = async () => {
+      try {
+        const response = await axios.post(`${gigAPI}/get-gig-count`, {
+          categories: categoryList
+        });
+        const res = response.data.sort((a, b) => b.count - a.count);
+        setGigCountSorted(res);
+      } catch (error) {
+        console.error('Error fetch sorted gig count:', error.response || error);
+      }
+    }
 
+    getCountSorted();
     getTrendingUsers();
 
     // Intersection Observer for scroll animations
@@ -154,7 +171,6 @@ const Home = () => {
   }, []);
 
   const getGig = async (name, category) => {
-    // setTimeout(() => { }, 2000);
     try {
       const response = await axios.post(`${gigAPI}/get-gig`, { name, category });
       const res = response.data.filteredGigs;
@@ -235,7 +251,7 @@ const Home = () => {
             Hire a Person To Help Your Problem.
           </motion.p>
           <motion.p
-            className='text-md text-[#D5D5D5C2] opacity-80 text-wrap max-w-xl'
+            className='text-lg text-[#D5D5D5C2] opacity-80 text-wrap max-w-xl'
             variants={fadeIn}
           >
             In the ever-evolving landscape of skills and knowledge, the choice between hiring an expert is a pivotal decision.
@@ -281,10 +297,10 @@ const Home = () => {
             <p className='text-xl font-medium'>
               TRENDING SERVICES
             </p>
-            <div className='text-lg opacity-80 flex flex-wrap gap-4'>
-              <TrendingServiceButton text="DESIGNER" />
-              <TrendingServiceButton text="DEVELOPER" />
-              <TrendingServiceButton text="WORDPRESS" />
+            <div className='text-lg opacity-80 flex flex-col gap-3'>
+              {gigCountSorted.slice(0, 3).map((categ) => (
+                <TrendingServiceButton text={categ.category} />
+              ))}
             </div>
           </motion.div>
         </motion.div>
@@ -512,47 +528,13 @@ const Home = () => {
         </motion.div>
 
         <motion.div
-          className='flex flex-wrap gap-3 justify-center'
+          className={`grid grid-cols-4 gap-6 justify-center`}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <motion.div
-            className="w-sm flex flex-row h-90 font-inter bg-[#F3F3F3] relative items-center rounded-lg shadow-md overflow-hidden"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className='flex flex-row items-center justify-center p-3'>
-              <p className='text-wrap font-Archivo font-bold text-3xl self-start -mt-4 text-gray-800'>
-                Our Best Sellers
-              </p>
-              <motion.img
-                className='mt-10'
-                src={mr_pink_hair}
-                alt="mr pink hair"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </div>
-            <motion.button
-              className='bg-[#CFD2DA] flex flex-row absolute bottom-20 w-57 left-3 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300'
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/catalog")}
-            >
-              <p className='font-Archivo text-3xl font-bold text-[#565E6D]'>
-                Shop Now
-              </p>
-              <motion.img
-                src={arrow_right}
-                alt="arrow right"
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-            </motion.button>
-          </motion.div>
-          <GigItem data={gigs} home />
+          <GigItem data={gigs?.slice(0, 8)} home start={0} end={8} starter/>
         </motion.div>
       </motion.section>
 
