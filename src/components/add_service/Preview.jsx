@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn, X } from "lucide-react";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { DynamicStars } from "../dynamic_stars/DynamicStars";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const Preview = ({ serviceData, onClose }) => {
   const [currentImage, setCurrentImage] = useState(0);
@@ -12,6 +13,14 @@ const Preview = ({ serviceData, onClose }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showZoomOverlay, setShowZoomOverlay] = useState(false);
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(true); // Always start in fullscreen
+
+  // Get current authenticated user
+  const { auth } = useContext(AuthContext);
+
+  // Get current user name from auth context
+  const getCurrentUserName = () => {
+    return auth?.data?.auth?.name || "Service Provider";
+  };
 
   // Extract data from serviceData
   const { title, categories, images, description, packages } = serviceData;
@@ -246,16 +255,15 @@ const Preview = ({ serviceData, onClose }) => {
               <div className="lg:col-span-8">                {/* Title and Rating */}
                 <h1 className="text-4xl font-bold text-gray-800">
                   {title || "Service Title"}
-                </h1>
-                <div className="flex items-center mt-2 mb-6">
+                </h1>                <div className="flex items-center mt-2 mb-6">
                   <span className="font-medium text-gray-700 mr-2">
-                    Service Provider
+                    {getCurrentUserName()}
                   </span>
                   <div className="flex text-yellow-400">
-                    <DynamicStars number={4.5} />
+                    <DynamicStars number={0} />
                   </div>
                   <span className="text-yellow-500 ml-1">
-                    4.5
+                    0
                   </span>
                   <span className="text-gray-500 ml-1">
                     (Preview)
