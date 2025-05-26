@@ -87,13 +87,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     });
   };
 
-  const cookieClear = async () => {
-    await axios.post(`${authAPI}/clear-cookie`,
-      {},
-      { withCredentials: true }
-    )
-  }
-
   let lastRenderedDate = null;
 
   return (
@@ -382,7 +375,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                               const name = cookie.split("=")[0].trim();
                               document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
                             });
-                            await cookieClear();
+                            await axios.post(`${authAPI}/clear-cookie`,
+                              {},
+                              { withCredentials: true }
+                            )
                             setAuth(null);
                             setIsFreelancer(false);
                             navigate('/home');

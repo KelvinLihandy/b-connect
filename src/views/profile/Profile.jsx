@@ -17,11 +17,12 @@ import downArrow from "../../assets/profile_down_arrow_2.svg";
 
 import Footer from "../../components/footer/Footer";
 import Navbar from "../../components/navbar/Navbar";
-import { userAPI } from "../../constants/APIRoutes";
+import { authAPI, userAPI } from "../../constants/APIRoutes";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import axios from "axios";
 import { AuthContext } from "../../contexts/AuthContext";
 import { RememberContext } from "../../contexts/RememberContext";
+import { UserTypeContext } from "../../contexts/UserTypeContext";
 
 
 // Constants for available languages
@@ -65,10 +66,9 @@ const Profile = () => {
     clearSavedPreferences: false,
   });
   const dropdownRef = useRef(null);
-
-  const { auth, getAuth } = useContext(AuthContext);
+  const { auth, getAuth, setAuth } = useContext(AuthContext);
   const { remember } = useContext(RememberContext);
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext)
   const [isPendingImageDelete, setIsPendingImageDelete] = useState(false);
   const [paymentNumberError, setPaymentNumberError] = useState("");
   const [isPaymentUpdating, setIsPaymentUpdating] = useState(false);
@@ -80,7 +80,98 @@ const Profile = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleSave = async () => {//REVISION: update refresh auth info
+  const handleLogOut = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    document.cookie.split(";").forEach((cookie) => {
+      const name = cookie.split("=")[0].trim();
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+    });
+    await axios.post(`${authAPI}/clear-cookie`,
+      {},
+      { withCredentials: true }
+    )
+    setAuth(null);
+    setIsFreelancer(false);
+    navigate('/home');
+  }
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${userAPI}/get-user/${auth?.data?.auth.id}`, {
+        method: 'POST',
+        withCredentials: true,
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data && data.user) {
+        if (data.user.picture) {
+          setProfileImage(data.user.picture);
+        }
+        if (data.user.paymentNumber) {
+          setPaymentPhoneNumber(data.user.paymentNumber);
+        }
+        if (data.user.name) {
+          const nameParts = data.user.name.split(' ');
+          setFirstName(nameParts[0] || '');
+          setLastName(nameParts.slice(1).join(' ') || '');
+        }
+        if (data.user.email) setContactEmail(data.user.email);
+        if (data.user.phoneNumber) setPhoneNumber(data.user.phoneNumber);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const validateEmail = (email) => {
+    const emailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
+    return email ? emailRegex.test(email) : true;
+  };
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
+    return phone ? phoneRegex.test(phone) : true;
+  };
+
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
+  const handleUploadPicture = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg, image/png';
+    fileInput.multiple = false;
+    fileInput.max = 1;
+    fileInput.onchange = async (e) => {
+      if (e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      const validTypes = ['image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        setImageUploadError("Format file tidak didukung. Harap unggah file dengan format PNG atau JPEG.");
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setImageUploadError("Ukuran file terlalu besar. Maksimal 15MB.");
+        return;
+      }
+      setSelectedFile(file);
+      const imageUrl = URL.createObjectURL(file);
+      setImagePreview(imageUrl);
+      setIsPendingImageDelete(false);
+    };
+    fileInput.click();
+  };
+
+  const handleSavePersonalData = async () => {
     setFormErrors({
       email: "",
       phoneNumber: "",
@@ -111,38 +202,30 @@ const Profile = () => {
         fullName = `${firstName} ${lastName}`.trim();
         formData.append('name', fullName);
       }
-      if (contactEmail) {
-        formData.append('email', contactEmail);
-      }
-      if (phoneNumber) {
-        formData.append('phoneNumber', phoneNumber);
-      }
-      if (isPendingImageDelete) {
-        formData.append('deletePicture', 'true');
-      }
-      else if (selectedFile) {
-        formData.append('picture', selectedFile);
-      }
+      if (contactEmail) formData.append('email', contactEmail);
+      if (phoneNumber) formData.append('phoneNumber', phoneNumber);
+      if (isPendingImageDelete) formData.append('deletePicture', 'true');
+      else if (selectedFile) formData.append('picture', selectedFile);
       formData.append('remember', remember);
-      const response = await axios.patch(`${userAPI}/update-user-profile`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        withCredentials: true
-      });
-      if (response.data && response.data.user) {
-        if (response.data.user.picture) {
-          setProfileImage(response.data.user.picture);
+      const response = await axios.patch(`${userAPI}/update-user-profile`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true
         }
-        if (imagePreview) {
-          URL.revokeObjectURL(imagePreview);
-        }
-        setSelectedFile(null);
+      );
+      const res = response.data;
+      console.log(response)
+      setSelectedFile(null);
+      setSaveError("");
+      await getAuth();
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
         setImagePreview(null);
-        setIsPendingImageDelete(false);
-        setSaveError("");
-        await getAuth();
       }
+      await fetchUserProfile();
     } catch (error) {
       console.error("Error updating profile:", error);
       if (error.message.includes('Network Error') || error.response?.status === 0) {
@@ -150,154 +233,15 @@ const Profile = () => {
       } else {
         setSaveError("Gagal memperbarui profil. Silakan coba lagi.");
       }
-    } 
-    setSaveLoad(false);
-    window.location.reload();
-  };
-
-  const validateEmail = (email) => {
-    const emailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
-    return email ? emailRegex.test(email) : true;
-  };
-
-  const validatePhoneNumber = (phone) => {
-    const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
-    return phone ? phoneRegex.test(phone) : true;
-  };
-
-  const handleUploadPicture = () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/jpeg, image/png';
-    fileInput.multiple = false;
-    fileInput.max = 1;
-    fileInput.onchange = async (e) => {
-      if (e.target.files.length === 0) return;
-      const file = e.target.files[0];
-      const validTypes = ['image/jpeg', 'image/png'];
-      if (!validTypes.includes(file.type)) {
-        setImageUploadError("Format file tidak didukung. Harap unggah file dengan format PNG atau JPEG.");
-        return;
-      }
-      if (file.size > 15 * 1024 * 1024) {
-        setImageUploadError("Ukuran file terlalu besar. Maksimal 15MB.");
-        return;
-      }
-      setSelectedFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setImagePreview(imageUrl);
-      setIsPendingImageDelete(false);
-    };
-    fileInput.click();
-  };
-
-  const handleDeletePicture = () => {
-    setIsPendingImageDelete(true);
-    setImagePreview(null);
-  };
-
-  // Account Security Constants
-  const handleChangeAccount = async () => {
-    // Reset error state
-    setPaymentNumberError("");
-
-    // Validate payment number
-    if (!paymentPhoneNumber) {
-      setPaymentNumberError("Nomor pembayaran harus diisi");
-      return;
-    }
-
-    // Use phone number validation instead of digit-only validation
-    if (!validatePhoneNumber(paymentPhoneNumber)) {
-      setPaymentNumberError("Format nomor telepon tidak valid (format: +628xxx/628xxx/08xxx)");
-      return;
-    }
-
-    setIsPaymentUpdating(true);
-
-    try {
-      // Use same approach as handleSave function that's working with axios
-      const formData = new FormData();
-      formData.append('paymentNumber', paymentPhoneNumber);
-
-      // Use axios.post instead of fetch - similar to the handleSave function
-      const response = await axios.patch(`${userAPI}/update-payment-number`, { paymentNumber: paymentPhoneNumber }, {
-        withCredentials: true
-      });
-
-      // Handle response in the same style as handleSave
-      if (response.data && response.data.user) {
-        alert("Nomor pembayaran berhasil diperbarui");
-
-        // Update the local state if backend returned updated value
-        if (response.data.user.paymentNumber) {
-          setPaymentPhoneNumber(response.data.user.paymentNumber);
-        }
-      }
-    } catch (error) {
-      console.error("Error updating payment number:", error);
-
-      // Use similar error handling as handleSave
-      if (error.message.includes('Network Error') || error.response?.status === 0) {
-        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
-      } else if (error.response?.data?.error) {
-        setPaymentNumberError(error.response.data.error);
-      } else {
-        setPaymentNumberError("Gagal memperbarui nomor pembayaran. Silakan coba lagi.");
-      }
     } finally {
-      setIsPaymentUpdating(false);
+      setSaveLoad(false);
     }
-  };
+    window.location.reload()
+  }
 
-  const handleDisconnectAccount = async () => {
-    // Ask for confirmation before disconnecting
-    if (!window.confirm("Apakah Anda yakin ingin memutuskan koneksi akun pembayaran?")) {
-      return;
-    }
-
-    setIsPaymentUpdating(true);
-
-    try {
-      // Send empty string as the payment number to disconnect the account
-      const response = await axios.patch(`${userAPI}/update-payment-number`,
-        { paymentNumber: "" },  // Send empty string to disconnect
-        { withCredentials: true }
-      );
-
-      // Handle response in the same style as handleChangeAccount
-      if (response.data && response.data.user) {
-        // Update the local state to empty string
-        setPaymentPhoneNumber("");
-        alert("Koneksi akun pembayaran telah diputus");
-      }
-    } catch (error) {
-      console.error("Error disconnecting payment account:", error);
-
-      if (error.message.includes('Network Error') || error.response?.status === 0) {
-        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
-      } else if (error.response?.data?.error) {
-        setPaymentNumberError(error.response.data.error);
-      } else {
-        setPaymentNumberError("Gagal memutuskan koneksi. Silakan coba lagi.");
-      }
-    } finally {
-      setIsPaymentUpdating(false);
-    }
-  };
-
-  // Password validation function
-  const validatePassword = (password) => {
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
-  };
-
-  // Handle new password change and validation
   const handleNewPasswordChange = (e) => {
     const value = e.target.value;
     setNewPassword(value);
-
-    // Validate new password format
     if (value && !validatePassword(value)) {
       setPasswordErrors(prev => ({
         ...prev,
@@ -309,8 +253,6 @@ const Profile = () => {
         newPassword: ""
       }));
     }
-
-    // Check if confirm password matches
     if (confirmPassword && value !== confirmPassword) {
       setPasswordErrors(prev => ({
         ...prev,
@@ -324,11 +266,9 @@ const Profile = () => {
     }
   };
 
-  // Handle confirm password change and matching validation
   const handleConfirmPasswordChange = (e) => {
     const value = e.target.value;
     setConfirmPassword(value);
-
     if (value !== newPassword) {
       setPasswordErrors(prev => ({
         ...prev,
@@ -342,77 +282,51 @@ const Profile = () => {
     }
   };
 
-  const handleSavePassword = async () => {
-    // Reset error states
+  const handleChangePassword = async () => {
     let errors = {
       currentPassword: "",
       newPassword: "",
       confirmPassword: ""
     };
-
-    // Validate password format based on backend requirements
-    // Password must have at least 8 characters, 1 letter, 1 number and 1 special character
     if (!currentPassword) {
       errors.currentPassword = "Password saat ini harus diisi";
     } else if (!validatePassword(currentPassword)) {
       errors.currentPassword = "Format password tidak valid";
     }
-
     if (!newPassword) {
       errors.newPassword = "Password baru harus diisi";
     } else if (!validatePassword(newPassword)) {
       errors.newPassword = "Password harus minimal 8 karakter dan memuat huruf, angka, dan simbol (@$!%*?&)";
     }
-
     if (!confirmPassword) {
       errors.confirmPassword = "Konfirmasi password harus diisi";
     } else if (newPassword !== confirmPassword) {
       errors.confirmPassword = "Password dan konfirmasi berbeda";
     }
-
-    // Update error state
     setPasswordErrors(errors);
-
-    // Check if there are any errors
     if (errors.currentPassword || errors.newPassword || errors.confirmPassword) {
       return;
     }
-
-    // Start loading state
     setIsChangingPassword(true);
-
     try {
-      // Call API to change password - matching the backend expecting email, password & passwordConf
       const response = await axios.patch(`${userAPI}/change-password-profile`, {
-        password: currentPassword,  // Fix: Use currentPassword as the old password
-        newPassword: newPassword,             // Fix: renamed from 'password' to avoid duplicate keys
-        passwordConf: confirmPassword      // This is correct
+        password: currentPassword,
+        newPassword: newPassword,
+        passwordConf: confirmPassword
       }, {
         withCredentials: true
       });
-
-      // Reset form fields after successful update
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
-      // Show success message from the response or default
-      alert(response.data?.message || "Password berhasil diubah");
-
-      // Add delay before logging out to ensure the user sees the success message
-      setTimeout(() => {
-        alert("Anda akan keluar dan perlu login kembali dengan password baru.");
-        handleLogOut(); // Call the logout function after password change
-      }, 1000);
-
+      if (response.data.message === "Password berhasil diubah.") {
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        alert("Password berhasil diubah, anda perlu login kembali dengan password baru");
+        handleLogOut();
+      }
     } catch (error) {
       console.error("Error changing password:", error);
-
-      // Better error handling based on backend responses
       if (error.response?.data?.error) {
-        // Handle specific error messages from the backend
         const errorMessage = error.response.data.error;
-
         if (errorMessage.includes("Password lama tidak valid")) {
           setPasswordErrors(prev => ({ ...prev, currentPassword: errorMessage }));
         } else if (errorMessage.includes("Password baru tidak valid")) {
@@ -420,7 +334,6 @@ const Profile = () => {
         } else if (errorMessage.includes("Password dan konfimasi berbeda")) {
           setPasswordErrors(prev => ({ ...prev, confirmPassword: errorMessage }));
         } else {
-          // General error alert
           alert(errorMessage);
         }
       } else {
@@ -431,38 +344,75 @@ const Profile = () => {
     }
   };
 
-  const handleLogOut = () => {
+  const handleChangeAccount = async () => {
+    setPaymentNumberError("");
+    if (!paymentPhoneNumber) {
+      setPaymentNumberError("Nomor pembayaran harus diisi");
+      return;
+    }
+    if (!validatePhoneNumber(paymentPhoneNumber)) {
+      setPaymentNumberError("Format nomor telepon tidak valid (format: +628xxx/628xxx/08xxx)");
+      return;
+    }
+    setIsPaymentUpdating(true);
     try {
-      // Clear localStorage
-      localStorage.clear();  // Remove all items from localStorage
-
-      // Clear sessionStorage
-      sessionStorage.clear();  // Remove all items from sessionStorage
-
-      // Clear cookies (a simple approach that works for most cookies)
-      document.cookie.split(';').forEach(cookie => {
-        const [name, _] = cookie.split('=');
-        document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
-      });
-
-      // Show success message
-      alert("Berhasil logout");
-
-      // Redirect to login page
-      navigate('/sign-in');
+      const response = await axios.patch(`${userAPI}/update-payment-number`,
+        { paymentNumber: paymentPhoneNumber },
+        { withCredentials: true }
+      );
+      if (response.data && response.data.user) {
+        alert("Nomor pembayaran berhasil diperbarui");
+        if (response.data.user.paymentNumber) {
+          setPaymentPhoneNumber(response.data.user.paymentNumber);
+        }
+      }
     } catch (error) {
-      console.error("Error during logout:", error);
-      alert("Terjadi masalah saat logout. Silakan coba lagi.");
+      console.error("Error updating payment number:", error);
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else if (error.response?.data?.error) {
+        setPaymentNumberError(error.response.data.error);
+      } else {
+        setPaymentNumberError("Gagal memperbarui nomor pembayaran. Silakan coba lagi.");
+      }
+    } finally {
+      setIsPaymentUpdating(false);
     }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDisconnectAccount = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin memutuskan koneksi akun pembayaran?")) {
+      return;
+    }
+    setIsPaymentUpdating(true);
+    try {
+      const response = await axios.patch(`${userAPI}/update-payment-number`,
+        { paymentNumber: "" },
+        { withCredentials: true }
+      );
+      if (response.data && response.data.user) {
+        setPaymentPhoneNumber("");
+      }
+    } catch (error) {
+      console.error("Error disconnecting payment account:", error);
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else if (error.response?.data?.error) {
+        setPaymentNumberError(error.response.data.error);
+      } else {
+        setPaymentNumberError("Gagal memutuskan koneksi. Silakan coba lagi.");
+      }
+    } finally {
+      setIsPaymentUpdating(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {//update
     console.log("Delete account clicked");
     // Tambahkan logika untuk menghapus akun
   };
 
-  // Language Constants
-  const handleDropdownClick = () => {
+  const handleDropdownClick = () => {//update
     setIsDropdownOpen(!isDropdownOpen);
   };
 
@@ -479,50 +429,6 @@ const Profile = () => {
     };
   }, [dropdownRef]);
 
-
-  // Replace useEffect to use fetch instead of axios.get
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch(`${userAPI}/get-user/${auth?.data?.auth.id}`, {
-          method: 'POST',
-          withCredentials: true,
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data && data.user) {
-          if (data.user.picture) {
-            setProfileImage(data.user.picture);
-          }
-
-          // Also set payment number if available
-          if (data.user.paymentNumber) {
-            setPaymentPhoneNumber(data.user.paymentNumber);
-          }
-
-          // Set name and other fields if available
-          if (data.user.name) {
-            const nameParts = data.user.name.split(' ');
-            setFirstName(nameParts[0] || '');
-            setLastName(nameParts.slice(1).join(' ') || '');
-          }
-
-          if (data.user.email) setContactEmail(data.user.email);
-          if (data.user.phoneNumber) setPhoneNumber(data.user.phoneNumber);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
-  // Push Notification Constants
   const [notificationPrefs, setNotificationPrefs] = useState({
     emailPromo: false,
     pushTransaction: false,
@@ -589,32 +495,24 @@ const Profile = () => {
               Kelola detail pribadi Anda agar sesuai dengan profil terbaru.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-
-            {/* Personal Data Section */}
             <div className="">
               <h2 className="font-Archivo font-semibold text-[20px] mb-4">Personal Data</h2>
               <div className="relative flex items-center mb-6">
                 <div className="bg-[#9095A0] rounded-[20px] mr-4">
-                  {isImageLoading && (
-                    <div className="w-[100px] h-[100px] flex items-center justify-center">
-                      <CircularProgress color="inherit" />
-                    </div>
-                  )}
                   <img
                     src={
-                      isPendingImageDelete
-                        ? Picture
-                        : imagePreview || (profileImage ? `${imageShow}${profileImage}` : Picture)
+                      imagePreview !== null
+                        ? imagePreview
+                        : !auth?.data?.auth.picture || auth?.data?.auth.picture === "temp"
+                          ? Picture
+                          : `${imageShow}${auth?.data?.auth.picture}`
                     }
                     alt="Profile Picture"
                     className="w-[100px] h-[100px] object-cover rounded-[16px]"
-                    onLoad={() => setIsImageLoading(false)}
                     onError={(e) => {
                       console.error("Error loading image", e);
                       e.target.src = Picture;
-                      setIsImageLoading(false);
                     }}
-                    style={{ display: isImageLoading ? 'none' : 'block' }}
                   />
                 </div>
                 <div className="flex-col gap-3">
@@ -629,8 +527,11 @@ const Profile = () => {
                     Upload new picture
                   </button>
                   <button
-                    className="bg-[#565E6D] text-[#FFFFFF] text-[14px] font-inter px-4 py-2 cursor-pointer"
-                    onClick={handleDeletePicture}
+                    className={`${isPendingImageDelete ? 'bg-red-500' : 'bg-[#565E6D]'} text-[#FFFFFF] text-[14px] font-inter px-4 py-2 cursor-pointer`}
+                    onClick={() => {
+                      setIsPendingImageDelete(!isPendingImageDelete);
+                      setImagePreview(null);
+                    }}
                   >
                     Delete
                   </button>
@@ -706,7 +607,7 @@ const Profile = () => {
               </div>
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
-                onClick={handleSave}
+                onClick={handleSavePersonalData}
                 disabled={saveLoad}
               >
                 {saveLoad ?
@@ -726,10 +627,9 @@ const Profile = () => {
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Payment Account</h1>
             <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Real-time information and activities of your prototype.
+              Cantumkan nomor telepon akun penerima bayaran kontrak.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-            {/* Payment Phone Number */}
             <div className="mb-6 mr-4">
               <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
                 Status Akun
@@ -748,10 +648,7 @@ const Profile = () => {
                 <p className="text-red-500 text-sm mt-1">{paymentNumberError}</p>
               )}
             </div>
-
-            {/* Button */}
             <div className="">
-              {/* Change Account Button */}
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
                 onClick={handleChangeAccount}
@@ -759,13 +656,12 @@ const Profile = () => {
               >
                 {isPaymentUpdating ? 'Memproses...' : 'Ganti Akun'}
               </button>
-              {/* Disconnect Account Button */}
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
                 onClick={handleDisconnectAccount}
                 disabled={isPaymentUpdating}
               >
-                Putuskan Koneksi
+                {isPaymentUpdating ? 'Memproses...' : 'Putuskan Koneksi'}
               </button>
             </div>
           </div>
@@ -775,16 +671,13 @@ const Profile = () => {
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Account Security</h1>
             <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Pastikan akun Anda tetap aman dengan mengatur preferensi keamanan di sini.
+              Pastikan akun Anda tetap aman dengan mengatur kata sandi akun di sini.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-            {/* Change Password */}
             <div className="mb-6 mr-4">
               <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
                 Change Password
               </label>
-
-              {/* Current Password Input */}
               <p className="text-[#424956] font-semibold text-[16px] mb-1">Current Password :</p>
               <input
                 type="password"
@@ -796,8 +689,6 @@ const Profile = () => {
               {passwordErrors.currentPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.currentPassword}</p>
               )}
-
-              {/* New Password Input */}
               <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">New Password :</p>
               <input
                 type="password"
@@ -809,8 +700,6 @@ const Profile = () => {
               {passwordErrors.newPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.newPassword}</p>
               )}
-
-              {/* Confirm New Password Input */}
               <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">Confirm Password :</p>
               <input
                 type="password"
@@ -822,38 +711,15 @@ const Profile = () => {
               {passwordErrors.confirmPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.confirmPassword}</p>
               )}
-
-              {/* Save Password Button */}
               <div className="mt-4">
                 <button
                   className={`bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer ${isChangingPassword ? 'opacity-70' : ''}`}
-                  onClick={handleSavePassword}
+                  onClick={handleChangePassword}
                   disabled={isChangingPassword}
                 >
                   {isChangingPassword ? 'Processing...' : 'Save Changes'}
                 </button>
               </div>
-            </div>
-
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-
-            <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
-              Manage Account
-            </label>
-            {/* Manage Account Button */}
-            <div className="">
-              <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
-                onClick={handleLogOut}
-              >
-                Log out
-              </button>
-              {/* <button
-                className="bg-[#565E6D]  w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
-                onClick={handleDeleteAccount}
-              >
-                Delete Account
-              </button> */}
             </div>
           </div>
         );

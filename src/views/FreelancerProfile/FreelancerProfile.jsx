@@ -277,7 +277,8 @@ const FreelancerProfile = () => {
                 <div className="flex justify-between items-center my-5">
                   <h2 className="text-xl font-semibold">
                     {isOwnProfile ? "My Gigs" : "Available Gigs"}
-                  </h2>                  {isOwnProfile && isFreelancer && (
+                  </h2>
+                  {isOwnProfile && isFreelancer && (
                     <button
                       onClick={() => {
                         setShowAddServiceModal(true);
@@ -616,7 +617,6 @@ const FreelancerProfile = () => {
                                 : `${imageShow}${freelancerData?.picture}`
                             }
                             alt="freelancer"
-                            onLoad={() => setIsImageLoading(false)}
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = default_avatar;
