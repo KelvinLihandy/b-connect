@@ -29,6 +29,7 @@ import { UserTypeContext } from "../../contexts/UserTypeContext";
 // Import components
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import AddService from "../../components/add_service/AddService";
 
 // Import service images (replace with your actual imports)
 import default_avatar from '../../assets/default-avatar.png'
@@ -64,10 +65,10 @@ const FreelancerProfile = () => {
   const [end, setEnd] = useState(itemsPerPage - 1);
   const [start, setStart] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);  const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [totalGigs, setTotalGigs] = useState(0);
   const [copyMessage, setCopyMessage] = useState("");
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
 
   const getPageNumbers = () => {
     const pages = [];
@@ -276,11 +277,10 @@ const FreelancerProfile = () => {
                 <div className="flex justify-between items-center my-5">
                   <h2 className="text-xl font-semibold">
                     {isOwnProfile ? "My Gigs" : "Available Gigs"}
-                  </h2>
-                  {isOwnProfile && isFreelancer && (
+                  </h2>                  {isOwnProfile && isFreelancer && (
                     <button
                       onClick={() => {
-                        // rayyan open modal
+                        setShowAddServiceModal(true);
                       }}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
@@ -475,10 +475,10 @@ const FreelancerProfile = () => {
                           {!isOwnProfile
                             ? "This freelancer hasn't published any gigs yet."
                             : "Create your first gig to start offering your services to potential clients."}
-                        </p>
+                        </p>                        
                         {isOwnProfile && isFreelancer && (
                           <button
-                            onClick={navigateToCreateGig}
+                            onClick={() => setShowAddServiceModal(true)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                           >
                             Create New Gig
@@ -679,10 +679,16 @@ const FreelancerProfile = () => {
               </div>
             </div>
           </div>
-        </div >
-      </main >
+        </div >      
+        </main >
 
       <Footer />
+
+      {/* AddService Modal */}
+      <AddService 
+        isOpen={showAddServiceModal}
+        onClose={() => setShowAddServiceModal(false)}
+      />
     </>
   );
 };

@@ -25,7 +25,6 @@ import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
 import ManageOrder from "./views/manage_order/ManageOrder";
 import Invoice from "./views/invoice/Invoice";
-export const socket = io.connect(baseAPI);
 import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {

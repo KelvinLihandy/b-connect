@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn, X, Minimize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn, X } from "lucide-react";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { DynamicStars } from "../dynamic_stars/DynamicStars";
 
@@ -11,7 +11,7 @@ const Preview = ({ serviceData, onClose }) => {
   const [activePackage, setActivePackage] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showZoomOverlay, setShowZoomOverlay] = useState(false);
-  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(true); // Always start in fullscreen
 
   // Extract data from serviceData
   const { title, categories, images, description, packages } = serviceData;
@@ -31,7 +31,6 @@ const Preview = ({ serviceData, onClose }) => {
       opacity: 0
     })
   };
-
   // Zoom animation for fullscreen mode
   const fullscreenVariants = {
     hidden: { opacity: 0, scale: 0.8 },
@@ -44,6 +43,45 @@ const Preview = ({ serviceData, onClose }) => {
       opacity: 0,
       scale: 0.8,
       transition: { duration: 0.2 }
+    }
+  };
+
+  // Animation variants for the preview modal
+  const previewModalVariants = {
+    hidden: { 
+      opacity: 0, 
+      scale: 0.9,
+      y: 20
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { 
+        type: "spring",
+        damping: 25,
+        stiffness: 300,
+        duration: 0.4 
+      }
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.9,
+      y: 20,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  // Backdrop animation
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.3 }
     }
   };
 
@@ -68,15 +106,9 @@ const Preview = ({ serviceData, onClose }) => {
   const toggleImageMode = () => {
     setImageMode(prev => prev === "cover" ? "contain" : "cover");
   };
-
   // Toggle fullscreen mode for the carousel
   const toggleFullscreen = () => {
     setIsFullscreen(prev => !prev);
-  };
-
-  // Toggle preview fullscreen mode
-  const togglePreviewFullscreen = () => {
-    setIsPreviewFullscreen(prev => !prev);
   };
 
   // Format price with commas
@@ -176,30 +208,28 @@ const Preview = ({ serviceData, onClose }) => {
       </motion.div>
     );
   };
-
   return (
-    <div className="fixed inset-0 bg-transparent-75 z-50">
-      <div className={`relative ${isPreviewFullscreen ? 'h-screen' : 'min-h-screen flex items-center justify-center p-4'}`}>
-        <div className={`bg-white ${isPreviewFullscreen ? 'w-full h-full' : 'rounded-xl w-full max-w-6xl'} shadow-2xl relative`}>
+    <motion.div 
+      className="fixed inset-0 bg-black bg-opacity-75 z-50"
+      variants={backdropVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <motion.div 
+        className="relative h-screen"
+        variants={previewModalVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        <div className="bg-white w-full h-full shadow-2xl relative">
           {/* Preview Header */}
-          <div className={`bg-gray-100 ${isPreviewFullscreen ? '' : 'rounded-t-xl'} p-4 border-b flex justify-between items-center`}>
+          <div className="bg-gray-100 p-4 border-b flex justify-between items-center">
             <h2 className="text-xl font-bold text-center text-red-500 font-Archivo flex-grow">
               ***This is Preview of Your Add Page Progress***
             </h2>
             <div className="flex items-center space-x-2">
-              <motion.button
-                className="text-gray-600 hover:text-gray-800 p-1"
-                onClick={togglePreviewFullscreen}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                title={isPreviewFullscreen ? "Exit fullscreen" : "View fullscreen"}
-              >
-                {isPreviewFullscreen ? (
-                  <Minimize2 size={20} />
-                ) : (
-                  <Maximize2 size={20} />
-                )}
-              </motion.button>
               <motion.button
                 className="text-gray-500 hover:text-gray-800 p-1"
                 onClick={onClose}
@@ -209,10 +239,8 @@ const Preview = ({ serviceData, onClose }) => {
                 <X size={20} />
               </motion.button>
             </div>
-          </div>
-
-          {/* Main content area */}
-          <div className={`${isPreviewFullscreen ? 'h-[calc(100%-64px)] overflow-auto' : ''} p-6`}>
+          </div>          {/* Main content area */}
+          <div className="h-[calc(100%-64px)] overflow-auto p-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 py-8 mx-[108px]">
               {/* Left column - takes 8/12 of the grid on large screens */}
               <div className="lg:col-span-8">                {/* Title and Rating */}
@@ -511,17 +539,16 @@ const Preview = ({ serviceData, onClose }) => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </div>            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Fullscreen view modal */}
       <AnimatePresence>
         {isFullscreen && <FullscreenView />}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

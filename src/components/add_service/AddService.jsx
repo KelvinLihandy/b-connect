@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 import CancelIcon from "../../assets/addservice-cancel.svg";
 import SaveIcon from "../../assets/addservice-save.svg";
@@ -37,7 +37,7 @@ const PACKAGE_TYPES = {
   ADVANCE: "Advance"
 };
 
-const AddService = () => {
+const AddService = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
@@ -72,7 +72,49 @@ const AddService = () => {
   const dropdownRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const navigate = useNavigate();
+  // Reset form function
+  const resetForm = () => {
+    setStep(1);
+    setTitle("");
+    setSearchCategory("");
+    setShowDropdown(false);
+    setSelectedTags([]);
+    setErrors({});
+    setAttachments([]);
+    setDescription("");
+    setWorkFlows(Array(DEFAULT_WORKFLOW_COUNT).fill(""));
+    setBasePrice("");
+    setDeliveryTime("3");
+    setShowPreview(false);
+    setBasicPackage({
+      konsep: "",
+      revisi: "",
+      waktu: "",
+      sourceFile: "",
+      harga: ""
+    });
+    setAdvancePackage({
+      konsep: "",
+      revisi: "",
+      waktu: "",
+      sourceFile: "",
+      harga: ""
+    });
+  };
+  // Handle modal close
+  const handleClose = () => {
+    if (step === 6) {
+      // If on finish step, just close
+      resetForm();
+      onClose();
+    } else {
+      // Otherwise, ask for confirmation
+      if (window.confirm("Are you sure you want to close? All progress will be lost.")) {
+        resetForm();
+        onClose();
+      }
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -394,23 +436,90 @@ const AddService = () => {
     for (let i = index; i < workFlows.length; i++) {
       delete updatedErrors[`workflow_${i}`];
     }
-    setErrors(updatedErrors);
+    setErrors(updatedErrors);  };
+
+  // Animation variants for the modal
+  const modalVariants = {
+    hidden: { 
+      opacity: 0,
+      scale: 0.7,
+      y: 60,
+      rotateX: -15
+    },
+    visible: { 
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      rotateX: 0,
+      transition: {
+        type: "spring",
+        damping: 25,
+        stiffness: 300,
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    },
+    exit: { 
+      opacity: 0,
+      scale: 0.8,
+      y: 30,
+      rotateX: 10,
+      transition: {
+        duration: 0.25,
+        ease: "easeIn"
+      }
+    }
+  };
+
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { 
+        duration: 0.25,
+        ease: "easeIn"
+      }
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full">
-      <div className="w-[90%] md:w-[80%] lg:w-[60%] bg-white rounded-xl shadow-md overflow-hidden border border-gray-400">
-        {/* Navbar */}
-        <nav className="flex flex-row items-center justify-between px-8 h-[68px] bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)]">
-          <h2 className="text-white text-[24px] md:text-[28px] lg:text-[32px] font-Archivo">
-            Add Product
-          </h2>
-          <button className="cursor-pointer" onClick={() => navigate(-1)}>
-            <img className="w-[40px] h-[40px]" src={CancelIcon} alt="Cancel" />
-          </button>
-        </nav>
+    <>
+      {/* Modal Overlay with Animation */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className="fixed inset-0 backdrop-blur-sm backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4"
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-400 flex flex-col"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+            {/* Navbar */}
+            <nav className="flex flex-row items-center justify-between px-8 h-[68px] bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)] flex-shrink-0">
+              <h2 className="text-white text-[24px] md:text-[28px] lg:text-[32px] font-Archivo">
+                Add Product
+              </h2>
+              <button className="cursor-pointer" onClick={handleClose}>
+                <img className="w-[40px] h-[40px]" src={CancelIcon} alt="Cancel" />
+              </button>
+            </nav>
 
-        {/* Stepper */}
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">{/* Stepper */}
         <div className="px-8 py-6">
           <div className="flex justify-between items-center relative">
             {steps.map((label, index) => {
@@ -659,7 +768,7 @@ const AddService = () => {
                         alt={`Attachment ${index + 1}`}
                         className="w-full h-32 object-cover rounded-md"
                       />
-                      <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
+                      <div className="absolute inset-0 backdrop-blur-sm bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
                         <button
                           className="bg-red-500 text-white rounded-full p-1 cursor-pointer"
                           onClick={() => removeAttachment(index)}
@@ -1102,9 +1211,7 @@ const AddService = () => {
             
             
           </div>
-        )}
-
-        {/* Navigation Buttons */}
+        )}        {/* Navigation Buttons */}
         {step !== 6 && (
           <div className="flex justify-between items-center px-8 pt-2 pb-6">
             <button
@@ -1120,30 +1227,36 @@ const AddService = () => {
                 className="px-4 py-2 border border-gray-300 rounded-md text-white shadow-md cursor-pointer"
                 style={{ backgroundColor: "#4DA1A9" }}
               >
-                Next
-              </button>
+                Next              
+                </button>
             )}
           </div>
-        )}      </div>
+        )}
+            </div>
+            </motion.div>
+          </motion.div>
+        )}      </AnimatePresence>
       
       {/* Preview Modal */}
-      {showPreview && (
-        <Preview 
-          serviceData={{
-            title,
-            categories: selectedTags,
-            images: attachments,
-            description,
-            workFlows,
-            packages: {
-              basic: basicPackage,
-              advance: advancePackage
-            }
-          }} 
-          onClose={closePreview} 
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {showPreview && (
+          <Preview 
+            serviceData={{
+              title,
+              categories: selectedTags,
+              images: attachments,
+              description,
+              workFlows,
+              packages: {
+                basic: basicPackage,
+                advance: advancePackage
+              }
+            }} 
+            onClose={closePreview} 
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
