@@ -45,8 +45,8 @@ const formatRupiah = (amount) => {
 const Invoice = () => {
   return (
     <div className="font-Archivo">
-        <Navbar alt />        
-        <div className="container mx-auto bg-white rounded-lg shadow-md p-10 mt-30 mb-15 max-w-4xl">
+        {/* <Navbar alt />         */}
+        <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md p-10 mt-15 mb-15 max-w-4xl">
             {/* Header Section */}
             <div className="flex justify-between items-start mb-10">
                 <div>
