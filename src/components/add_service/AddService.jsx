@@ -38,7 +38,7 @@ const PACKAGE_TYPES = {
 };
 
 const AddService = () => {
-  const [step, setStep] = useState(5);
+  const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
