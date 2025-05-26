@@ -139,8 +139,8 @@ const AddService = ({ isOpen, onClose }) => {
         isValid = false;
       }
 
-      if (selectedTags.length === 0) {
-        newErrors.category = "Please select at least one category";
+      if (selectedTags.length === 0 || selectedTags.length < 2) {
+        newErrors.category = "Please select at least two category";
         isValid = false;
       }
     } else if (step === 2) {
@@ -514,7 +514,7 @@ const AddService = ({ isOpen, onClose }) => {
                 Add Product
               </h2>
               <button className="cursor-pointer" onClick={handleClose}>
-                <img className="w-[40px] h-[40px]" src={CancelIcon} alt="Cancel" />
+                <img className="w-[35px] h-[40px]" src={CancelIcon} alt="Cancel" />
               </button>
             </nav>
 
