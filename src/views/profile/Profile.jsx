@@ -17,11 +17,12 @@ import downArrow from "../../assets/profile_down_arrow_2.svg";
 
 import Footer from "../../components/footer/Footer";
 import Navbar from "../../components/navbar/Navbar";
-import { userAPI } from "../../constants/APIRoutes";
+import { authAPI, userAPI } from "../../constants/APIRoutes";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import axios from "axios";
 import { AuthContext } from "../../contexts/AuthContext";
 import { RememberContext } from "../../contexts/RememberContext";
+import { UserTypeContext } from "../../contexts/UserTypeContext";
 
 
 // Constants for available languages
@@ -65,10 +66,9 @@ const Profile = () => {
     clearSavedPreferences: false,
   });
   const dropdownRef = useRef(null);
-
-  const { auth, getAuth } = useContext(AuthContext);
+  const { auth, getAuth, setAuth } = useContext(AuthContext);
   const { remember } = useContext(RememberContext);
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext)
   const [isPendingImageDelete, setIsPendingImageDelete] = useState(false);
   const [paymentNumberError, setPaymentNumberError] = useState("");
   const [isPaymentUpdating, setIsPaymentUpdating] = useState(false);
@@ -77,10 +77,114 @@ const Profile = () => {
     newPassword: "",
     confirmPassword: ""
   });
+  const [description, setDescription] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const navigate = useNavigate();
+  const scrollUp = useRef(null);
 
-  const handleSave = async () => {//REVISION: update refresh auth info
+  useEffect(() => {
+    window.scrollTo({
+      top: scrollUp.current.offsetTop,
+      behavior: "smooth",
+    });
+  }, [activeContent])
+
+  const handleLogOut = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    document.cookie.split(";").forEach((cookie) => {
+      const name = cookie.split("=")[0].trim();
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+    });
+    await axios.post(`${authAPI}/clear-cookie`,
+      {},
+      { withCredentials: true }
+    )
+    setAuth(null);
+    setIsFreelancer(false);
+    navigate('/home');
+  }
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${userAPI}/get-user/${auth?.data?.auth.id}`, {
+        method: 'POST',
+        withCredentials: true,
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(data)
+      if (data && data.user) {
+        if (data.user.picture) {
+          setProfileImage(data.user.picture);
+        }
+        if (data.user.description) {
+          setDescription(data.user.description);
+        }
+        if (data.user.paymentNumber) {
+          setPaymentPhoneNumber(data.user.paymentNumber);
+        }
+        if (data.user.name) {
+          const nameParts = data.user.name.split(' ');
+          setFirstName(nameParts[0] || '');
+          setLastName(nameParts.slice(1).join(' ') || '');
+        }
+        if (data.user.email) setContactEmail(data.user.email);
+        if (data.user.phoneNumber) setPhoneNumber(data.user.phoneNumber);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const validateEmail = (email) => {
+    const emailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
+    return email ? emailRegex.test(email) : true;
+  };
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
+    return phone ? phoneRegex.test(phone) : true;
+  };
+
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
+  const handleUploadPicture = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg, image/png';
+    fileInput.multiple = false;
+    fileInput.max = 1;
+    fileInput.onchange = async (e) => {
+      if (e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      const validTypes = ['image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        setImageUploadError("Format file tidak didukung. Harap unggah file dengan format PNG atau JPEG.");
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setImageUploadError("Ukuran file terlalu besar. Maksimal 15MB.");
+        return;
+      }
+      setSelectedFile(file);
+      const imageUrl = URL.createObjectURL(file);
+      setImagePreview(imageUrl);
+      setIsPendingImageDelete(false);
+    };
+    fileInput.click();
+  };
+
+  const handleSavePersonalData = async () => {
     setFormErrors({
       email: "",
       phoneNumber: "",
@@ -111,38 +215,31 @@ const Profile = () => {
         fullName = `${firstName} ${lastName}`.trim();
         formData.append('name', fullName);
       }
-      if (contactEmail) {
-        formData.append('email', contactEmail);
-      }
-      if (phoneNumber) {
-        formData.append('phoneNumber', phoneNumber);
-      }
-      if (isPendingImageDelete) {
-        formData.append('deletePicture', 'true');
-      }
-      else if (selectedFile) {
-        formData.append('picture', selectedFile);
-      }
+      if (contactEmail) formData.append('email', contactEmail);
+      if (phoneNumber) formData.append('phoneNumber', phoneNumber);
+      if (isFreelancer) formData.append('descr', description);
+      if (isPendingImageDelete) formData.append('deletePicture', 'true');
+      else if (selectedFile) formData.append('picture', selectedFile);
       formData.append('remember', remember);
-      const response = await axios.patch(`${userAPI}/update-user-profile`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        withCredentials: true
-      });
-      if (response.data && response.data.user) {
-        if (response.data.user.picture) {
-          setProfileImage(response.data.user.picture);
+      const response = await axios.patch(`${userAPI}/update-user-profile`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true
         }
-        if (imagePreview) {
-          URL.revokeObjectURL(imagePreview);
-        }
-        setSelectedFile(null);
+      );
+      const res = response.data;
+      console.log(response)
+      setSelectedFile(null);
+      setSaveError("");
+      await getAuth();
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
         setImagePreview(null);
-        setIsPendingImageDelete(false);
-        setSaveError("");
-        await getAuth();
       }
+      await fetchUserProfile();
     } catch (error) {
       console.error("Error updating profile:", error);
       if (error.message.includes('Network Error') || error.response?.status === 0) {
@@ -150,154 +247,15 @@ const Profile = () => {
       } else {
         setSaveError("Gagal memperbarui profil. Silakan coba lagi.");
       }
-    } 
-    setSaveLoad(false);
+    } finally {
+      setSaveLoad(false);
+    }
     window.location.reload();
-  };
+  }
 
-  const validateEmail = (email) => {
-    const emailRegex = /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z\-0-9]*[a-zA-Z0-9]:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f])\]))$/;
-    return email ? emailRegex.test(email) : true;
-  };
-
-  const validatePhoneNumber = (phone) => {
-    const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,10}$/;
-    return phone ? phoneRegex.test(phone) : true;
-  };
-
-  const handleUploadPicture = () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/jpeg, image/png';
-    fileInput.multiple = false;
-    fileInput.max = 1;
-    fileInput.onchange = async (e) => {
-      if (e.target.files.length === 0) return;
-      const file = e.target.files[0];
-      const validTypes = ['image/jpeg', 'image/png'];
-      if (!validTypes.includes(file.type)) {
-        setImageUploadError("Format file tidak didukung. Harap unggah file dengan format PNG atau JPEG.");
-        return;
-      }
-      if (file.size > 15 * 1024 * 1024) {
-        setImageUploadError("Ukuran file terlalu besar. Maksimal 15MB.");
-        return;
-      }
-      setSelectedFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setImagePreview(imageUrl);
-      setIsPendingImageDelete(false);
-    };
-    fileInput.click();
-  };
-
-  const handleDeletePicture = () => {
-    setIsPendingImageDelete(true);
-    setImagePreview(null);
-  };
-
-  // Account Security Constants
-  const handleChangeAccount = async () => {
-    // Reset error state
-    setPaymentNumberError("");
-
-    // Validate payment number
-    if (!paymentPhoneNumber) {
-      setPaymentNumberError("Nomor pembayaran harus diisi");
-      return;
-    }
-
-    // Use phone number validation instead of digit-only validation
-    if (!validatePhoneNumber(paymentPhoneNumber)) {
-      setPaymentNumberError("Format nomor telepon tidak valid (format: +628xxx/628xxx/08xxx)");
-      return;
-    }
-
-    setIsPaymentUpdating(true);
-
-    try {
-      // Use same approach as handleSave function that's working with axios
-      const formData = new FormData();
-      formData.append('paymentNumber', paymentPhoneNumber);
-
-      // Use axios.post instead of fetch - similar to the handleSave function
-      const response = await axios.patch(`${userAPI}/update-payment-number`, { paymentNumber: paymentPhoneNumber }, {
-        withCredentials: true
-      });
-
-      // Handle response in the same style as handleSave
-      if (response.data && response.data.user) {
-        alert("Nomor pembayaran berhasil diperbarui");
-
-        // Update the local state if backend returned updated value
-        if (response.data.user.paymentNumber) {
-          setPaymentPhoneNumber(response.data.user.paymentNumber);
-        }
-      }
-    } catch (error) {
-      console.error("Error updating payment number:", error);
-
-      // Use similar error handling as handleSave
-      if (error.message.includes('Network Error') || error.response?.status === 0) {
-        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
-      } else if (error.response?.data?.error) {
-        setPaymentNumberError(error.response.data.error);
-      } else {
-        setPaymentNumberError("Gagal memperbarui nomor pembayaran. Silakan coba lagi.");
-      }
-    } finally {
-      setIsPaymentUpdating(false);
-    }
-  };
-
-  const handleDisconnectAccount = async () => {
-    // Ask for confirmation before disconnecting
-    if (!window.confirm("Apakah Anda yakin ingin memutuskan koneksi akun pembayaran?")) {
-      return;
-    }
-
-    setIsPaymentUpdating(true);
-
-    try {
-      // Send empty string as the payment number to disconnect the account
-      const response = await axios.patch(`${userAPI}/update-payment-number`,
-        { paymentNumber: "" },  // Send empty string to disconnect
-        { withCredentials: true }
-      );
-
-      // Handle response in the same style as handleChangeAccount
-      if (response.data && response.data.user) {
-        // Update the local state to empty string
-        setPaymentPhoneNumber("");
-        alert("Koneksi akun pembayaran telah diputus");
-      }
-    } catch (error) {
-      console.error("Error disconnecting payment account:", error);
-
-      if (error.message.includes('Network Error') || error.response?.status === 0) {
-        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
-      } else if (error.response?.data?.error) {
-        setPaymentNumberError(error.response.data.error);
-      } else {
-        setPaymentNumberError("Gagal memutuskan koneksi. Silakan coba lagi.");
-      }
-    } finally {
-      setIsPaymentUpdating(false);
-    }
-  };
-
-  // Password validation function
-  const validatePassword = (password) => {
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
-  };
-
-  // Handle new password change and validation
   const handleNewPasswordChange = (e) => {
     const value = e.target.value;
     setNewPassword(value);
-
-    // Validate new password format
     if (value && !validatePassword(value)) {
       setPasswordErrors(prev => ({
         ...prev,
@@ -309,8 +267,6 @@ const Profile = () => {
         newPassword: ""
       }));
     }
-
-    // Check if confirm password matches
     if (confirmPassword && value !== confirmPassword) {
       setPasswordErrors(prev => ({
         ...prev,
@@ -324,11 +280,9 @@ const Profile = () => {
     }
   };
 
-  // Handle confirm password change and matching validation
   const handleConfirmPasswordChange = (e) => {
     const value = e.target.value;
     setConfirmPassword(value);
-
     if (value !== newPassword) {
       setPasswordErrors(prev => ({
         ...prev,
@@ -342,77 +296,51 @@ const Profile = () => {
     }
   };
 
-  const handleSavePassword = async () => {
-    // Reset error states
+  const handleChangePassword = async () => {
     let errors = {
       currentPassword: "",
       newPassword: "",
       confirmPassword: ""
     };
-
-    // Validate password format based on backend requirements
-    // Password must have at least 8 characters, 1 letter, 1 number and 1 special character
     if (!currentPassword) {
       errors.currentPassword = "Password saat ini harus diisi";
     } else if (!validatePassword(currentPassword)) {
       errors.currentPassword = "Format password tidak valid";
     }
-
     if (!newPassword) {
       errors.newPassword = "Password baru harus diisi";
     } else if (!validatePassword(newPassword)) {
       errors.newPassword = "Password harus minimal 8 karakter dan memuat huruf, angka, dan simbol (@$!%*?&)";
     }
-
     if (!confirmPassword) {
       errors.confirmPassword = "Konfirmasi password harus diisi";
     } else if (newPassword !== confirmPassword) {
       errors.confirmPassword = "Password dan konfirmasi berbeda";
     }
-
-    // Update error state
     setPasswordErrors(errors);
-
-    // Check if there are any errors
     if (errors.currentPassword || errors.newPassword || errors.confirmPassword) {
       return;
     }
-
-    // Start loading state
     setIsChangingPassword(true);
-
     try {
-      // Call API to change password - matching the backend expecting email, password & passwordConf
       const response = await axios.patch(`${userAPI}/change-password-profile`, {
-        password: currentPassword,  // Fix: Use currentPassword as the old password
-        newPassword: newPassword,             // Fix: renamed from 'password' to avoid duplicate keys
-        passwordConf: confirmPassword      // This is correct
+        password: currentPassword,
+        newPassword: newPassword,
+        passwordConf: confirmPassword
       }, {
         withCredentials: true
       });
-
-      // Reset form fields after successful update
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
-      // Show success message from the response or default
-      alert(response.data?.message || "Password berhasil diubah");
-
-      // Add delay before logging out to ensure the user sees the success message
-      setTimeout(() => {
-        alert("Anda akan keluar dan perlu login kembali dengan password baru.");
-        handleLogOut(); // Call the logout function after password change
-      }, 1000);
-
+      if (response.data.message === "Password berhasil diubah.") {
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        alert("Password berhasil diubah, anda perlu login kembali dengan password baru");
+        handleLogOut();
+      }
     } catch (error) {
       console.error("Error changing password:", error);
-
-      // Better error handling based on backend responses
       if (error.response?.data?.error) {
-        // Handle specific error messages from the backend
         const errorMessage = error.response.data.error;
-
         if (errorMessage.includes("Password lama tidak valid")) {
           setPasswordErrors(prev => ({ ...prev, currentPassword: errorMessage }));
         } else if (errorMessage.includes("Password baru tidak valid")) {
@@ -420,7 +348,6 @@ const Profile = () => {
         } else if (errorMessage.includes("Password dan konfimasi berbeda")) {
           setPasswordErrors(prev => ({ ...prev, confirmPassword: errorMessage }));
         } else {
-          // General error alert
           alert(errorMessage);
         }
       } else {
@@ -431,39 +358,67 @@ const Profile = () => {
     }
   };
 
-  const handleLogOut = () => {
+  const handleChangeAccount = async () => {
+    setPaymentNumberError("");
+    if (!paymentPhoneNumber) {
+      setPaymentNumberError("Nomor pembayaran harus diisi");
+      return;
+    }
+    if (!validatePhoneNumber(paymentPhoneNumber)) {
+      setPaymentNumberError("Format nomor telepon tidak valid (format: +628xxx/628xxx/08xxx)");
+      return;
+    }
+    setIsPaymentUpdating(true);
     try {
-      // Clear localStorage
-      localStorage.clear();  // Remove all items from localStorage
-
-      // Clear sessionStorage
-      sessionStorage.clear();  // Remove all items from sessionStorage
-
-      // Clear cookies (a simple approach that works for most cookies)
-      document.cookie.split(';').forEach(cookie => {
-        const [name, _] = cookie.split('=');
-        document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
-      });
-
-      // Show success message
-      alert("Berhasil logout");
-
-      // Redirect to login page
-      navigate('/sign-in');
+      const response = await axios.patch(`${userAPI}/update-payment-number`,
+        { paymentNumber: paymentPhoneNumber },
+        { withCredentials: true }
+      );
+      if (response.data && response.data.user) {
+        alert("Nomor pembayaran berhasil diperbarui");
+        if (response.data.user.paymentNumber) {
+          setPaymentPhoneNumber(response.data.user.paymentNumber);
+        }
+      }
     } catch (error) {
-      console.error("Error during logout:", error);
-      alert("Terjadi masalah saat logout. Silakan coba lagi.");
+      console.error("Error updating payment number:", error);
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else if (error.response?.data?.error) {
+        setPaymentNumberError(error.response.data.error);
+      } else {
+        setPaymentNumberError("Gagal memperbarui nomor pembayaran. Silakan coba lagi.");
+      }
+    } finally {
+      setIsPaymentUpdating(false);
     }
   };
 
-  const handleDeleteAccount = () => {
-    console.log("Delete account clicked");
-    // Tambahkan logika untuk menghapus akun
-  };
-
-  // Language Constants
-  const handleDropdownClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
+  const handleDisconnectAccount = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin memutuskan koneksi akun pembayaran?")) {
+      return;
+    }
+    setIsPaymentUpdating(true);
+    try {
+      const response = await axios.patch(`${userAPI}/update-payment-number`,
+        { paymentNumber: "" },
+        { withCredentials: true }
+      );
+      if (response.data && response.data.user) {
+        setPaymentPhoneNumber("");
+      }
+    } catch (error) {
+      console.error("Error disconnecting payment account:", error);
+      if (error.message.includes('Network Error') || error.response?.status === 0) {
+        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
+      } else if (error.response?.data?.error) {
+        setPaymentNumberError(error.response.data.error);
+      } else {
+        setPaymentNumberError("Gagal memutuskan koneksi. Silakan coba lagi.");
+      }
+    } finally {
+      setIsPaymentUpdating(false);
+    }
   };
 
   useEffect(() => {
@@ -479,88 +434,28 @@ const Profile = () => {
     };
   }, [dropdownRef]);
 
+  // const [notificationPrefs, setNotificationPrefs] = useState({
+  //   emailPromo: false,
+  //   pushTransaction: false,
+  //   newFeatures: false,
+  // });
 
-  // Replace useEffect to use fetch instead of axios.get
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch(`${userAPI}/get-user/${auth?.data?.auth.id}`, {
-          method: 'POST',
-          withCredentials: true,
-        });
+  // const handleCheckboxChange = (id) => {
+  //   setNotificationPrefs((prev) => ({
+  //     ...prev,
+  //     [id]: !prev[id],
+  //   }));
+  // };
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+  // const handleSaveNotificationPrefs = () => {
+    
+  // };
 
-        const data = await response.json();
-        if (data && data.user) {
-          if (data.user.picture) {
-            setProfileImage(data.user.picture);
-          }
-
-          // Also set payment number if available
-          if (data.user.paymentNumber) {
-            setPaymentPhoneNumber(data.user.paymentNumber);
-          }
-
-          // Set name and other fields if available
-          if (data.user.name) {
-            const nameParts = data.user.name.split(' ');
-            setFirstName(nameParts[0] || '');
-            setLastName(nameParts.slice(1).join(' ') || '');
-          }
-
-          if (data.user.email) setContactEmail(data.user.email);
-          if (data.user.phoneNumber) setPhoneNumber(data.user.phoneNumber);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
-  // Push Notification Constants
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    emailPromo: false,
-    pushTransaction: false,
-    newFeatures: false,
-  });
-
-  const handleCheckboxChange = (id) => {
-    setNotificationPrefs((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleSaveNotificationPrefs = () => {
-    console.log("Saving notification preferences:", notificationPrefs);
-    // Add API call here to save preferences
-  };
-
-  // Clear Cache Constants
-  const handleCacheOptionChange = (id) => {
-    setCacheOptions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleClearCache = () => {
-    console.log("Clearing cache with options:", cacheOptions);
-    // Add API call or logic to clear cache
-  };
-
-  // Help Center Constants
   const [expandedItem, setExpandedItem] = useState(null);
   const toggleItem = (index) => {
     setExpandedItem(expandedItem === index ? null : index);
   };
 
-  // Array FAQ
   const FAQ_ITEMS = [
     {
       question: "Bagaimana cara mengubah password saya?",
@@ -589,32 +484,24 @@ const Profile = () => {
               Kelola detail pribadi Anda agar sesuai dengan profil terbaru.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-
-            {/* Personal Data Section */}
             <div className="">
               <h2 className="font-Archivo font-semibold text-[20px] mb-4">Personal Data</h2>
               <div className="relative flex items-center mb-6">
                 <div className="bg-[#9095A0] rounded-[20px] mr-4">
-                  {isImageLoading && (
-                    <div className="w-[100px] h-[100px] flex items-center justify-center">
-                      <CircularProgress color="inherit" />
-                    </div>
-                  )}
                   <img
                     src={
-                      isPendingImageDelete
-                        ? Picture
-                        : imagePreview || (profileImage ? `${imageShow}${profileImage}` : Picture)
+                      imagePreview !== null
+                        ? imagePreview
+                        : !auth?.data?.auth.picture || auth?.data?.auth.picture === "temp"
+                          ? Picture
+                          : `${imageShow}${auth?.data?.auth.picture}`
                     }
                     alt="Profile Picture"
                     className="w-[100px] h-[100px] object-cover rounded-[16px]"
-                    onLoad={() => setIsImageLoading(false)}
                     onError={(e) => {
                       console.error("Error loading image", e);
                       e.target.src = Picture;
-                      setIsImageLoading(false);
                     }}
-                    style={{ display: isImageLoading ? 'none' : 'block' }}
                   />
                 </div>
                 <div className="flex-col gap-3">
@@ -629,8 +516,11 @@ const Profile = () => {
                     Upload new picture
                   </button>
                   <button
-                    className="bg-[#565E6D] text-[#FFFFFF] text-[14px] font-inter px-4 py-2 cursor-pointer"
-                    onClick={handleDeletePicture}
+                    className={`${isPendingImageDelete ? 'bg-red-500' : 'bg-[#565E6D]'} text-[#FFFFFF] text-[14px] font-inter px-4 py-2 cursor-pointer`}
+                    onClick={() => {
+                      setIsPendingImageDelete(!isPendingImageDelete);
+                      setImagePreview(null);
+                    }}
                   >
                     Delete
                   </button>
@@ -692,7 +582,6 @@ const Profile = () => {
                 <p className="text-sm text-[#565E6D] mb-2">
                   Pastikan nomor Anda benar agar klien dapat menghubungi Anda dengan mudah.
                 </p>
-                <p className="text-[#424956] font-semibold text-[16px] mb-1">Phone Number</p>
                 <input
                   type="text"
                   value={phoneNumber}
@@ -704,20 +593,39 @@ const Profile = () => {
                   <p className="text-red-500 text-sm mt-1">{formErrors.phoneNumber}</p>
                 )}
               </div>
-              <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
-                onClick={handleSave}
-                disabled={saveLoad}
-              >
-                {saveLoad ?
-                  <CircularProgress color="inherit" size={20} />
-                  :
-                  "Save Changes"
-                }
-              </button>
-              {saveError && (
-                <p className="text-red-500 text-sm mb-3">{saveError}</p>
-              )}
+              {isFreelancer &&
+                <>
+                  <div className="mb-6 mr-4">
+                    <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+                      About
+                    </label>
+                    <p className="text-sm text-[#565E6D] mb-2">
+                      Jelaskan diri anda
+                    </p>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Deskripsi..."
+                      className={`w-1/2 h-40 border border-[#ACACAC] px-3 py-2 text-sm resize-none rounded`}
+                    />
+                  </div>
+                  <button
+                    className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
+                    onClick={handleSavePersonalData}
+                    disabled={saveLoad}
+                  >
+                    {saveLoad ?
+                      <CircularProgress color="inherit" size={20} />
+                      :
+                      "Save Changes"
+                    }
+                  </button>
+                  {saveError && (
+                    <p className="text-red-500 text-sm mb-3">{saveError}</p>
+                  )}
+                </>
+              }
+
             </div>
           </div>
         );
@@ -726,10 +634,9 @@ const Profile = () => {
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Payment Account</h1>
             <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Real-time information and activities of your prototype.
+              Cantumkan nomor telepon akun penerima bayaran kontrak.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-            {/* Payment Phone Number */}
             <div className="mb-6 mr-4">
               <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
                 Status Akun
@@ -748,10 +655,7 @@ const Profile = () => {
                 <p className="text-red-500 text-sm mt-1">{paymentNumberError}</p>
               )}
             </div>
-
-            {/* Button */}
             <div className="">
-              {/* Change Account Button */}
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
                 onClick={handleChangeAccount}
@@ -759,13 +663,12 @@ const Profile = () => {
               >
                 {isPaymentUpdating ? 'Memproses...' : 'Ganti Akun'}
               </button>
-              {/* Disconnect Account Button */}
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
                 onClick={handleDisconnectAccount}
                 disabled={isPaymentUpdating}
               >
-                Putuskan Koneksi
+                {isPaymentUpdating ? 'Memproses...' : 'Putuskan Koneksi'}
               </button>
             </div>
           </div>
@@ -775,16 +678,13 @@ const Profile = () => {
           <div>
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Account Security</h1>
             <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Pastikan akun Anda tetap aman dengan mengatur preferensi keamanan di sini.
+              Pastikan akun Anda tetap aman dengan mengatur kata sandi akun di sini.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-            {/* Change Password */}
             <div className="mb-6 mr-4">
               <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
                 Change Password
               </label>
-
-              {/* Current Password Input */}
               <p className="text-[#424956] font-semibold text-[16px] mb-1">Current Password :</p>
               <input
                 type="password"
@@ -796,8 +696,6 @@ const Profile = () => {
               {passwordErrors.currentPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.currentPassword}</p>
               )}
-
-              {/* New Password Input */}
               <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">New Password :</p>
               <input
                 type="password"
@@ -809,8 +707,6 @@ const Profile = () => {
               {passwordErrors.newPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.newPassword}</p>
               )}
-
-              {/* Confirm New Password Input */}
               <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">Confirm Password :</p>
               <input
                 type="password"
@@ -822,217 +718,57 @@ const Profile = () => {
               {passwordErrors.confirmPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.confirmPassword}</p>
               )}
-
-              {/* Save Password Button */}
               <div className="mt-4">
                 <button
                   className={`bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer ${isChangingPassword ? 'opacity-70' : ''}`}
-                  onClick={handleSavePassword}
+                  onClick={handleChangePassword}
                   disabled={isChangingPassword}
                 >
                   {isChangingPassword ? 'Processing...' : 'Save Changes'}
                 </button>
               </div>
             </div>
-
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-
-            <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
-              Manage Account
-            </label>
-            {/* Manage Account Button */}
-            <div className="">
-              <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
-                onClick={handleLogOut}
-              >
-                Log out
-              </button>
-              {/* <button
-                className="bg-[#565E6D]  w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
-                onClick={handleDeleteAccount}
-              >
-                Delete Account
-              </button> */}
-            </div>
           </div>
         );
-      case "languages":
-        return (
-          <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Languages</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Atur bahasa tampilan sesuai dengan preferensi Anda.
-            </p>
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
+      // case "pushNotification":
+      //   return (
+      //     <div>
+      //       <h1 className="font-Archivo font-semibold text-[24px] mb-2">Push notification</h1>
+      //       <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+      //         Sesuaikan preferensi notifikasi agar tetap mendapatkan informasi penting.
+      //       </p>
 
-            {/* Change Language Dropdown */}
-            <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
-                Change Language
-              </label>
-              <p className="text-[#424956] font-semibold text-[16px] mb-1">Current Language :</p>
-
-              {/* Custom Dropdown */}
-              <div className="relative inline-block w-1/2" ref={dropdownRef}>
-                <select
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
-                  onClick={handleDropdownClick}
-                  onBlur={() => setIsDropdownOpen(false)}
-                  className="appearance-none w-full h-[50px] border border-[#ACACAC] px-3 py-2 text-sm pr-10"
-                >
-                  {LANGUAGES.map((language) => (
-                    <option key={language.code} value={language.code}>
-                      {language.name}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Custom arrow with rotation animation */}
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
-                  <img
-                    src={dropdownArrow}
-                    alt="Dropdown Arrow"
-                    className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
-                      }`}
-                  />
-                </div>
-              </div>
-
-              {/* Save Button */}
-              <div className="mt-6">
-                <button
-                  className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
-                  onClick={() => console.log("Bahasa diubah menjadi:", selectedLanguage)}
-                  disabled={saveLoad}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      case "pushNotification":
-        return (
-          <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Push notification</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Sesuaikan preferensi notifikasi agar tetap mendapatkan informasi penting.
-            </p>
-
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-
-            {/* Notification Preferences */}
-            <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">
-                Notification Preferences
-              </label>
-
-              {/* Checkbox Group */}
-              <div className="w-full">
-                {NOTIFICATION_PREFERENCES.map((pref) => (
-                  <div key={pref.id} className="flex items-center mb-3">
-                    <input
-                      type="checkbox"
-                      id={pref.id}
-                      checked={notificationPrefs[pref.id]}
-                      onChange={() => handleCheckboxChange(pref.id)}
-                      className="w-4 h-4 mr-3 cursor-pointer"
-                    />
-                    <label htmlFor={pref.id} className="text-[14px] text-[#444444] cursor-pointer">
-                      {pref.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-
-              {/* Save Button */}
-              <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer mt-3"
-                onClick={handleSaveNotificationPrefs}
-              >
-                Save Changes
-              </button>
-            </div>
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-          </div>
-        );
-      case "clearCache":
-        return (
-          <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Clear Cache</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-              Bersihkan data cache agar aplikasi berjalan lebih lancar.
-            </p>
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-
-            {/* Cache Options */}
-            <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">
-                Clear my cache
-              </label>
-
-              {/* Checkbox Group */}
-              <div className="mb-6">
-                <div className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    id="clearImageCache"
-                    checked={cacheOptions.clearImageCache}
-                    onChange={() => handleCacheOptionChange("clearImageCache")}
-                    className="w-4 h-4 mr-3 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="clearImageCache"
-                    className="text-[14px] text-[#444444] cursor-pointer"
-                  >
-                    Clear image cache
-                  </label>
-                </div>
-                <div className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    id="clearSessionData"
-                    checked={cacheOptions.clearSessionData}
-                    onChange={() => handleCacheOptionChange("clearSessionData")}
-                    className="w-4 h-4 mr-3 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="clearSessionData"
-                    className="text-[14px] text-[#444444] cursor-pointer"
-                  >
-                    Clear session data
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="clearSavedPreferences"
-                    checked={cacheOptions.clearSavedPreferences}
-                    onChange={() => handleCacheOptionChange("clearSavedPreferences")}
-                    className="w-4 h-4 mr-3 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="clearSavedPreferences"
-                    className="text-[14px] text-[#444444] cursor-pointer"
-                  >
-                    Clear saved preferences
-                  </label>
-                </div>
-              </div>
-
-              {/* Clear Cache Button */}
-              <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
-                onClick={handleClearCache}
-              >
-                Clear cache now
-              </button>
-            </div>
-            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-          </div>
-        );
+      //       <div className="border-t border-[#ACACAC] w-full mb-6"></div>
+      //       <div className="mb-6 mr-4">
+      //         <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">
+      //           Notification Preferences
+      //         </label>
+      //         <div className="w-full">
+      //           {NOTIFICATION_PREFERENCES.map((pref) => (
+      //             <div key={pref.id} className="flex items-center mb-3">
+      //               <input
+      //                 type="checkbox"
+      //                 id={pref.id}
+      //                 checked={notificationPrefs[pref.id]}
+      //                 onChange={() => handleCheckboxChange(pref.id)}
+      //                 className="w-4 h-4 mr-3 cursor-pointer"
+      //               />
+      //               <label htmlFor={pref.id} className="text-[14px] text-[#444444] cursor-pointer">
+      //                 {pref.label}
+      //               </label>
+      //             </div>
+      //           ))}
+      //         </div>
+      //         <button
+      //           className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer mt-3"
+      //           onClick={handleSaveNotificationPrefs}
+      //         >
+      //           Save Changes
+      //         </button>
+      //       </div>
+      //       <div className="border-t border-[#ACACAC] w-full mb-6"></div>
+      //     </div>
+      //   );
       case "helpCenter":
         return (
           <div>
@@ -1041,12 +777,9 @@ const Profile = () => {
               Butuh bantuan? Lihat FAQ atau hubungi tim dukungan kami.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-2"></div>
-
-            {/* FAQ Accordion */}
             <div className="mt-2 w-2/3">
               {FAQ_ITEMS.map((item, index) => (
                 <div key={index} className="border-b border-black">
-                  {/* Header - Clickable */}
                   <div
                     className="flex items-center justify-between py-4 cursor-pointer"
                     onClick={() => toggleItem(index)}
@@ -1059,8 +792,6 @@ const Profile = () => {
                         }`}
                     />
                   </div>
-
-                  {/* Content - Expandable */}
                   <div
                     className={`overflow-hidden transition-all duration-300 ${expandedItem === index ? "max-h-96 opacity-100 pb-4" : "max-h-0 opacity-0"
                       }`}
@@ -1073,7 +804,121 @@ const Profile = () => {
           </div>
         );
       case "privacyPolicy":
-        return <div>Privacy Policy Content</div>;
+        return (
+          <div>
+            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Privacy Policy</h1>
+            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+              Kebijakan privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.
+            </p>
+            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
+
+            <div className="space-y-6">
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">1. Informasi yang Kami Kumpulkan</h2>
+                <div className="space-y-3 text-[16px] text-[#424956]">
+                  <p><strong className="text-[#171A1F]">Informasi Pribadi:</strong> Ketika Anda mendaftar atau menggunakan B-Connect, kami dapat mengumpulkan informasi pribadi seperti nama, alamat email, nomor telepon, lokasi, informasi keterampilan/jasa yang Anda tawarkan, dan informasi pembayaran.</p>
+                  <p><strong className="text-[#171A1F]">Data Profil Jasa:</strong> Untuk penyedia jasa, kami mengumpulkan informasi tentang layanan yang ditawarkan, portofolio, pengalaman, tarif, dan ulasan dari klien.</p>
+                  <p><strong className="text-[#171A1F]">Data Transaksi:</strong> Informasi tentang pemesanan jasa, komunikasi antara penyedia dan penerima jasa, pembayaran, dan riwayat transaksi.</p>
+                  <p><strong className="text-[#171A1F]">Data Penggunaan:</strong> Kami secara otomatis mengumpulkan informasi tentang cara Anda berinteraksi dengan platform B-Connect, termasuk pencarian jasa, komunikasi, dan aktivitas di aplikasi.</p>
+                  <p><strong className="text-[#171A1F]">Informasi Perangkat:</strong> Kami dapat mengumpulkan informasi tentang perangkat Anda, termasuk alamat IP, jenis browser, sistem operasi, dan pengenal perangkat.</p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">2. Cara Kami Menggunakan Informasi Anda</h2>
+                <div className="space-y-3 text-[16px] text-[#424956]">
+                  <p>Kami menggunakan informasi yang dikumpulkan untuk:</p>
+                  <div className="ml-4 space-y-2">
+                    <p>• Menyediakan dan memelihara platform B-Connect</p>
+                    <p>• Memfasilitasi koneksi antara penyedia jasa dan penerima jasa</p>
+                    <p>• Memproses transaksi pembayaran dan booking jasa</p>
+                    <p>• Menampilkan profil dan layanan penyedia jasa kepada calon klien</p>
+                    <p>• Mengirimkan notifikasi tentang pesanan, pembayaran, dan komunikasi</p>
+                    <p>• Menyediakan sistem ulasan dan rating untuk menjaga kualitas layanan</p>
+                    <p>• Mencegah penipuan dan menjaga keamanan platform</p>
+                    <p>• Meningkatkan algoritma pencarian dan rekomendasi jasa</p>
+                    <p>• Memberikan dukungan pelanggan dan menyelesaikan sengketa</p>
+                    <p>• Mematuhi kewajiban hukum dan peraturan yang berlaku</p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">3. Berbagi Informasi</h2>
+                <div className="space-y-3 text-[16px] text-[#424956]">
+                  <p>Kami tidak menjual informasi pribadi Anda kepada pihak ketiga. Namun, kami dapat membagikan informasi dalam situasi berikut:</p>
+                  <div className="ml-4 space-y-2">
+                    <p><strong className="text-[#171A1F]">Antar Pengguna B-Connect:</strong> Profile dan informasi layanan penyedia jasa akan ditampilkan kepada calon klien di platform</p>
+                    <p><strong className="text-[#171A1F]">Untuk Transaksi:</strong> Informasi kontak yang diperlukan untuk komunikasi dan penyelesaian jasa antara penyedia dan penerima jasa</p>
+                    <p><strong className="text-[#171A1F]">Penyedia Layanan:</strong> Dengan partner pembayaran, layanan pesan, dan penyedia infrastruktur yang membantu mengoperasikan B-Connect</p>
+                    <p><strong className="text-[#171A1F]">Kewajiban Hukum:</strong> Ketika diwajibkan oleh hukum atau untuk merespons proses hukum</p>
+                    <p><strong className="text-[#171A1F]">Keamanan Platform:</strong> Untuk melindungi hak, properti, keamanan B-Connect dan pengguna dari penipuan atau aktivitas berbahaya</p>
+                    <p><strong className="text-[#171A1F]">Perubahan Kepemilikan:</strong> Dalam hubungan dengan merger, akuisisi, atau penjualan aset B-Connect</p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">4. Keamanan Data</h2>
+                <p className="text-[16px] text-[#424956]">Kami menerapkan langkah-langkah keamanan yang tepat untuk melindungi informasi pribadi Anda dari akses, perubahan, pengungkapan, atau penghancuran yang tidak sah. Ini termasuk enkripsi data, autentikasi berlapis, dan monitoring keamanan. Namun, tidak ada metode transmisi melalui internet yang 100% aman, dan kami tidak dapat menjamin keamanan absolut.</p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">5. Hak Anda</h2>
+                <div className="space-y-3 text-[16px] text-[#424956]">
+                  <p>Sebagai pengguna B-Connect, Anda memiliki hak untuk:</p>
+                  <div className="ml-4 space-y-2">
+                    <p>• Mengakses dan memperbarui profil dan informasi pribadi Anda</p>
+                    <p>• Mengontrol visibilitas profil jasa Anda (untuk penyedia jasa)</p>
+                    <p>• Meminta penghapusan akun dan data pribadi Anda</p>
+                    <p>• Memilih keluar dari komunikasi pemasaran dan promosi</p>
+                    <p>• Meminta salinan data pribadi yang kami miliki tentang Anda</p>
+                    <p>• Menolak pemrosesan data pribadi untuk tujuan tertentu</p>
+                    <p>• Melaporkan masalah keamanan atau privasi kepada tim B-Connect</p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">6. Cookie dan Pelacakan</h2>
+                <p className="text-[16px] text-[#424956]">Kami menggunakan cookie dan teknologi pelacakan serupa untuk meningkatkan pengalaman Anda di B-Connect, termasuk mengingat preferensi pencarian, menyimpan sesi login, dan menganalisis penggunaan platform. Anda dapat mengontrol pengaturan cookie melalui preferensi browser Anda.</p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">7. Privasi Anak</h2>
+                <p className="text-[16px] text-[#424956]">B-Connect tidak ditujukan untuk anak-anak di bawah usia 17 tahun. Kami tidak secara sengaja mengumpulkan informasi pribadi dari anak-anak di bawah 17 tahun. Jika Anda mengetahui bahwa anak di bawah umur telah memberikan informasi pribadi kepada kami, silakan hubungi kami untuk menghapus informasi tersebut.</p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">8. Pengguna Internasional</h2>
+                <p className="text-[16px] text-[#424956]">Jika Anda mengakses layanan kami dari luar Indonesia, harap dicatat bahwa informasi Anda dapat ditransfer dan diproses di Indonesia, tempat server kami berada.</p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">9. Perubahan Kebijakan</h2>
+                <p className="text-[16px] text-[#424956]">Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu Anda tentang perubahan apa pun dengan memposting Kebijakan Privasi baru di halaman ini dan memperbarui tanggal "Terakhir Diperbarui".</p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">10. Hubungi Kami</h2>
+                <div className="space-y-3 text-[16px] text-[#424956]">
+                  <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, silakan hubungi kami di:</p>
+                  <div className="bg-[#F5F5F5] p-4 rounded-lg mt-3">
+                    <p className="mb-1"><strong className="text-[#171A1F]">Email:</strong> bconnect404@gmail.com</p>
+                    <p className="mb-1"><strong className="text-[#171A1F]">Telepon:</strong> +62 821-2517-4770</p>
+                    <p><strong className="text-[#171A1F]">Alamat:</strong> Jakarta, Indonesia</p>
+                  </div>
+                </div>
+              </section>
+
+              <div className="border-t border-[#ACACAC] w-full pt-4 mt-6">
+                <p className="text-[14px] text-[#565E6D]">
+                  <strong>Terakhir Diperbarui:</strong> Januari 2025
+                </p>
+              </div>
+            </div>
+          </div>
+        );
       case "aboutApp":
         return (
           <div>
@@ -1082,8 +927,6 @@ const Profile = () => {
               Semua informasi penting tentang aplikasi ini tersedia di sini.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-1"></div>
-
-            {/* App Description */}
             <div className="mt-2">
               <p className="text-[18px] leading-relaxed text-[#171A1F]">
                 B-Connect adalah platform digital yang dirancang untuk menghubungkan para freelancer
@@ -1096,7 +939,52 @@ const Profile = () => {
           </div>
         );
       case "termsConditions":
-        return <div>Terms & Conditions Content</div>;
+        return (
+          <div>
+            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Terms and Conditions</h1>
+            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+              Syarat dan Ketentuan ini mengatur penggunaan Anda atas platform kami.
+            </p>
+            <div className="border-t border-[#ACACAC] w-full mb-6"></div>
+
+            <div className="space-y-6">
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">1. Penggunaan Layanan</h2>
+                <p className="text-[16px] text-[#424956]">
+                  Dengan menggunakan platform ini, Anda menyetujui untuk mematuhi semua peraturan dan ketentuan yang berlaku. Anda tidak diperbolehkan menggunakan layanan untuk kegiatan yang melanggar hukum atau merugikan pihak lain.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">2. Hak Kekayaan Intelektual</h2>
+                <p className="text-[16px] text-[#424956]">
+                  Seluruh konten dalam platform ini termasuk namun tidak terbatas pada teks, grafik, logo, ikon, dan perangkat lunak adalah milik kami dan dilindungi oleh undang-undang hak cipta.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">3. Tanggung Jawab Pengguna</h2>
+                <p className="text-[16px] text-[#424956]">
+                  Pengguna bertanggung jawab atas keamanan akun mereka sendiri serta aktivitas yang dilakukan melalui akun tersebut. Harap menjaga kerahasiaan informasi login Anda.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">4. Pembaruan Ketentuan</h2>
+                <p className="text-[16px] text-[#424956]">
+                  Kami dapat memperbarui Syarat dan Ketentuan ini sewaktu-waktu. Perubahan akan diberlakukan segera setelah dipublikasikan di halaman ini.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">5. Kontak</h2>
+                <p className="text-[16px] text-[#424956]">
+                  Jika Anda memiliki pertanyaan terkait Syarat dan Ketentuan ini, silakan hubungi tim dukungan kami.
+                </p>
+              </section>
+            </div>
+          </div>
+        );
       default:
         return <div>Select a menu to view content</div>;
     }
@@ -1104,185 +992,148 @@ const Profile = () => {
 
   return (
     <div>
-      <div className="flex bg-[#eeeeee]">
+      <div className="flex bg-[#eeeeee]" ref={scrollUp}>
         <Navbar />
-        {/* Sidebar */}
-        <div className="flex flex-col mt-[190px] mb-[50px] ml-[60px] mr-[60px] w-fit h-fit font-inter">
-          {/* Personal Info Section */}
-          <div className="mb-10 bg-[#FFFFFF] w-[276px] h-fit">
-            <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2 font-Archivo">
-              Personal Info
-            </h3>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "personalData" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("personalData")}
-            >
-              <img src={PersonalData} alt="Personal Data" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "personalData"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
+        <div className="flex flex-col mt-35 mb-[50px] ml-[60px] mr-[60px] w-fit font-inter">
+          <div className="sticky top-35 z-10">
+            <div className="bg-[#FFFFFF] w-[276px] h-fit mb-5">
+              <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
+                Personal Info
+              </h3>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "personalData" ? "bg-[#DFDFDF]" : ""
                   }`}
+                onClick={() => setActiveContent("personalData")}
               >
-                Personal Data
-              </span>
+                <img src={PersonalData} alt="Personal Data" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "personalData"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Personal Data
+                </span>
+              </div>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "paymentAccount" ? "bg-[#DFDFDF]" : ""
+                  }`}
+                onClick={() => setActiveContent("paymentAccount")}
+              >
+                <img src={PaymentAcc} alt="Payment Account" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "paymentAccount"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Payment Account
+                </span>
+              </div>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "accountSecurity" ? "bg-[#DFDFDF]" : ""
+                  }`}
+                onClick={() => setActiveContent("accountSecurity")}
+              >
+                <img src={AccSecurity} alt="Account Security" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "accountSecurity"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Account Security
+                </span>
+              </div>
+              {/* <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "pushNotification" ? "bg-[#DFDFDF]" : ""
+                  }`}
+                onClick={() => setActiveContent("pushNotification")}
+              >
+                <img src={PushNotification} alt="Push Notification" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "pushNotification"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Push Notification
+                </span>
+              </div> */}
             </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "paymentAccount" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("paymentAccount")}
-            >
-              <img src={PaymentAcc} alt="Payment Account" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "paymentAccount"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
+            <div className="bg-[#FFFFFF] w-[276px] h-fit">
+             <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
+                General
+              </h3>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "helpCenter" ? "bg-[#DFDFDF]" : ""
                   }`}
+                onClick={() => setActiveContent("helpCenter")}
               >
-                Payment Account
-              </span>
-            </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "accountSecurity" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("accountSecurity")}
-            >
-              <img src={AccSecurity} alt="Account Security" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "accountSecurity"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
+                <img src={HelpCenter} alt="Help Center" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "helpCenter"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Help Center
+                </span>
+              </div>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "privacyPolicy" ? "bg-[#DFDFDF]" : ""
                   }`}
+                onClick={() => setActiveContent("privacyPolicy")}
               >
-                Account Security
-              </span>
-            </div>
-          </div>
-
-          {/* General Section */}
-          <div className="mb-10 bg-[#FFFFFF] w-[276px] h-fit">
-            <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2">General</h3>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "languages" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("languages")}
-            >
-              <img src={Language} alt="Languages" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "languages"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
+                <img src={PrivacyPolicy} alt="Privacy Policy" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "privacyPolicy"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Privacy Policy
+                </span>
+              </div>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "aboutApp" ? "bg-[#DFDFDF]" : ""
                   }`}
+                onClick={() => setActiveContent("aboutApp")}
               >
-                Languages
-              </span>
-            </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "pushNotification" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("pushNotification")}
-            >
-              <img src={PushNotification} alt="Push Notification" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "pushNotification"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
+                <img src={aboutApp} alt="About App" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "aboutApp"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  About App
+                </span>
+              </div>
+              <div
+                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "termsConditions" ? "bg-[#DFDFDF]" : ""
                   }`}
+                onClick={() => setActiveContent("termsConditions")}
               >
-                Push Notification
-              </span>
-            </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "clearCache" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("clearCache")}
-            >
-              <img src={ClearCache} alt="Clear Cache" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "clearCache"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
-                  }`}
-              >
-                Clear Cache
-              </span>
-            </div>
-          </div>
-
-          {/* Help Section */}
-          <div className="mb-10 bg-[#FFFFFF] w-[276px] h-fit">
-            <h3 className="text-[12px] font-semibold text-[#171A1F] mb-2">General</h3>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "helpCenter" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("helpCenter")}
-            >
-              <img src={HelpCenter} alt="Help Center" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "helpCenter"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
-                  }`}
-              >
-                Help Center
-              </span>
-            </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "privacyPolicy" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("privacyPolicy")}
-            >
-              <img src={PrivacyPolicy} alt="Privacy Policy" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "privacyPolicy"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
-                  }`}
-              >
-                Privacy Policy
-              </span>
-            </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "aboutApp" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("aboutApp")}
-            >
-              <img src={aboutApp} alt="About App" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "aboutApp"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
-                  }`}
-              >
-                About App
-              </span>
-            </div>
-            <div
-              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "termsConditions" ? "bg-[#DFDFDF]" : ""
-                }`}
-              onClick={() => setActiveContent("termsConditions")}
-            >
-              <img src={TermsCondition} alt="Terms & Conditions" className="w-5 h-5 mr-3" />
-              <span
-                className={`text-[12px] ${activeContent === "termsConditions"
-                  ? "font-semibold text-[#171A1F]"
-                  : "font-normal text-[#565E6D]"
-                  }`}
-              >
-                Terms & Conditions
-              </span>
+                <img src={TermsCondition} alt="Terms & Conditions" className="w-5 h-5 mr-3" />
+                <span
+                  className={`text-[12px] ${activeContent === "termsConditions"
+                    ? "font-semibold text-[#171A1F]"
+                    : "font-normal text-[#565E6D]"
+                    }`}
+                >
+                  Terms & Conditions
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="border-r mt-[190px] h-[723px] mb-[110px] border-black"></div>
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col mt-[180px] mb-[50px] ml-[80px] mr-[200px] w-fit h-fit font-inter">
+        <div className="flex-1 flex flex-col mt-35 mb-[50px] ml-[80px] mr-[200px] w-fit h-fit font-inter">
           {renderContent()}
         </div>
       </div>
+
       <Footer />
     </div>
   );

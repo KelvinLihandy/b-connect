@@ -65,7 +65,7 @@ const FreelancerProfile = () => {
   const [end, setEnd] = useState(itemsPerPage - 1);
   const [start, setStart] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [totalPages, setTotalPages] = useState(1); const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [totalGigs, setTotalGigs] = useState(0);
   const [copyMessage, setCopyMessage] = useState("");
   const [showAddServiceModal, setShowAddServiceModal] = useState(false);
@@ -265,7 +265,7 @@ const FreelancerProfile = () => {
                         {freelancerData?.description?.trim()
                           ? freelancerData.description
                           : isOwnProfile ?
-                            "You have not set a desctiption"
+                            "You have not set a description"
                             : `${freelancerData?.name} has not set a description`
                         }
                       </p>
@@ -277,7 +277,8 @@ const FreelancerProfile = () => {
                 <div className="flex justify-between items-center my-5">
                   <h2 className="text-xl font-semibold">
                     {isOwnProfile ? "My Gigs" : "Available Gigs"}
-                  </h2>                  {isOwnProfile && isFreelancer && (
+                  </h2>
+                  {isOwnProfile && isFreelancer && (
                     <button
                       onClick={() => {
                         setShowAddServiceModal(true);
@@ -475,7 +476,7 @@ const FreelancerProfile = () => {
                           {!isOwnProfile
                             ? "This freelancer hasn't published any gigs yet."
                             : "Create your first gig to start offering your services to potential clients."}
-                        </p>                        
+                        </p>
                         {isOwnProfile && isFreelancer && (
                           <button
                             onClick={() => setShowAddServiceModal(true)}
@@ -616,7 +617,6 @@ const FreelancerProfile = () => {
                                 : `${imageShow}${freelancerData?.picture}`
                             }
                             alt="freelancer"
-                            onLoad={() => setIsImageLoading(false)}
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = default_avatar;
@@ -679,13 +679,13 @@ const FreelancerProfile = () => {
               </div>
             </div>
           </div>
-        </div >      
-        </main >
+        </div >
+      </main >
 
       <Footer />
 
       {/* AddService Modal */}
-      <AddService 
+      <AddService
         isOpen={showAddServiceModal}
         onClose={() => setShowAddServiceModal(false)}
       />
