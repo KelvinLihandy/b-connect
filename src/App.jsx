@@ -23,7 +23,7 @@ import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
-import ManageOrder from "./views/manage_order/manageOrder";
+import ManageOrder from "./views/manage_order/ManageOrder";
 import Invoice from "./views/invoice/Invoice";
 export const socket = io.connect(baseAPI);
 

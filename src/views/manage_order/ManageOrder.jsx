@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import { UserTypeContext } from '../../contexts/UserTypeContext';
 
 import check from '../../assets/mo_check.svg';
 import clock from '../../assets/mo_clock.svg';
@@ -11,6 +12,8 @@ import invoice from '../../assets/mo_invoice.svg';
 import Return from '../../assets/mo_return.svg';
 import send from '../../assets/mo_send.svg';
 import status from '../../assets/mo_status.svg';
+
+
 
 // Date Constants
 const ORDER_DATES = {
@@ -89,6 +92,9 @@ const STEPS = [
 ];
 
 const ManageOrder = () => {
+  // Access the user type context to check if user is a freelancer
+  const { isFreelancer } = useContext(UserTypeContext);
+  
   // Current active step - this would be set by backend data in a real app
   // 0 = Waiting, 1 = Order Confirmed, 2 = In Progress, 3 = Delivered
   const [currentStep, setCurrentStep] = useState(0);
@@ -109,14 +115,6 @@ const ManageOrder = () => {
     <div className="font-Archivo">
       <Navbar alt />
       <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>
-        {/* Breadcrumb Navigation */}        <div className="flex font-Archivo text-[27px] items-center gap-2 mb-4">
-          <span>Home</span>
-          <span>&gt;</span>
-          <span>Purchase History</span>
-          <span>&gt;</span>
-          <span>Order #{ORDER_DETAILS.ORDER_NUMBER}</span>
-        </div>
-        
         {/* Order Header */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-[40px] font-semibold">Order #{ORDER_DETAILS.ORDER_NUMBER}</h1>          
@@ -185,7 +183,7 @@ const ManageOrder = () => {
           <div className="border-t border-[#000] w-full mb-6"></div>
 
         {/* Status Testing Controls - Uncomment for testing */}
-        <div className="flex justify-center gap-4 mb-4">
+        {/* <div className="flex justify-center gap-4 mb-4">
           <button 
             onClick={() => setCurrentStep(0)} 
             className={`px-3 py-1 ${currentStep === 0 ? 'bg-orange-500 text-white font-bold' : 'bg-gray-200'} rounded`}
@@ -210,7 +208,7 @@ const ManageOrder = () => {
           >
             Delivered
           </button>
-        </div>
+        </div> */}
             
         {/* Order Item */}
         <div className="flex items-center py-4 mb-6">
@@ -233,32 +231,35 @@ const ManageOrder = () => {
 
         {/* Payment Section */}
         <div className="mb-6">
-          <h2 className="text-[31px] font-medium mb-2">Payment</h2>            <div className="flex items-center">
+          <h2 className="text-[31px] font-medium mb-2">Payment</h2>            
+          <div className="flex items-center">            
             <div className="flex items-center gap-2 text-[28px] font-Archivo">
               <img src={gopay} alt={PAYMENT_METHOD.TYPE} className="" />
               <span>{PAYMENT_METHOD.TYPE}</span>
               <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-[19px] ml-2">{PAYMENT_METHOD.STATUS}</span>
             </div>            
-            <div className="ml-auto">
-              {currentStep === 0 && (
-                <button 
-                  onClick={() => setCurrentStep(2)} 
-                  className="bg-yellow-500 text-white text-[27px] rounded px-4 py-1 flex items-center gap-2"
-                >
-                  <img src={status} alt="Status" className="" />
-                  <span>Confirm Order</span>
-                </button>
-              )}
-              {currentStep === 2 && (
-                <button 
-                  onClick={() => setCurrentStep(3)} 
-                  className="bg-yellow-500 text-white text-[27px] rounded px-4 py-1 flex items-center gap-2"
-                >
-                  <img src={check} alt="Check" className="" />
-                  <span>Finish Order</span>
-                </button>
-              )}
-            </div>
+            {isFreelancer && (
+              <div className="ml-auto">
+                {currentStep === 0 && (
+                  <button 
+                    onClick={() => setCurrentStep(2)} 
+                    className="bg-yellow-500 text-white text-[27px] rounded px-4 py-1 flex items-center gap-2"
+                  >
+                    <img src={status} alt="Status" className="" />
+                    <span>Confirm Order</span>
+                  </button>
+                )}
+                {currentStep === 2 && (
+                  <button 
+                    onClick={() => setCurrentStep(3)} 
+                    className="bg-yellow-500 text-white text-[27px] rounded px-4 py-1 flex items-center gap-2"
+                  >
+                    <img src={check} alt="Check" className="" />
+                    <span>Finish Order</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         
