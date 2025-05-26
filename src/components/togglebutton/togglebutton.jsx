@@ -18,14 +18,14 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer }) => {
   const handleClick = () => {
     const newState = !isFreelancer;
     localStorage.setItem("isFreelancer", newState);
-    
-    // Don't navigate if in chat
     if (location.pathname.startsWith("/chat")) {
       setIsFreelancer(newState);
       return;
     }
-    
-    // Navigate based on new state
+    else if(location.pathname.startsWith("/profile")){
+      setIsFreelancer(newState);
+      return;
+    }
     if (newState) {
       navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
     } else {
