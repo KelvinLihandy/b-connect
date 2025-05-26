@@ -23,6 +23,8 @@ import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
+import ManageOrder from "./views/manage_order/ManageOrder";
+import Invoice from "./views/invoice/Invoice";
 import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
@@ -95,6 +97,9 @@ const App = () => {
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
         <Route path="/add-service" element={<AddService />} />
         <Route path="/become-freelancer" element={<FreelancerReg />} />
+        <Route path="/manage-order" element={<ManageOrder />} />
+        <Route path="/invoice" element={<Invoice />} />
+
         {isFreelancer ? (
           <>
             <Route
