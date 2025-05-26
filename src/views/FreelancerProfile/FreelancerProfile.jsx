@@ -651,18 +651,23 @@ const FreelancerProfile = () => {
                       <p className="text-gray-700 text-sm font-medium mb-2">
                         {isOwnProfile ? "Your portfolio link" : "Checkout my portfolio"}
                       </p>
-                      <div className="bg-white rounded-md p-3 border border-gray-200 flex">
-                        <input
-                          type="text"
-                          value={freelancerData?.portfolio}
-                          readOnly
-                          className="w-full text-gray-500 text-sm bg-transparent outline-none"
-                        />
+                      <div className="bg-white rounded-md p-3 border border-gray-200 flex text-black">
+                        <div className="w-full text-gray-500 text-sm bg-transparent outline-none">
+                          <a href={freelancerData?.portofolioUrl?.startsWith('http')
+                            ? freelancerData.portofolioUrl
+                            : `https://${freelancerData?.portofolioUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer">
+                            {freelancerData?.portofolioUrl}
+                          </a>
+
+                        </div>
+
                         <button
                           className="text-blue-600 text-sm font-medium"
                           onClick={async () => {
                             try {
-                              await navigator.clipboard.writeText(freelancerData?.portfolio);
+                              await navigator.clipboard.writeText(freelancerData?.portofolioUrl);
                               setCopied(true);
                               setTimeout(() => setCopied(false), 2000);
                             } catch (error) {
