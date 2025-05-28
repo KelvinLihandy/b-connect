@@ -124,9 +124,9 @@ const App = () => {
             <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/home" element={<Home />} />
             <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/detail/:gigId" element={<Detail />} />
           </>
         )}
+        <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
         {/* Protected routes - require authentication */}
         <Route path="/chat" element={<Navigate to="/chat/def" replace />} />
