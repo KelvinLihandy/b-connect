@@ -403,6 +403,7 @@ const FreelancerProfile = () => {
                                   key={gig._id}
                                   custom={index}
                                   variants={cardVariants}
+                                  onClick={() => {navigate(`/detail/${gig._id}`)}}
                                   className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                                 >
                                   <div className="relative">
@@ -692,12 +693,10 @@ const FreelancerProfile = () => {
 
       <AddService
         isOpen={showAddServiceModal}
-        // isOpen={true}
         onClose={() => {setShowAddServiceModal(false)}}
         onCloseAfterSave={async () => {
           await getFreelancerData();
           setShowAddServiceModal(false);
-          console.log("modal saved")
         }}
       />
     </>

@@ -114,10 +114,10 @@ const App = () => {
               path="/catalog"
               element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
             />
-            <Route
+            {/* <Route
               path="/detail/:gigId"
               element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
-            />
+            /> */}
           </>
         ) : (
           <>

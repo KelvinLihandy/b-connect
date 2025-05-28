@@ -462,7 +462,7 @@ const Detail = () => {
               <div className="flex flex-col gap-1">
                 {gigDetail?.workflow?.map((flows, index) => (
                   <h3 className="font-bold text-lg">
-                    {index + 1}. {flows.flow}
+                    {index + 1}. {flows}
                   </h3>
                 ))}
               </div>

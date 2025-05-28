@@ -6,6 +6,8 @@ import SaveIcon from "../../assets/addservice-save.svg";
 import FinishBg from "../../assets/addservice-finishbg.svg";
 import addFlow from "../../assets/addservice-addflow.svg";
 import Preview from "./Preview";
+import axios from "axios";
+import { gigAPI } from "../../constants/APIRoutes";
 
 const steps = ["Title", "Attachment", "Description", "Price", "Review", "Finish"];
 
@@ -94,16 +96,13 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
   };
 
   const handleClose = () => {
-    if (step === 6) {
-      resetForm();
-      onCloseAfterSave();
-    } else {
+    if (step < 6) {
       if (window.confirm("Apa anda yakin ingin menutup? Semua progres akan hilang.")) {
         resetForm();
         onClose();
       }
-    }
-  };
+    };
+  }
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -153,12 +152,20 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
         newErrors.basicKonsep = "Jumlah Batas Konsep tidak boleh kosong";
         isValid = false;
       }
+      if (basicPackage.konsep < 1 || basicPackage.konsep === "0") {
+        newErrors.basicKonsep = "Jumlah Batas Konsep tidak boleh kurang dari 1";
+        isValid = false;
+      }
       if (basicPackage.revisi === null || basicPackage.revisi === undefined || basicPackage.revisi === '') {
         newErrors.basicRevisi = "Jumlah Batas Revisi tidak boleh kosong";
         isValid = false;
       }
       if (basicPackage.waktu === null || basicPackage.waktu === undefined || basicPackage.waktu === '') {
         newErrors.basicWaktu = "Waktu Pengerjaan tidak boleh kosong";
+        isValid = false;
+      }
+      if (basicPackage.waktu < 1 || basicPackage.waktu === "0") {
+        newErrors.basicKonsep = "Waktu Pengerjaan tidak boleh kurang dari 1 hari";
         isValid = false;
       }
       if (basicPackage.harga === null || basicPackage.harga === undefined || basicPackage.harga === '') {
@@ -174,12 +181,20 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
         newErrors.advanceKonsep = "Jumlah Batas Konsep tidak boleh kosong";
         isValid = false;
       }
+      if (advancePackage.konsep < 1 || advancePackage.konsep === '0') {
+        newErrors.advanceKonsep = "Jumlah Batas Konsep tidak boleh kurang dari 1";
+        isValid = false;
+      }
       if (advancePackage.revisi === null || advancePackage.revisi === undefined || advancePackage.revisi === '') {
         newErrors.advanceRevisi = "Jumlah Batas Revisi tidak boleh kosong";
         isValid = false;
       }
       if (advancePackage.waktu === null || advancePackage.waktu === undefined || advancePackage.waktu === '') {
         newErrors.advanceWaktu = "Waktu Pengerjaan tidak boleh kosong";
+        isValid = false;
+      }
+      if (advancePackage.waktu < 1 || advancePackage.waktu === '0') {
+        newErrors.advanceWaktu = "Waktu Pengerjaan tidak boleh kurang dari 1 hari";
         isValid = false;
       }
       if (advancePackage.harga === null || advancePackage.harga === undefined || advancePackage.harga === '') {
@@ -292,8 +307,49 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
     setAttachments(attachments.filter((_, index) => index !== indexToRemove));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (window.confirm("Apakah Anda yakin ingin menyimpan product service ini?")) {
+      try {
+        const formData = new FormData();
+        attachments.forEach(att => {
+          formData.append("images", att.file);
+        });
+        formData.append("name", title);
+        formData.append("description", description);
+        formData.append("workflow", JSON.stringify(workFlows));
+        formData.append("categories", JSON.stringify(selectedTags));
+        formData.append("packages", JSON.stringify([
+          {
+            type: "Basic",
+            price: basicPackage.harga,
+            workDuration: basicPackage.waktu,
+            conceptLimit: basicPackage.konsep,
+            revisionLimit: basicPackage.revisi,
+            sourceFile: basicPackage.sourceFile,
+          },
+          {
+            type: "Standard",
+            price: advancePackage.harga,
+            workDuration: advancePackage.waktu,
+            conceptLimit: advancePackage.konsep,
+            revisionLimit: advancePackage.revisi,
+            sourceFile: advancePackage.sourceFile,
+          }
+        ]));
+        const response = await axios.post(`${gigAPI}/create-gig`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true
+          }
+        );
+        console.log(response.data)
+      }
+      catch (error) {
+        console.log("error save new gig", error);
+      }
       goNext();
     }
   };
@@ -963,14 +1019,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                   ${basicPackage.sourceFile === null ? "text-gray-400" : "text-black"}`
                                 }
                                 value={basicPackage.sourceFile}
-                                onClick={() => {
-                                  if (basicPackage['sourceFile'] === null) {
-                                    setBasicPackage({
-                                      ...basicPackage,
-                                      ['sourceFile']: false
-                                    })
-                                  }
-                                }}
                                 onChange={(e) => {
                                   handleBasicChange("sourceFile", e.target.value);
                                   if (errors.basicSourceFile) {
@@ -1131,14 +1179,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                   ${advancePackage.sourceFile === null ? "text-gray-400" : "text-black"}`
                                 }
                                 value={advancePackage.sourceFile}
-                                onClick={() => {
-                                  if (advancePackage['sourceFile'] === null) {
-                                    setAdvancePackage({
-                                      ...advancePackage,
-                                      ['sourceFile']: false
-                                    })
-                                  }
-                                }}
                                 onChange={(e) => {
                                   handleAdvanceChange("sourceFile", e.target.value);
                                   if (errors.advanceSourceFile) {
@@ -1234,6 +1274,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                       </p>
                     </div>
                     <img
+                      onClick={onCloseAfterSave}
                       src={FinishBg}
                       alt="Background"
                       className="absolute inset-0 w-full h-full mt-4 z-0 opacity-80"
