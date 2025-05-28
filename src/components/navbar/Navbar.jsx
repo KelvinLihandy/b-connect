@@ -265,7 +265,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               />
 
               <motion.div
-                className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
+                className="relative w-15 h-15 rounded-full flex items-center justify-center cursor-pointer mr-10"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowUserDropdown(prev => !prev);

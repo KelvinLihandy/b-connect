@@ -78,6 +78,7 @@ const Profile = () => {
     confirmPassword: ""
   });
   const [description, setDescription] = useState("");
+  const [portoLink, setPortoLink] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const navigate = useNavigate();
   const scrollUp = useRef(null);
@@ -122,6 +123,9 @@ const Profile = () => {
         }
         if (data.user.description) {
           setDescription(data.user.description);
+        }
+        if (data.user.portofolioUrl) {
+          setPortoLink(data.user.portofolioUrl);
         }
         if (data.user.paymentNumber) {
           setPaymentPhoneNumber(data.user.paymentNumber);
@@ -217,7 +221,10 @@ const Profile = () => {
       }
       if (contactEmail) formData.append('email', contactEmail);
       if (phoneNumber) formData.append('phoneNumber', phoneNumber);
-      if (isFreelancer) formData.append('descr', description);
+      if (isFreelancer) {
+        formData.append('descr', description);
+        formData.append('porto', portoLink);
+      }
       if (isPendingImageDelete) formData.append('deletePicture', 'true');
       else if (selectedFile) formData.append('picture', selectedFile);
       formData.append('remember', remember);
@@ -434,23 +441,6 @@ const Profile = () => {
     };
   }, [dropdownRef]);
 
-  // const [notificationPrefs, setNotificationPrefs] = useState({
-  //   emailPromo: false,
-  //   pushTransaction: false,
-  //   newFeatures: false,
-  // });
-
-  // const handleCheckboxChange = (id) => {
-  //   setNotificationPrefs((prev) => ({
-  //     ...prev,
-  //     [id]: !prev[id],
-  //   }));
-  // };
-
-  // const handleSaveNotificationPrefs = () => {
-    
-  // };
-
   const [expandedItem, setExpandedItem] = useState(null);
   const toggleItem = (index) => {
     setExpandedItem(expandedItem === index ? null : index);
@@ -466,11 +456,6 @@ const Profile = () => {
       question: "Bagaimana cara menghubungkan GoPay?",
       answer:
         "Masuk ke menu Payment Account, lalu klik tombol Tambah Akun GoPay atau Hubungkan Akun. Ikuti instruksi yang diberikan dan pastikan nomor GoPay Anda aktif dan sesuai dengan data akun.",
-    },
-    {
-      question: "Bagaimana cara menghapus akun?",
-      answer:
-        "Untuk menghapus akun, buka halaman Account Security, lalu scroll ke bawah dan klik tombol Delete Account. Anda akan diminta konfirmasi untuk memastikan tindakan ini. Setelah dihapus, semua data Anda akan dihapus secara permanen dan tidak dapat dikembalikan.",
     },
   ];
 
@@ -609,22 +594,34 @@ const Profile = () => {
                       className={`w-1/2 h-40 border border-[#ACACAC] px-3 py-2 text-sm resize-none rounded`}
                     />
                   </div>
-                  <button
-                    className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
-                    onClick={handleSavePersonalData}
-                    disabled={saveLoad}
-                  >
-                    {saveLoad ?
-                      <CircularProgress color="inherit" size={20} />
-                      :
-                      "Save Changes"
-                    }
-                  </button>
-                  {saveError && (
-                    <p className="text-red-500 text-sm mb-3">{saveError}</p>
-                  )}
+                  <div className="mb-6 mr-4">
+                    <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+                      Portofolio URL
+                    </label>
+                    <input
+                      type="text"
+                      value={portoLink}
+                      onChange={(e) => setPortoLink(e.target.value)}
+                      placeholder=""
+                      className={`w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm`}
+                    />
+                  </div>
                 </>
               }
+              <button
+                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
+                onClick={handleSavePersonalData}
+                disabled={saveLoad}
+              >
+                {saveLoad ?
+                  <CircularProgress color="inherit" size={20} />
+                  :
+                  "Save Changes"
+                }
+              </button>
+              {saveError && (
+                <p className="text-red-500 text-sm mb-3">{saveError}</p>
+              )}
 
             </div>
           </div>
@@ -730,45 +727,6 @@ const Profile = () => {
             </div>
           </div>
         );
-      // case "pushNotification":
-      //   return (
-      //     <div>
-      //       <h1 className="font-Archivo font-semibold text-[24px] mb-2">Push notification</h1>
-      //       <p className="font-inter text-[16px] text-[#565E6D] mb-6">
-      //         Sesuaikan preferensi notifikasi agar tetap mendapatkan informasi penting.
-      //       </p>
-
-      //       <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-      //       <div className="mb-6 mr-4">
-      //         <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-4">
-      //           Notification Preferences
-      //         </label>
-      //         <div className="w-full">
-      //           {NOTIFICATION_PREFERENCES.map((pref) => (
-      //             <div key={pref.id} className="flex items-center mb-3">
-      //               <input
-      //                 type="checkbox"
-      //                 id={pref.id}
-      //                 checked={notificationPrefs[pref.id]}
-      //                 onChange={() => handleCheckboxChange(pref.id)}
-      //                 className="w-4 h-4 mr-3 cursor-pointer"
-      //               />
-      //               <label htmlFor={pref.id} className="text-[14px] text-[#444444] cursor-pointer">
-      //                 {pref.label}
-      //               </label>
-      //             </div>
-      //           ))}
-      //         </div>
-      //         <button
-      //           className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer mt-3"
-      //           onClick={handleSaveNotificationPrefs}
-      //         >
-      //           Save Changes
-      //         </button>
-      //       </div>
-      //       <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-      //     </div>
-      //   );
       case "helpCenter":
         return (
           <div>
@@ -817,10 +775,9 @@ const Profile = () => {
                 <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">1. Informasi yang Kami Kumpulkan</h2>
                 <div className="space-y-3 text-[16px] text-[#424956]">
                   <p><strong className="text-[#171A1F]">Informasi Pribadi:</strong> Ketika Anda mendaftar atau menggunakan B-Connect, kami dapat mengumpulkan informasi pribadi seperti nama, alamat email, nomor telepon, lokasi, informasi keterampilan/jasa yang Anda tawarkan, dan informasi pembayaran.</p>
-                  <p><strong className="text-[#171A1F]">Data Profil Jasa:</strong> Untuk penyedia jasa, kami mengumpulkan informasi tentang layanan yang ditawarkan, portofolio, pengalaman, tarif, dan ulasan dari klien.</p>
+                  <p><strong className="text-[#171A1F]">Data Profil Jasa:</strong> Untuk penyedia jasa, kami mengumpulkan informasi tentang layanan yang ditawarkan, portofolio, tarif, dan ulasan dari klien.</p>
                   <p><strong className="text-[#171A1F]">Data Transaksi:</strong> Informasi tentang pemesanan jasa, komunikasi antara penyedia dan penerima jasa, pembayaran, dan riwayat transaksi.</p>
-                  <p><strong className="text-[#171A1F]">Data Penggunaan:</strong> Kami secara otomatis mengumpulkan informasi tentang cara Anda berinteraksi dengan platform B-Connect, termasuk pencarian jasa, komunikasi, dan aktivitas di aplikasi.</p>
-                  <p><strong className="text-[#171A1F]">Informasi Perangkat:</strong> Kami dapat mengumpulkan informasi tentang perangkat Anda, termasuk alamat IP, jenis browser, sistem operasi, dan pengenal perangkat.</p>
+                  <p><strong className="text-[#171A1F]">Data Penggunaan:</strong> Kami secara otomatis mengumpulkan informasi tentang cara Anda berinteraksi dengan platform B-Connect, termasuk komunikasi, dan aktivitas di aplikasi.</p>
                 </div>
               </section>
 
@@ -833,11 +790,9 @@ const Profile = () => {
                     <p>• Memfasilitasi koneksi antara penyedia jasa dan penerima jasa</p>
                     <p>• Memproses transaksi pembayaran dan booking jasa</p>
                     <p>• Menampilkan profil dan layanan penyedia jasa kepada calon klien</p>
-                    <p>• Mengirimkan notifikasi tentang pesanan, pembayaran, dan komunikasi</p>
                     <p>• Menyediakan sistem ulasan dan rating untuk menjaga kualitas layanan</p>
                     <p>• Mencegah penipuan dan menjaga keamanan platform</p>
-                    <p>• Meningkatkan algoritma pencarian dan rekomendasi jasa</p>
-                    <p>• Memberikan dukungan pelanggan dan menyelesaikan sengketa</p>
+                    <p>• Meningkatkan algoritma pencarian jasa</p>
                     <p>• Mematuhi kewajiban hukum dan peraturan yang berlaku</p>
                   </div>
                 </div>
@@ -869,8 +824,6 @@ const Profile = () => {
                   <p>Sebagai pengguna B-Connect, Anda memiliki hak untuk:</p>
                   <div className="ml-4 space-y-2">
                     <p>• Mengakses dan memperbarui profil dan informasi pribadi Anda</p>
-                    <p>• Mengontrol visibilitas profil jasa Anda (untuk penyedia jasa)</p>
-                    <p>• Meminta penghapusan akun dan data pribadi Anda</p>
                     <p>• Memilih keluar dari komunikasi pemasaran dan promosi</p>
                     <p>• Meminta salinan data pribadi yang kami miliki tentang Anda</p>
                     <p>• Menolak pemrosesan data pribadi untuk tujuan tertentu</p>
@@ -1062,7 +1015,7 @@ const Profile = () => {
               </div> */}
             </div>
             <div className="bg-[#FFFFFF] w-[276px] h-fit">
-             <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
+              <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
                 General
               </h3>
               <div

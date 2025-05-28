@@ -100,36 +100,40 @@ const FreelancerProfile = () => {
     }
   }, [gigData]);
 
-  useEffect(() => {
-    const getFreelancerData = async () => {
-      try {
-        const res = await axios.post(`${userAPI}/get-freelancer-data/${id}`);
-        const response = res.data;
-        console.log(response);
-        if (response.freelancer._id == auth?.data?.auth?.id) setIsOwnProfile(true);
-        setTotalGigs(response.freelancerGigs.length);
-        setTotalPages(Math.max(1, Math.ceil(response.freelancerGigs.length / itemsPerPage)));
-        setFreelancerData(response?.freelancer);
-        setGigData(response?.freelancerGigs);
-        setReviews(response?.reviews);
-        const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-        response?.reviews.forEach(review => {
-          const rating = Math.round(review.rating);
-          if (counts[rating] !== undefined) {
-            counts[rating]++;
-          }
-        });
-        setRatingCounts(counts);
-      }
-      catch (error) {
-        console.log("error freelancer data", error);
-        setFreelancerData(null);
-        setGigData([]);
-        setRatingCounts({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
-      }
-    };
+  const getFreelancerData = async () => {
+    try {
+      const res = await axios.post(`${userAPI}/get-freelancer-data/${id}`);
+      const response = res.data;
+      console.log(response);
+      if (response.freelancer._id == auth?.data?.auth?.id) setIsOwnProfile(true);
+      setTotalGigs(response.freelancerGigs.length);
+      setTotalPages(Math.max(1, Math.ceil(response.freelancerGigs.length / itemsPerPage)));
+      setFreelancerData(response?.freelancer);
+      setGigData(response?.freelancerGigs);
+      setReviews(response?.reviews);
+      const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      response?.reviews.forEach(review => {
+        const rating = Math.round(review.rating);
+        if (counts[rating] !== undefined) {
+          counts[rating]++;
+        }
+      });
+      setRatingCounts(counts);
+    }
+    catch (error) {
+      console.log("error freelancer data", error);
+      setFreelancerData(null);
+      setGigData([]);
+      setRatingCounts({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+    }
+  };
 
-    getFreelancerData();
+  useEffect(() => {
+    const load = async () => {
+      await getFreelancerData();
+    }
+
+    load();
   }, [id]);
 
   const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
@@ -399,6 +403,7 @@ const FreelancerProfile = () => {
                                   key={gig._id}
                                   custom={index}
                                   variants={cardVariants}
+                                  onClick={() => {navigate(`/detail/${gig._id}`)}}
                                   className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                                 >
                                   <div className="relative">
@@ -651,18 +656,21 @@ const FreelancerProfile = () => {
                       <p className="text-gray-700 text-sm font-medium mb-2">
                         {isOwnProfile ? "Your portfolio link" : "Checkout my portfolio"}
                       </p>
-                      <div className="bg-white rounded-md p-3 border border-gray-200 flex">
-                        <input
-                          type="text"
-                          value={freelancerData?.portfolio}
-                          readOnly
-                          className="w-full text-gray-500 text-sm bg-transparent outline-none"
-                        />
+                      <div className="bg-white rounded-md p-3 border border-gray-200 flex text-black">
+                        <div className="w-full text-gray-500 text-sm bg-transparent outline-none">
+                          <a href={freelancerData?.portofolioUrl?.startsWith('http')
+                            ? freelancerData.portofolioUrl
+                            : `https://${freelancerData?.portofolioUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer">
+                            {freelancerData?.portofolioUrl}
+                          </a>
+                        </div>
                         <button
                           className="text-blue-600 text-sm font-medium"
                           onClick={async () => {
                             try {
-                              await navigator.clipboard.writeText(freelancerData?.portfolio);
+                              await navigator.clipboard.writeText(freelancerData?.portofolioUrl);
                               setCopied(true);
                               setTimeout(() => setCopied(false), 2000);
                             } catch (error) {
@@ -681,13 +689,15 @@ const FreelancerProfile = () => {
           </div>
         </div >
       </main >
-
       <Footer />
 
-      {/* AddService Modal */}
       <AddService
         isOpen={showAddServiceModal}
-        onClose={() => setShowAddServiceModal(false)}
+        onClose={() => {setShowAddServiceModal(false)}}
+        onCloseAfterSave={async () => {
+          await getFreelancerData();
+          setShowAddServiceModal(false);
+        }}
       />
     </>
   );

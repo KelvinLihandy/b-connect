@@ -114,19 +114,19 @@ const App = () => {
               path="/catalog"
               element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
             />
-            <Route
+            {/* <Route
               path="/detail/:gigId"
               element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
-            />
+            /> */}
           </>
         ) : (
           <>
             <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/home" element={<Home />} />
             <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/detail/:gigId" element={<Detail />} />
           </>
         )}
+        <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
         {/* Protected routes - require authentication */}
         <Route path="/chat" element={<Navigate to="/chat/def" replace />} />
