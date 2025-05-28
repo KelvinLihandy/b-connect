@@ -100,36 +100,40 @@ const FreelancerProfile = () => {
     }
   }, [gigData]);
 
-  useEffect(() => {
-    const getFreelancerData = async () => {
-      try {
-        const res = await axios.post(`${userAPI}/get-freelancer-data/${id}`);
-        const response = res.data;
-        console.log(response);
-        if (response.freelancer._id == auth?.data?.auth?.id) setIsOwnProfile(true);
-        setTotalGigs(response.freelancerGigs.length);
-        setTotalPages(Math.max(1, Math.ceil(response.freelancerGigs.length / itemsPerPage)));
-        setFreelancerData(response?.freelancer);
-        setGigData(response?.freelancerGigs);
-        setReviews(response?.reviews);
-        const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-        response?.reviews.forEach(review => {
-          const rating = Math.round(review.rating);
-          if (counts[rating] !== undefined) {
-            counts[rating]++;
-          }
-        });
-        setRatingCounts(counts);
-      }
-      catch (error) {
-        console.log("error freelancer data", error);
-        setFreelancerData(null);
-        setGigData([]);
-        setRatingCounts({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
-      }
-    };
+  const getFreelancerData = async () => {
+    try {
+      const res = await axios.post(`${userAPI}/get-freelancer-data/${id}`);
+      const response = res.data;
+      console.log(response);
+      if (response.freelancer._id == auth?.data?.auth?.id) setIsOwnProfile(true);
+      setTotalGigs(response.freelancerGigs.length);
+      setTotalPages(Math.max(1, Math.ceil(response.freelancerGigs.length / itemsPerPage)));
+      setFreelancerData(response?.freelancer);
+      setGigData(response?.freelancerGigs);
+      setReviews(response?.reviews);
+      const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      response?.reviews.forEach(review => {
+        const rating = Math.round(review.rating);
+        if (counts[rating] !== undefined) {
+          counts[rating]++;
+        }
+      });
+      setRatingCounts(counts);
+    }
+    catch (error) {
+      console.log("error freelancer data", error);
+      setFreelancerData(null);
+      setGigData([]);
+      setRatingCounts({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+    }
+  };
 
-    getFreelancerData();
+  useEffect(() => {
+    const load = async () => {
+      await getFreelancerData();
+    }
+
+    load();
   }, [id]);
 
   const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
@@ -660,9 +664,7 @@ const FreelancerProfile = () => {
                             rel="noopener noreferrer">
                             {freelancerData?.portofolioUrl}
                           </a>
-
                         </div>
-
                         <button
                           className="text-blue-600 text-sm font-medium"
                           onClick={async () => {
@@ -686,13 +688,17 @@ const FreelancerProfile = () => {
           </div>
         </div >
       </main >
-
       <Footer />
 
-      {/* AddService Modal */}
       <AddService
-        isOpen={showAddServiceModal}
-        onClose={() => setShowAddServiceModal(false)}
+        // isOpen={showAddServiceModal}
+        isOpen={true}
+        onClose={() => {setShowAddServiceModal(false)}}
+        onCloseAfterSave={async () => {
+          await getFreelancerData();
+          setShowAddServiceModal(false);
+          console.log("modal saved")
+        }}
       />
     </>
   );
