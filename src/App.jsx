@@ -27,6 +27,7 @@ import ManageOrder from "./views/manage_order/ManageOrder";
 import Invoice from "./views/invoice/Invoice";
 import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
+
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
 //   path: "/clients/socketio/hubs/Hub",
 //   transports: ["polling"],
@@ -133,6 +134,7 @@ const App = () => {
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile" element={<AuthRouting component={Profile} />} />
         <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />
+
       </Routes>
     </>
   );
