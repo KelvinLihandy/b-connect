@@ -25,6 +25,7 @@ import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
 import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
+
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
 //   path: "/clients/socketio/hubs/Hub",
 //   transports: ["polling"],
@@ -128,6 +129,7 @@ const App = () => {
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
         <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
         <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />
+
       </Routes>
     </>
   );

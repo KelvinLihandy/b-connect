@@ -1,360 +1,813 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import { AuthContext } from "../../contexts/AuthContext"; // Import AuthContext
+import { userAPI } from "../../constants/APIRoutes"; // Import API routes
 import product1 from "../../assets/image 35.png";
 import product2 from "../../assets/image.png";
 import reviewProduct from "../../assets/reviewProduct1.png";
 import reviewProduct2 from "../../assets/reviewProduct2.png";
 
 const UserProfile = () => {
+  const navigate = useNavigate();
+  const { userId } = useParams();
   const [activeTab, setActiveTab] = useState("purchase");
-
-  const purchaseHistory = [
-    {
-      id: 1,
-      title: "I will design UI/UX for mobile app with figma",
-      date: "Order #001, Jun 15, 2020",
-      status: "In Progress",
-      price: "Rp 210.000",
-      image: product1,
-      statusType: "progress",
-    },
-    {
-      id: 2,
-      title: "I will create landing page for your business",
-      date: "Order #002, Jun 15, 2020",
-      status: "Completed",
-      price: "Rp 210.000",
-      image: product2,
-      statusType: "completed",
-    },
-    {
-      id: 3,
-      title: "I will design UI/UX for mobile app with figma",
-      date: "Order #003, Jun 15, 2020",
-      status: "Completed",
-      price: "Rp 210.000",
-      image: product1,
-      statusType: "completed",
-    },
-    {
-      id: 4,
-      title: "I will create landing page for your business",
-      date: "Order #004, Jun 15, 2020",
-      status: "Completed",
-      price: "Rp 210.000",
-      image: product2,
-      statusType: "completed",
-    },
-  ];
-
-  const reviewsData = [
-    {
-      id: 1,
-      title: "I will design UI/UX for mobile app with figma",
-      orderId: "Order #001, Jun 15, 2020",
-      rating: 4.5,
-      reviewText: "The service was excellent! The designer understood my requirements perfectly and delivered the UI/UX design exactly as I wanted. The communication was clear and prompt, and the revisions were handled professionally. I'm very satisfied with the final result.",
-      image: product1,
-      wireframes: [reviewProduct, reviewProduct2]
-    },
-    {
-      id: 2,
-      title: "I will design UI/UX for mobile app with figma", 
-      orderId: "Order #002, Jun 15, 2020",
-      rating: 4.5,
-      reviewText: "The service was excellent! The designer understood my requirements perfectly and delivered the UI/UX design exactly as I wanted. The communication was clear and prompt, and the revisions were handled professionally. I'm very satisfied with the final result.",
-      image: product2,
-      wireframes: []
-    }
-  ];
-
-  const userStats = {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Use AuthContext like in ProfileUser.js
+  const { auth } = useContext(AuthContext);
+  
+  // API Base URL
+  const API_BASE_URL = 'http://localhost:5000/api';
+  
+  // Real data from backend
+  const [userStats, setUserStats] = useState({
     memberSince: "2020",
-    profileFinish: "85%",
-    activeVouchers: "3",
-    totalOrder: "12",
+    profileCompletion: "0%",
+    activeVouchers: "0",
+    totalOrders: "0",
+    totalSpent: "Rp 0"
+  });
+
+  // Current user data (from AuthContext)
+  const [currentUser, setCurrentUser] = useState({
+    name: "Loading...",
+    email: "Loading...",
+    memberSince: "2020"
+  });
+  
+  const [purchaseHistory, setPurchaseHistory] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  
+  // Pagination state
+  const [purchasePagination, setPurchasePagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+
+  const [reviewsPagination, setReviewsPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+
+  // Get current user ID from AuthContext (like in ProfileUser.js)
+  const getCurrentUserId = () => {
+    return auth?.data?.auth?.id || userId;
   };
 
+  // API Functions - Updated to use proper user ID
+  const fetchCurrentUser = async (targetUserId) => {
+    try {
+      const response = await fetch(`${userAPI}/get-user/${targetUserId}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.user;
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      throw error;
+    }
+  };
+
+  const fetchUserStats = async (targetUserId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/${targetUserId}/stats`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.stats;
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      throw error;
+    }
+  };
+
+  const fetchPurchaseHistory = async (targetUserId, page = 1, limit = 4) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/${targetUserId}/purchase-history?page=${page}&limit=${limit}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return {
+        purchaseHistory: data.purchaseHistory,
+        pagination: data.pagination
+      };
+    } catch (error) {
+      console.error('Error fetching purchase history:', error);
+      throw error;
+    }
+  };
+
+  const fetchUserReviews = async (targetUserId, page = 1, limit = 2) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/${targetUserId}/reviews?page=${page}&limit=${limit}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return {
+        reviews: data.reviews,
+        pagination: data.pagination
+      };
+    } catch (error) {
+      console.error('Error fetching user reviews:', error);
+      throw error;
+    }
+  };
+
+  // Reset pagination when switching tabs
+  const resetPagination = () => {
+    setPurchasePagination({
+      currentPage: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false
+    });
+    setReviewsPagination({
+      currentPage: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false
+    });
+  };
+
+  // Load current user and stats on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      const targetUserId = getCurrentUserId();
+      if (!targetUserId) return;
+      
+      setLoading(true);
+      try {
+        // First, set user data from AuthContext if available
+        if (auth?.data?.auth) {
+          setCurrentUser({
+            name: auth.data.auth.name || "User",
+            email: auth.data.auth.email || "",
+            memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
+          });
+        }
+
+        // Then load detailed user data
+        const user = await fetchCurrentUser(targetUserId);
+        setCurrentUser({
+          name: user.name || auth?.data?.auth?.name || "User",
+          email: user.email || auth?.data?.auth?.email || "",
+          memberSince: new Date(user.joinedDate).getFullYear().toString()
+        });
+
+        // Load user stats
+        const stats = await fetchUserStats(targetUserId);
+        setUserStats(stats);
+      } catch (err) {
+        console.error("Error loading user data:", err);
+        setError("Failed to load user data");
+        
+        // Fallback to AuthContext data if API fails
+        if (auth?.data?.auth) {
+          setCurrentUser({
+            name: auth.data.auth.name || "User",
+            email: auth.data.auth.email || "",
+            memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [auth, userId]);
+
+  // Load purchase history when tab changes or pagination changes
+  useEffect(() => {
+    const loadPurchaseHistory = async () => {
+      const targetUserId = getCurrentUserId();
+      if (!targetUserId || activeTab !== "purchase") return;
+      
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchPurchaseHistory(
+          targetUserId, 
+          purchasePagination.currentPage, 
+          4
+        );
+        setPurchaseHistory(data.purchaseHistory);
+        setPurchasePagination({
+          currentPage: data.pagination.currentPage,
+          totalPages: data.pagination.totalPages,
+          hasNextPage: data.pagination.hasNextPage,
+          hasPrevPage: data.pagination.hasPrevPage
+        });
+      } catch (err) {
+        console.error("Error loading purchase history:", err);
+        setError("Failed to load purchase history");
+        setPurchaseHistory([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPurchaseHistory();
+  }, [auth, userId, activeTab, purchasePagination.currentPage]);
+
+  // Load reviews when tab changes or pagination changes
+  useEffect(() => {
+    const loadReviews = async () => {
+      const targetUserId = getCurrentUserId();
+      if (!targetUserId || activeTab !== "reviews") return;
+      
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchUserReviews(
+          targetUserId, 
+          reviewsPagination.currentPage, 
+          2
+        );
+        setReviews(data.reviews);
+        setReviewsPagination({
+          currentPage: data.pagination.currentPage,
+          totalPages: data.pagination.totalPages,
+          hasNextPage: data.pagination.hasNextPage,
+          hasPrevPage: data.pagination.hasPrevPage
+        });
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+        setError("Failed to load reviews");
+        setReviews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReviews();
+  }, [auth, userId, activeTab, reviewsPagination.currentPage]);
+
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setError(null);
+    resetPagination();
+  };
+
+  // Handle pagination for purchase history
+  const handlePurchasePagination = (page) => {
+    setPurchasePagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
+  };
+
+  // Handle pagination for reviews
+  const handleReviewsPagination = (page) => {
+    setReviewsPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
+  };
+
+  // Handle settings navigation (like in ProfileUser.js)
+  const handleSettingsClick = () => {
+    navigate('/profile-user');
+  };
+
+  // Enhanced Purchase Card with fallback images
+  const PurchaseCard = ({ item }) => (
+    <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
+      <div className="flex flex-col lg:flex-row">
+        {/* Product Image with fallback */}
+        <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
+          <img 
+            src={item.image || product1} 
+            alt={item.title}
+            className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
+            onError={(e) => {
+              e.target.src = product1;
+            }}
+          />
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                  {item.category}
+                </span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                {item.title}
+              </h3>
+              
+              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                {item.description}
+              </p>
+              
+              <div className="flex items-center gap-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
+                      {item.seller.charAt(0)}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{item.seller}</span>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">{item.sellerRating}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4 mb-4">
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  item.statusType === "progress"
+                    ? "bg-orange-100 text-orange-800 border border-orange-200"
+                    : item.statusType === "delivered"
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : "bg-red-100 text-red-800 border border-red-200"
+                }`}>
+                  {item.status}
+                </span>
+                
+                {item.statusType === "delivered" && item.rating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-gray-600">Your rating:</span>
+                    <div className="flex">
+                      {[...Array(5)].map((_, index) => (
+                        <svg key={index} className={`w-4 h-4 ${index < Math.floor(item.rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-sm text-gray-500 mb-2">
+                {item.orderNumber} • {item.date}
+              </div>
+              <div className="text-sm text-gray-600 font-medium">
+                {item.deliveryTime}
+              </div>
+            </div>
+            
+            {/* Price and Actions */}
+            <div className="flex flex-col items-end gap-3 ml-6">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-gray-900">
+                  {item.price}
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <button className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                  item.statusType === "progress"
+                    ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
+                    : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                }`}>
+                  {item.statusType === "progress" ? "View Details" : "Buy Again"}
+                </button>
+                
+                {item.statusType === "delivered" && (
+                  <button className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300">
+                    Contact Seller
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Enhanced Review Card 
+  const ReviewCard = ({ review }) => (
+    <div className="group relative bg-white rounded-xl p-8 border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Product Image with fallback */}
+        <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
+          <img 
+            src={review.image || reviewProduct} 
+            alt={review.title}
+            className="w-full h-full object-cover rounded-lg border border-gray-200"
+            onError={(e) => {
+              e.target.src = reviewProduct;
+            }}
+          />
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                  {review.category}
+                </span>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                  COMPLETED
+                </span>
+                {review.verified && (
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Verified Purchase
+                  </span>
+                )}
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2 leading-tight">
+                {review.title}
+              </h3>
+              
+              <div className="flex items-center gap-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
+                      {review.seller.charAt(0)}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{review.seller}</span>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">{review.sellerRating}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-sm text-gray-500 mb-4">{review.orderId}</p>
+              
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 font-medium">My Rating:</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, starIndex) => (
+                      <svg key={starIndex} className={`w-5 h-5 ${starIndex < Math.floor(review.rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-900 font-semibold ml-1">{review.rating}.0</span>
+                </div>
+                
+                <span className="text-sm text-gray-600">• {review.deliveryTime}</span>
+              </div>
+            </div>
+            
+            {/* Price and Actions */}
+            <div className="flex flex-col items-end gap-3 ml-6">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-gray-900">
+                  {review.price}
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20">
+                  Buy Again
+                </button>
+                <button className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300">
+                  Contact Seller
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Review Text */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <p className="text-gray-700 leading-relaxed text-sm">
+              {review.reviewText}
+            </p>
+          </div>
+          
+          {/* Review Footer */}
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center gap-4">
+              <button className="flex items-center gap-1 hover:text-[#2E5077] transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V9a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 12m5-2v10m-5-2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-7.5" />
+                </svg>
+                Helpful ({review.helpful})
+              </button>
+              <button className="hover:text-[#2E5077] transition-colors">Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const PaginationControls = ({ pagination, onPageChange }) => (
+    <div className="flex justify-center items-center gap-2.5 mt-12">
+      <button 
+        onClick={() => onPageChange(pagination.currentPage - 1)}
+        disabled={!pagination.hasPrevPage}
+        className="group w-12 h-12 border-2 border-gray-200 rounded-xl text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-black"
+      >
+        ‹
+      </button>
+      
+      {[...Array(Math.min(pagination.totalPages, 5))].map((_, index) => {
+        const pageNum = index + 1;
+        const isActive = pageNum === pagination.currentPage;
+        
+        return (
+          <button 
+            key={pageNum}
+            onClick={() => onPageChange(pageNum)}
+            className={`w-12 h-12 rounded-xl font-bold text-lg transition-all duration-300 ${
+              isActive 
+                ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-110" 
+                : "border-2 border-gray-200 text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] hover:scale-110"
+            }`}
+          >
+            {pageNum}
+          </button>
+        );
+      })}
+      
+      <button 
+        onClick={() => onPageChange(pagination.currentPage + 1)}
+        disabled={!pagination.hasNextPage}
+        className="group w-12 h-12 border-2 border-gray-200 rounded-xl text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-black"
+      >
+        ›
+      </button>
+    </div>
+  );
+
+  // Loading component
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-16">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E5077]"></div>
+    </div>
+  );
+
+  // Error component
+  const ErrorMessage = ({ message }) => (
+    <div className="text-center py-16">
+      <div className="text-red-500 text-xl mb-4">⚠️</div>
+      <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
+      <p className="text-gray-500">{message}</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="mt-4 bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
+      >
+        Retry
+      </button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <Navbar />
 
-      {/* Spacer untuk memberikan jarak setelah navbar */}
-      <div className="h-24"></div>
+      {/* Enhanced spacing from navbar */}
+      <div className="h-32"></div>
 
-      <div className="max-w-6xl mx-auto p-5 bg-white mt-8 mb-20 rounded-xl shadow-lg">
-        {/* Profile Header */}
-        <div className="flex items-center p-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl mb-8 text-white relative">
-          <div className="mr-5">
-            <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white text-2xl">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                  fill="currentColor"
-                />
-              </svg>
-            </div>
-          </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-1">Adam Warlok</h1>
-            <p className="text-base opacity-90">AdamWarlok@gmail.com</p>
-          </div>
-          <div className="absolute top-5 right-5">
-            <button className="bg-white bg-opacity-20 border-none rounded-lg p-2 text-white cursor-pointer hover:bg-opacity-30 transition-all duration-300">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
-                  fill="currentColor"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <div className="flex items-center p-5 bg-gray-50 rounded-xl border border-gray-200">
-            <div className="text-2xl mr-4">📅</div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 mb-1">Member Since:</span>
-              <span className="text-lg font-semibold text-gray-700">{userStats.memberSince}</span>
-            </div>
-          </div>
-          <div className="flex items-center p-5 bg-gray-50 rounded-xl border border-gray-200">
-            <div className="text-2xl mr-4">📋</div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 mb-1">Profile Finish:</span>
-              <span className="text-lg font-semibold text-gray-700">{userStats.profileFinish}</span>
-            </div>
-          </div>
-          <div className="flex items-center p-5 bg-gray-50 rounded-xl border border-gray-200">
-            <div className="text-2xl mr-4">🎫</div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 mb-1">Active Vouchers:</span>
-              <span className="text-lg font-semibold text-gray-700">{userStats.activeVouchers}</span>
-            </div>
-          </div>
-          <div className="flex items-center p-5 bg-gray-50 rounded-xl border border-gray-200">
-            <div className="text-2xl mr-4">📦</div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 mb-1">Total Order:</span>
-              <span className="text-lg font-semibold text-gray-700">{userStats.totalOrder}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex border-b-2 border-gray-200 mb-8">
-          <button
-            className={`px-8 py-4 text-base font-medium cursor-pointer border-b-2 transition-all duration-300 ${
-              activeTab === "purchase"
-                ? "text-blue-500 border-blue-500"
-                : "text-gray-500 border-transparent hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("purchase")}
-          >
-            Purchase History
-          </button>
-          <button
-            className={`px-8 py-4 text-base font-medium cursor-pointer border-b-2 transition-all duration-300 ${
-              activeTab === "reviews"
-                ? "text-blue-500 border-blue-500"
-                : "text-gray-500 border-transparent hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("reviews")}
-          >
-            Reviews
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div className="mb-16">
-          {activeTab === "purchase" && (
-            <div className="flex flex-col gap-5 pb-8">
-              {purchaseHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col lg:flex-row items-start gap-5 p-6 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-shadow duration-300"
-                >
-                  <div className="flex-shrink-0">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full lg:w-30 h-20 object-cover rounded-lg bg-gray-200"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2 leading-snug">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-4">{item.date}</p>
-                    <div className="flex items-center gap-5">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium uppercase ${
-                          item.statusType === "progress"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <div className="flex">
-                          {[...Array(5)].map((_, index) => (
-                            <span key={index} className="text-yellow-400 text-sm">
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500 ml-1">300 Items sold</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-row lg:flex-col items-center lg:items-end gap-3 w-full lg:w-auto">
-                    <div className="text-xl font-bold text-gray-700">{item.price}</div>
-                    <button
-                      className={`px-5 py-2 border-none rounded-md text-sm font-medium cursor-pointer transition-all duration-300 min-w-32 ${
-                        item.statusType === "progress"
-                          ? "bg-cyan-500 text-white hover:bg-cyan-600"
-                          : "bg-blue-500 text-white hover:bg-blue-600"
-                      }`}
+      <div className="w-full px-4 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-none bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden">
+          {/* Enhanced Profile Header - Dynamic User Data from AuthContext */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#2E5077] via-[#2F5379] to-[#2E5077] p-8 text-white">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#2E90EB] opacity-15 rounded-full blur-2xl"></div>
+            
+            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                <div className="group relative">
+                  <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 transition-all duration-700 group-hover:scale-105 group-hover:bg-white/20">
+                    <svg
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-white"
                     >
-                      {item.statusType === "progress" ? "Order Details" : "Buy Again"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Pagination */}
-              <div className="flex justify-center items-center gap-2 mt-8 mb-8">
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  ‹
-                </button>
-                <button className="bg-blue-500 text-white border-blue-500 px-3 py-2 rounded-md cursor-pointer min-w-10">
-                  1
-                </button>
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  2
-                </button>
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  3
-                </button>
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  ›
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "reviews" && (
-            <div className="flex flex-col gap-6 pb-8">
-              {reviewsData.map((review, index) => (
-                <div key={review.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
-                  {/* Review Header */}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="flex-shrink-0">
-                      <img 
-                        src={review.image}
-                        alt={review.title}
-                        className="w-16 h-16 object-cover rounded-lg bg-gray-200"
+                      <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                        fill="currentColor"
                       />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-700 mb-1">{review.title}</h3>
-                      <p className="text-sm text-gray-500 mb-2">{review.orderId}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {[...Array(5)].map((_, starIndex) => (
-                            <span 
-                              key={starIndex} 
-                              className={`text-sm ${starIndex < Math.floor(review.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                        <span className="text-sm font-semibold text-gray-700">{review.rating}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="text-blue-500 hover:text-blue-600 text-sm font-medium">Edit</button>
-                      <button className="text-red-500 hover:text-red-600 text-sm font-medium">Delete</button>
-                    </div>
+                    </svg>
                   </div>
-
-                  {/* Review Text */}
-                  <div className="mb-6">
-                    <p className="text-gray-700 leading-relaxed text-sm">
-                      {review.reviewText}
-                    </p>
-                  </div>
-
-                  {/* Wireframes/Mockups - Only show if wireframes exist */}
-                  {review.wireframes && review.wireframes.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex gap-3 flex-wrap">
-                        {review.wireframes.map((wireframe, wireIndex) => (
-                          <div key={wireIndex} className="w-16 h-16 bg-gray-100 rounded border border-gray-200 overflow-hidden">
-                            <img 
-                              src={wireframe}
-                              alt={`Wireframe ${wireIndex + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Section Divider */}
-                  {index < reviewsData.length - 1 && (
-                    <div className="mt-6 pt-4 border-t border-gray-100">
-                      <div className="text-xs text-gray-400 text-center">
-                        Review {index + 1} of {reviewsData.length}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              ))}
+                <div>
+                  {/* Dynamic User Information from AuthContext */}
+                  <h1 className="text-3xl font-bold mb-2 tracking-tight">{currentUser.name}</h1>
+                  <p className="text-lg opacity-90 font-medium mb-1">{currentUser.email}</p>
+                  <p className="text-sm opacity-75">Member since {currentUser.memberSince} • Premium User</p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={handleSettingsClick}
+                className="group bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-3 text-white hover:bg-white/25 transition-all duration-300 hover:scale-110"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="transition-transform duration-700 group-hover:rotate-180"
+                >
+                  <path
+                    d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
 
-              {/* Pagination for Reviews */}
-              <div className="flex justify-center items-center gap-2 mt-8 mb-8">
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  ‹
+          {/* Enhanced Stats Section */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-8 bg-gradient-to-br from-gray-50/50 to-white">
+            <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📅</div>
+              <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Member Since</span>
+              <span className="text-lg font-bold text-gray-900">{userStats.memberSince}</span>
+            </div>
+            
+            <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📋</div>
+              <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Profile</span>
+              <span className="text-lg font-bold text-green-600">{userStats.profileCompletion}</span>
+            </div>
+            
+            <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">🎫</div>
+              <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Vouchers</span>
+              <span className="text-lg font-bold text-blue-600">{userStats.activeVouchers}</span>
+            </div>
+            
+            <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📦</div>
+              <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Orders</span>
+              <span className="text-lg font-bold text-purple-600">{userStats.totalOrders}</span>
+            </div>
+            
+            <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">💰</div>
+              <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Total Spent</span>
+              <span className="text-sm font-bold text-green-600">{userStats.totalSpent}</span>
+            </div>
+          </div>
+
+          {/* Enhanced Tab Navigation */}
+          <div className="px-8 pt-6">
+            <div className="flex justify-start">
+              <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
+                <button
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${
+                    activeTab === "purchase"
+                      ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                  }`}
+                  onClick={() => handleTabChange("purchase")}
+                >
+                  Purchase History
                 </button>
-                <button className="bg-blue-500 text-white border-blue-500 px-3 py-2 rounded-md cursor-pointer min-w-10">
-                  1
-                </button>
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  2
-                </button>
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  3
-                </button>
-                <button className="border border-gray-300 px-3 py-2 rounded-md text-gray-600 cursor-pointer hover:bg-gray-100 transition-all duration-300 min-w-10">
-                  ›
+                <button
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${
+                    activeTab === "reviews"
+                      ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                  }`}
+                  onClick={() => handleTabChange("reviews")}
+                >
+                  My Reviews
                 </button>
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-8">
+            {loading ? (
+              <LoadingSpinner />
+            ) : error ? (
+              <ErrorMessage message={error} />
+            ) : (
+              <>
+                {activeTab === "purchase" && (
+                  <div className="space-y-6">
+                    {purchaseHistory.length > 0 ? (
+                      <>
+                        {purchaseHistory.map((item) => (
+                          <PurchaseCard key={item.id} item={item} />
+                        ))}
+                        {purchasePagination.totalPages > 1 && (
+                          <PaginationControls 
+                            pagination={purchasePagination} 
+                            onPageChange={handlePurchasePagination} 
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-16">
+                        <div className="text-gray-400 text-8xl mb-6">📦</div>
+                        <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Purchase History</h3>
+                        <p className="text-gray-500 text-lg">You haven't made any purchases yet.</p>
+                        <button className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors">
+                          Browse Services
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "reviews" && (
+                  <div className="space-y-8">
+                    {reviews.length > 0 ? (
+                      <>
+                        {reviews.map((review) => (
+                          <ReviewCard key={review.id} review={review} />
+                        ))}
+                        {reviewsPagination.totalPages > 1 && (
+                          <PaginationControls 
+                            pagination={reviewsPagination} 
+                            onPageChange={handleReviewsPagination} 
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-16">
+                        <div className="text-gray-400 text-8xl mb-6">⭐</div>
+                        <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Reviews Yet</h3>
+                        <p className="text-gray-500 text-lg">You haven't written any reviews yet.</p>
+                        <button 
+                          className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors"
+                          onClick={() => handleTabChange("purchase")}
+                        >
+                          View Purchase History
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Spacer untuk memberikan jarak dengan footer */}
-      <div className="h-20"></div>
+      {/* Enhanced spacing to footer */}
+      <div className="h-32"></div>
 
       <Footer />
     </div>
