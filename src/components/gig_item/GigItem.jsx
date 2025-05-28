@@ -30,7 +30,7 @@ const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 
   });
 };
 
-const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) => {
+const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const navigate = useNavigate();
   const [fallbackMap, setFallbackMap] = useState({});
@@ -108,17 +108,11 @@ const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) =>
                   whileHover={{ y: -5 }}
                   onClick={() => navigate(`/detail/${gig._id}`)}
                 >
-                  {/* Product Image with hover effect */}
-                  <div className="relative ">
-                    {/* {imageLoading && (
-                    <div className="w-full text-center">
-                      <CircularProgress color="inherit" size={80} />
-                    </div>
-                  )} */}
+                  <div className="relative">
                     <motion.img
                       src={imageSrc}
                       alt={gig.name}
-                      className="w-full h-58 object-cover bg-white"
+                      className="w-full h-58 object-cover bg-black"
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                       onLoad={() => {
@@ -161,7 +155,7 @@ const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) =>
         :
         <>
           <motion.div
-            className={`text-center font-Archivo text-black font-semibold text-xl py-10 ${!home && "w-297"}`}
+            className={`text-center font-Archivo text-black font-semibold text-xl py-10 ${!home && "w-297"} col-span-4`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}

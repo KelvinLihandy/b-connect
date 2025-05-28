@@ -40,29 +40,39 @@ const Detail = () => {
   const detailScrollUp = useRef(null);
   const [showContractModal, setShowContractModal] = useState(false);
   const [reviews, setReviews] = useState([]);
-  const reasons = disabledGigs[gigId];
-  let isDisabled = false;
-  let reasonText = "";
+  const [isOwnGig, setIsOwnGig] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
 
-  if (reasons && reasons.length > 0) {
-    isDisabled = true;
-    if (reasons.includes("contract-in-progress")) {
-      reasonText = "Contract in progress";
-    } else if (reasons.includes("transaction-pending")) {
-      reasonText = "Transaction pending";
+  useEffect(() => {
+    const reasons = disabledGigs[gigId];
+    if (reasons && reasons.length > 0) {
+      setIsDisabled(true);
     } else {
-      reasonText = reasons.join(", ");
+      setIsDisabled(false);
     }
-  } else {
-    isDisabled = false;
-    reasonText = "";
-  }
+  }, [disabledGigs, gigId]);
+
+  const getReasonText = () => {
+    const reasons = disabledGigs[gigId];
+    if (!reasons || reasons.length === 0) {
+      return "";
+    }
+    if (reasons.includes("contract-in-progress")) {
+      return "Contract in progress";
+    } else if (reasons.includes("transaction-pending")) {
+      return "Transaction pending";
+    } else {
+      return reasons.join(", ");
+    }
+  };
+  const reasonText = getReasonText();
 
   const getDetail = async () => {
     try {
       const response = await axios.post(`${gigAPI}/get-gig/${gigId}`);
-      const res = response.data.detail;
-      setGigDetail(res);
+      const res = response.data;
+      setGigDetail(res.detail);
+      setReviews(res.reviews)
       console.log("detail", res);
     } catch (error) {
       console.error('Error fetching detail:', error.response || error);
@@ -74,6 +84,10 @@ const Detail = () => {
     try {
       const response = await axios.post(`${userAPI}/get-user/${gigDetail?.creator}`, {});
       const res = response.data.user;
+      if (res._id === auth?.data?.auth?.id) {
+        setIsOwnGig(true);
+        setIsDisabled(true);
+      }
       setFreelancer(res);
       console.log("freelancer", res);
     } catch (error) {
@@ -446,9 +460,9 @@ const Detail = () => {
             <div className="border-t my-6">
               <h2 className="text-xl font-bold my-2">Workflow Overview</h2>
               <div className="flex flex-col gap-1">
-                {gigDetail?.workflow.map((flows, index) => (
+                {gigDetail?.workflow?.map((flows, index) => (
                   <h3 className="font-bold text-lg">
-                    {index + 1}. {flows.flow}
+                    {index + 1}. {flows}
                   </h3>
                 ))}
               </div>
@@ -460,9 +474,9 @@ const Detail = () => {
                   <img
                     className="w-20 h-20 rounded-full object-cover"
                     src={
-                      !freelancer?.picture || freelancer.picture === "temp"
+                      !freelancer?.picture || freelancer?.picture === "temp"
                         ? default_avatar
-                        : `${imageShow}${freelancer.picture}`
+                        : `${imageShow}${freelancer?.picture}`
                     }
                     alt="freelancer"
                     onLoad={() => setIsImageLoading(false)}
@@ -481,7 +495,7 @@ const Detail = () => {
                   <div className="flex items-center gap-2 text-xl">
                     <DynamicStars number={freelancer?.rating} />
                     <span className="text-yellow-400 font-bold">{freelancer?.rating}</span>
-                    <span className="text-gray-500">({freelancer?.reviews?.length ?? "0"} Reviews)</span>
+                    <span className="text-gray-500">({freelancer?.reviews} Reviews)</span>
                   </div>
                   <p className="text-gray-700 text-lg flex gap-2 items-center">
                     <Clock size={20} className="" />
@@ -494,51 +508,70 @@ const Detail = () => {
               <p className="text-gray-700 my-2 font-medium text-base">
                 {freelancer?.description?.trim()
                   ? freelancer.description
-                  : "No description is set"}
+                  : `${freelancer?.name} has not set a description`
+                }
               </p>
             </div>
             <div className="border-t mt-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold my-2">Reviews</h2>
-                <div className="flex gap-3">
-                  <button className="p-2 rounded-full bg-gray-100">
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button className="p-2 rounded-full bg-gray-100">
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {reviews?.length > 0 ?
-                  reviews.map((review) => (
-                    <div key={review._id} className="bg-gray-100 rounded-lg p-4">
-                      <div className="flex items-center space-x-2">
-                        <img
-                          src={`${imageShow}${review.poster.picture}`}
-                          alt={review.poster.picture}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <h3 className="font-medium">{review.poster.name}</h3>
-                          <div className="flex items-center text-yellow-400">
-                            <DynamicStars number={review.rating} />
-                            <span className="ml-1 text-gray-700">{review.rating}</span>
+              {reviews?.length <= 0 ?
+                (
+                  <div>
+                    <p>No review is currently available for this gig</p>
+                  </div>
+                )
+                :
+                (
+                  <div className="flex flex-col gap-2 overflow-y-auto h-105">
+                    {reviews?.map((review) => (
+                      <div
+                        key={review._id}
+                        className="p-4 border rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 w-full"
+                      >
+                        <div className="flex justify-between mb-2">
+                          <div className="flex items-center">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3 font-semibold border">
+                              <img
+                                className="w-full h-full rounded-full object-cover"
+                                src={
+                                  !review?.reviewerPicture || review?.reviewerPicture === "temp"
+                                    ? default_avatar
+                                    : `${imageShow}${review?.reviewerPicture}`
+                                }
+                                alt="reviewer"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = default_avatar;
+                                  console.log("Image load failed for reviewer:", review.reviewerName);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center">
+                                <div className="text-sm font-medium mr-2">
+                                  {review.reviewerName}
+                                  <div className="flex gap-3">
+                                    <DynamicStars number={review.rating} />
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {new Date(review.createdDate).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                        <p className="text-lg text-gray-700 mt-2">{review.reviewMessage}</p>
                       </div>
-                      <p className="text-gray-500 text-sm mt-1">{getDaysAgo(review.createdTime)} days ago</p>
-                      <p className="mt-2 text-gray-700">{review.comment}</p>
-                    </div>
-                  ))
-                  :
-                  (
-                    <div>
-                      <p>No review is currently available for this gig</p>
-                    </div>
-                  )
-                }
-              </div>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -615,18 +648,20 @@ const Detail = () => {
                       setShowContractModal(true);
                     }}
                   >
-                    {isDisabled ? reasonText : "Continue"}
-                    <ChevronRight size={18} className="ml-1" />
+                    {isOwnGig ? "This is your gig" : isDisabled ? reasonText : "Continue"}
+                    {!isOwnGig && <ChevronRight size={18} className="ml-1" />}
                   </motion.button>
 
-                  <motion.button
-                    className="w-full mt-3 border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-4 rounded-md font-medium"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => initiateChat()}
-                  >
-                    Contact B-Partner
-                  </motion.button>
+                  {!isOwnGig &&
+                    <motion.button
+                      className="w-full mt-3 border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-4 rounded-md font-medium"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => initiateChat()}
+                    >
+                      Contact B-Partner
+                    </motion.button>
+                  }
                 </div>
               </div>
             </div>

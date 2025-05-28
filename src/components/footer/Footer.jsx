@@ -84,9 +84,6 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
             <div onClick={() => navigate("/about-us")} className="hover:text-blue-600 transition-colors duration-300">About</div>
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <Link to='' className="hover:text-blue-600 transition-colors duration-300">FAQ</Link>
-          </motion.div>
-          <motion.div variants={fadeInUp}>
             <div onClick={() => navigate("/catalog")} className="hover:text-blue-600 transition-colors duration-300">Services</div>
           </motion.div>
         </div>
@@ -99,7 +96,6 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
         </motion.p>
       </motion.div>
 
-      {/* Vertical divider for desktop, horizontal for mobile */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"

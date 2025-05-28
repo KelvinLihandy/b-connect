@@ -40,16 +40,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  const imageUrl = auth?.data?.auth?.picture === "temp"
-    ? default_avatar
-    : `${imageShow}${auth?.data?.auth.picture}`;
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => setImageLoading(false);
-  }, [imageUrl]);
-
   useEffect(() => {
     const list = Array.isArray(notificationList)
       ? notificationList
@@ -96,13 +86,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
       year: "numeric",
     });
   };
-
-  const cookieClear = async () => {
-    await axios.post(`${authAPI}/clear-cookie`,
-      {},
-      { withCredentials: true }
-    )
-  }
 
   let lastRenderedDate = null;
 
@@ -163,14 +146,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                   Dashboard
                 </motion.p>
                 <motion.p
-                  className="inline-block text-xl cursor-pointer transition-colors duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  onClick={() => { navigate(`/freelancer-gigs`) }}
-                >
-                  My Gigs
-                </motion.p>
-                <motion.p
-                  className="inline-block text-xl cursor-pointer transition-colors duration-300"
+                  className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
                   whileHover={{ scale: 1.1 }}
                   onClick={() => { navigate(`/freelancer-orders`) }}
                 >
@@ -289,7 +265,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               />
 
               <motion.div
-                className="relative w-[40px] h-[40px] bg-black rounded-full flex items-center justify-center cursor-pointer mr-10"
+                className="relative w-15 h-15 rounded-full flex items-center justify-center cursor-pointer mr-10"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowUserDropdown(prev => !prev);
@@ -300,7 +276,9 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   className="w-full h-full object-cover rounded-full"
-                  src={imageUrl}
+                  src={auth?.data?.auth?.picture === "temp"
+                    ? default_avatar
+                    : `${imageShow}${auth?.data?.auth.picture}`}
                   alt="profile"
                   onLoad={() => setImageLoading(false)}
                   onError={(e) => {
@@ -370,7 +348,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            navigate(`/profile-user`);
+                            navigate(`/profile`);
                             setShowUserDropdown(false);
                           }}
                         >
@@ -390,7 +368,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                               const name = cookie.split("=")[0].trim();
                               document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
                             });
-                            await cookieClear();
+                            await axios.post(`${authAPI}/clear-cookie`,
+                              {},
+                              { withCredentials: true }
+                            )
                             setAuth(null);
                             setIsFreelancer(false);
                             navigate('/home');

@@ -313,9 +313,9 @@ const UserProfile = () => {
     }));
   };
 
-  // Handle settings navigation (like in ProfileUser.js)
+  // Handle settings navigation - UPDATED TO NAVIGATE TO /profile
   const handleSettingsClick = () => {
-    navigate('/profile-user');
+    navigate('/profile');
   };
 
   // Enhanced Purchase Card with fallback images

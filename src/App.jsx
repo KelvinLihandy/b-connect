@@ -16,13 +16,15 @@ import FreelancerProfile from "./views/FreelancerProfile/FreelancerProfile";
 import AuthRouting from "./components/auth_routing/AuthRouting";
 import { AuthContext } from "./contexts/AuthContext";
 import HomeRouting from "./components/home_routing/HomeRouting";
-import ProfileUser from "./views/profile_user/ProfileUser";
+import Profile from "./views/profile/Profile";
 import { NotificationContext } from "./contexts/NotificationContext";
 import { baseAPI } from "./constants/APIRoutes";
 import { UserTypeContext } from "./contexts/UserTypeContext";
 import AddService from "./components/add_service/AddService";
 import FreelancerReg from "./components/FreelancerRegister/FreelancerReg";
 import UserProfile from "./views/User_profile/UserProfile";
+import ManageOrder from "./views/manage_order/ManageOrder";
+import Invoice from "./views/invoice/Invoice";
 import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
 
@@ -96,6 +98,9 @@ const App = () => {
         <Route path="/sign-in/change-password" element={<ChangePassword />} />
         <Route path="/add-service" element={<AddService />} />
         <Route path="/become-freelancer" element={<FreelancerReg />} />
+        <Route path="/manage-order" element={<ManageOrder />} />
+        <Route path="/invoice" element={<Invoice />} />
+
         {isFreelancer ? (
           <>
             <Route
@@ -110,24 +115,24 @@ const App = () => {
               path="/catalog"
               element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
             />
-            <Route
+            {/* <Route
               path="/detail/:gigId"
               element={<Navigate to={`/freelancer-profile/${auth?.data?.auth?.id}`} replace />}
-            />
+            /> */}
           </>
         ) : (
           <>
             <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/home" element={<Home />} />
             <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/detail/:gigId" element={<Detail />} />
           </>
         )}
+        <Route path="/detail/:gigId" element={<Detail />} />
         <Route path="/freelancer-profile/:id" element={<FreelancerProfile />} />
         {/* Protected routes - require authentication */}
         <Route path="/chat" element={<Navigate to="/chat/def" replace />} />
         <Route path="/chat/:roomId" element={<AuthRouting component={Chat} />} />
-        <Route path="/profile-user" element={<AuthRouting component={ProfileUser} />} />
+        <Route path="/profile" element={<AuthRouting component={Profile} />} />
         <Route path="/user-profile/:id" element={<AuthRouting component={UserProfile} />} />
 
       </Routes>
