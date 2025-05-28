@@ -8,6 +8,7 @@ import addFlow from "../../assets/addservice-addflow.svg";
 import Preview from "./Preview";
 import axios from "axios";
 import { gigAPI } from "../../constants/APIRoutes";
+import { CircularProgress } from "@mui/material";
 
 const steps = ["Title", "Attachment", "Description", "Price", "Review", "Finish"];
 
@@ -39,6 +40,7 @@ const PACKAGE_TYPES = {
 const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
+  const [loadingSave, setLoadingSave] = useState(false);
   const [searchCategory, setSearchCategory] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -352,6 +354,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
       }
       goNext();
     }
+    setLoadingSave(false);
   };
 
   const handleBasicChange = (field, value) => {
@@ -1248,16 +1251,25 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                         <div className="flex space-x-4 mt-3">
                           <button
                             onClick={handlePreview}
+                            disabled={loadingSave}
                             className="px-6 py-2 border border-gray-300 bg-white text-gray-800 font-medium rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                           >
                             Preview
                           </button>
                           <button
-                            onClick={handleSave}
+                            onClick={() => {
+                              setLoadingSave(true);
+                              handleSave();
+                            }}
+                            disabled={loadingSave}
                             className="px-6 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center cursor-pointer"
                           >
                             <img src={SaveIcon} alt="Save" className="h-5 w-5 mr-2" />
-                            Save
+                            {loadingSave ?
+                              <CircularProgress />
+                              :
+                              "Save"
+                            }
                           </button>
                         </div>
                       </div>
@@ -1287,6 +1299,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                       <button
                         onClick={goBack}
                         className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 shadow-md cursor-pointer"
+                        disabled={loadingSave}
                       >
                         Back
                       </button>
@@ -1296,6 +1309,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                         onClick={goNext}
                         className="px-4 py-2 border border-gray-300 rounded-md text-white shadow-md cursor-pointer"
                         style={{ backgroundColor: "#4DA1A9" }}
+                        disabled={loadingSave}
                       >
                         Next
                       </button>
