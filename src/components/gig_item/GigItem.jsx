@@ -30,7 +30,7 @@ const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 
   });
 };
 
-const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) => {
+const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const navigate = useNavigate();
   const [fallbackMap, setFallbackMap] = useState({});
@@ -108,11 +108,11 @@ const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) =>
                   whileHover={{ y: -5 }}
                   onClick={() => navigate(`/detail/${gig._id}`)}
                 >
-                  <div className="relative ">
+                  <div className="relative">
                     <motion.img
                       src={imageSrc}
                       alt={gig.name}
-                      className="w-full h-58 object-cover bg-white"
+                      className="w-full h-58 object-cover bg-black"
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                       onLoad={() => {

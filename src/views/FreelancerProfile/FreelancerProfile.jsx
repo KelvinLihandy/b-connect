@@ -62,7 +62,7 @@ const FreelancerProfile = () => {
   const [selectedCategory, setSelectedCategory] = useState(categoryList[0]);
   const [fallbackMap, setFallbackMap] = useState({});
   const itemsPerPage = 6;
-  const [end, setEnd] = useState(itemsPerPage - 1);
+  const [end, setEnd] = useState(itemsPerPage);
   const [start, setStart] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); const [isOwnProfile, setIsOwnProfile] = useState(false);
@@ -390,7 +390,11 @@ const FreelancerProfile = () => {
                               (g) =>
                                 selectedCategory === "All" ||
                                 (Array.isArray(g.categories) && g.categories.includes(selectedCategory))
-                            ).slice(start, end)
+                            )
+                            .sort((a, b) => {
+                              return a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1;
+                            })
+                            .slice(start, end)
                             .map((gig, index) => {
                               const fallbackImage = fallbackMap[gig._id];
                               const imageSrc =
@@ -403,8 +407,8 @@ const FreelancerProfile = () => {
                                   key={gig._id}
                                   custom={index}
                                   variants={cardVariants}
-                                  onClick={() => {navigate(`/detail/${gig._id}`)}}
-                                  className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+                                  onClick={() => { navigate(`/detail/${gig._id}`) }}
+                                  className="bg-white rounded-lg shadow-sm border relative border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                                 >
                                   <div className="relative">
                                     <motion.img
@@ -421,6 +425,11 @@ const FreelancerProfile = () => {
                                         e.target.src = fallbackImage;
                                       }}
                                     />
+                                    {!gig.accepted && (
+                                      <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                        Pending Acceptance
+                                      </div>
+                                    )}
                                   </div>
 
                                   <div className="p-5 h-42">
@@ -693,7 +702,7 @@ const FreelancerProfile = () => {
 
       <AddService
         isOpen={showAddServiceModal}
-        onClose={() => {setShowAddServiceModal(false)}}
+        onClose={() => { setShowAddServiceModal(false) }}
         onCloseAfterSave={async () => {
           await getFreelancerData();
           setShowAddServiceModal(false);

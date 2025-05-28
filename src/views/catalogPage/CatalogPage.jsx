@@ -63,7 +63,7 @@ const CatalogPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [appliedFilter, setAppliedFilter] = useState(false);
   const [start, setStart] = useState(0);
-  const [end, setEnd] = useState(itemsPerPage - 1);
+  const [end, setEnd] = useState(itemsPerPage);
   const navigate = useNavigate();
   const catalogScrollUp = useRef(null);
   const navScrollUp = useRef(null);
