@@ -108,13 +108,7 @@ const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) =>
                   whileHover={{ y: -5 }}
                   onClick={() => navigate(`/detail/${gig._id}`)}
                 >
-                  {/* Product Image with hover effect */}
                   <div className="relative ">
-                    {/* {imageLoading && (
-                    <div className="w-full text-center">
-                      <CircularProgress color="inherit" size={80} />
-                    </div>
-                  )} */}
                     <motion.img
                       src={imageSrc}
                       alt={gig.name}
@@ -161,7 +155,7 @@ const GigItem = ({ data, home = false, start = 0, end = 5, starter = false }) =>
         :
         <>
           <motion.div
-            className={`text-center font-Archivo text-black font-semibold text-xl py-10 ${!home && "w-297"}`}
+            className={`text-center font-Archivo text-black font-semibold text-xl py-10 ${!home && "w-297"} col-span-4`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}

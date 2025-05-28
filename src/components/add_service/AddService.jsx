@@ -9,7 +9,6 @@ import Preview from "./Preview";
 
 const steps = ["Title", "Attachment", "Description", "Price", "Review", "Finish"];
 
-// Added new constant for default workflow
 const DEFAULT_WORKFLOW_COUNT = 3;
 
 const SERVICE_CATEGORIES = [
@@ -22,7 +21,6 @@ const SERVICE_CATEGORIES = [
   "Web Development",
 ];
 
-// Constants for Price Step inputs
 const PRICE_STEP_LABELS = {
   KONSEP: "Jumlah Batas Konsep",
   REVISI: "Jumlah Batas Revisi",
@@ -31,14 +29,13 @@ const PRICE_STEP_LABELS = {
   HARGA: "Harga"
 };
 
-// Constants for package types
 const PACKAGE_TYPES = {
   BASIC: "Basic",
   ADVANCE: "Advance"
 };
 
 const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
-  const [step, setStep] = useState(2);//
+  const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -47,32 +44,27 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
   const [attachments, setAttachments] = useState([]);
   const [description, setDescription] = useState("");
   const [workFlows, setWorkFlows] = useState(Array(DEFAULT_WORKFLOW_COUNT).fill(""));
-
   const [basePrice, setBasePrice] = useState("");
-  const [deliveryTime, setDeliveryTime] = useState("3");
   const [showPreview, setShowPreview] = useState(false);
-
-  // Price Step form state
   const [basicPackage, setBasicPackage] = useState({
-    konsep: "",
-    revisi: "",
-    waktu: "",
-    sourceFile: "",
-    harga: ""
+    konsep: null,
+    revisi: null,
+    waktu: null,
+    sourceFile: null,
+    harga: null
   });
 
   const [advancePackage, setAdvancePackage] = useState({
-    konsep: "",
-    revisi: "",
-    waktu: "",
-    sourceFile: "",
-    harga: ""
+    konsep: null,
+    revisi: null,
+    waktu: null,
+    sourceFile: null,
+    harga: null
   });
 
   const dropdownRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Reset form function
   const resetForm = () => {
     setStep(1);
     setTitle("");
@@ -84,32 +76,29 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
     setDescription("");
     setWorkFlows(Array(DEFAULT_WORKFLOW_COUNT).fill(""));
     setBasePrice("");
-    setDeliveryTime("3");
     setShowPreview(false);
     setBasicPackage({
-      konsep: "",
-      revisi: "",
-      waktu: "",
-      sourceFile: "",
-      harga: ""
+      konsep: null,
+      revisi: null,
+      waktu: null,
+      sourceFile: null,
+      harga: null
     });
     setAdvancePackage({
-      konsep: "",
-      revisi: "",
-      waktu: "",
-      sourceFile: "",
-      harga: ""
+      konsep: null,
+      revisi: null,
+      waktu: null,
+      sourceFile: null,
+      harga: null
     });
   };
-  // Handle modal close
+
   const handleClose = () => {
     if (step === 6) {
-      // If on finish step, just close
       resetForm();
       onCloseAfterSave();
     } else {
-      // Otherwise, ask for confirmation
-      if (window.confirm("Are you sure you want to close? All progress will be lost.")) {
+      if (window.confirm("Apa anda yakin ingin menutup? Semua progres akan hilang.")) {
         resetForm();
         onClose();
       }
@@ -135,92 +124,73 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
 
     if (step === 1) {
       if (title.trim() === "") {
-        newErrors.title = "Title cannot be empty";
+        newErrors.title = "Judul tidak boleh kosong";
         isValid = false;
       }
 
       if (selectedTags.length === 0) {
-        newErrors.category = "Please select at a category";
+        newErrors.category = "Silakan pilih minimal satu kategori";
         isValid = false;
       }
     } else if (step === 2) {
       if (attachments.length === 0) {
-        newErrors.attachments = "Please upload at least one image";
+        newErrors.attachments = "Silakan unggah minimal satu gambar";
         isValid = false;
       }
     } else if (step === 3) {
       if (description.trim().length < 50) {
-        newErrors.description = "Description must be at least 50 characters long";
+        newErrors.description = "Deskripsi harus terdiri dari minimal 50 karakter";
         isValid = false;
       }
-
-      // Validate all workflow inputs are not empty
       workFlows.forEach((flow, index) => {
         if (!flow.trim()) {
-          newErrors[`workflow_${index}`] = `Work flow ${index + 1} cannot be empty`;
+          newErrors[`workflow_${index}`] = `Alur kerja ${index + 1} tidak boleh kosong`;
           isValid = false;
         }
       });
     } else if (step === 4) {
-      // Validate deliveryTime
-      if (!deliveryTime) {
-        newErrors.deliveryTime = "Please select a delivery time";
+      if (basicPackage.konsep === null || basicPackage.konsep === undefined || basicPackage.konsep === '') {
+        newErrors.basicKonsep = "Jumlah Batas Konsep tidak boleh kosong";
+        isValid = false;
+      }
+      if (basicPackage.revisi === null || basicPackage.revisi === undefined || basicPackage.revisi === '') {
+        newErrors.basicRevisi = "Jumlah Batas Revisi tidak boleh kosong";
+        isValid = false;
+      }
+      if (basicPackage.waktu === null || basicPackage.waktu === undefined || basicPackage.waktu === '') {
+        newErrors.basicWaktu = "Waktu Pengerjaan tidak boleh kosong";
+        isValid = false;
+      }
+      if (basicPackage.harga === null || basicPackage.harga === undefined || basicPackage.harga === '') {
+        newErrors.basicHarga = "Harga tidak boleh kosong";
+        isValid = false;
+      }
+      if (basicPackage.sourceFile !== "true" && basicPackage.sourceFile !== "false") {
+        newErrors.basicSourceFile = "File Sumber harus berupa ya atau tidak";
         isValid = false;
       }
 
-      // Validate all Basic package fields
-      if (!basicPackage.konsep.trim()) {
-        newErrors.basicKonsep = "Jumlah Batas Konsep cannot be empty";
+      if (advancePackage.konsep === null || advancePackage.konsep === undefined || advancePackage.konsep === '') {
+        newErrors.advanceKonsep = "Jumlah Batas Konsep tidak boleh kosong";
         isValid = false;
       }
-
-      if (!basicPackage.revisi.trim()) {
-        newErrors.basicRevisi = "Jumlah Batas Revisi cannot be empty";
+      if (advancePackage.revisi === null || advancePackage.revisi === undefined || advancePackage.revisi === '') {
+        newErrors.advanceRevisi = "Jumlah Batas Revisi tidak boleh kosong";
         isValid = false;
       }
-
-      if (!basicPackage.waktu.trim()) {
-        newErrors.basicWaktu = "Waktu Pengerjaan cannot be empty";
+      if (advancePackage.waktu === null || advancePackage.waktu === undefined || advancePackage.waktu === '') {
+        newErrors.advanceWaktu = "Waktu Pengerjaan tidak boleh kosong";
         isValid = false;
       }
-
-      if (!basicPackage.sourceFile.trim()) {
-        newErrors.basicSourceFile = "Source File cannot be empty";
+      if (advancePackage.harga === null || advancePackage.harga === undefined || advancePackage.harga === '') {
+        newErrors.advanceHarga = "Harga tidak boleh kosong";
         isValid = false;
       }
-
-      if (!basicPackage.harga.trim()) {
-        newErrors.basicHarga = "Harga cannot be empty";
-        isValid = false;
-      }
-
-      // Validate all Advance package fields
-      if (!advancePackage.konsep.trim()) {
-        newErrors.advanceKonsep = "Jumlah Batas Konsep cannot be empty";
-        isValid = false;
-      }
-
-      if (!advancePackage.revisi.trim()) {
-        newErrors.advanceRevisi = "Jumlah Batas Revisi cannot be empty";
-        isValid = false;
-      }
-
-      if (!advancePackage.waktu.trim()) {
-        newErrors.advanceWaktu = "Waktu Pengerjaan cannot be empty";
-        isValid = false;
-      }
-
-      if (!advancePackage.sourceFile.trim()) {
-        newErrors.advanceSourceFile = "Source File cannot be empty";
-        isValid = false;
-      }
-
-      if (!advancePackage.harga.trim()) {
-        newErrors.advanceHarga = "Harga cannot be empty";
+      if (advancePackage.sourceFile !== "true" && advancePackage.sourceFile !== "false") {
+        newErrors.advanceSourceFile = "File Sumber harus berupa ya atau tidak";
         isValid = false;
       }
     }
-
     setErrors(newErrors);
     return isValid;
   };
@@ -250,21 +220,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
 
-  // Filter categories based on search input
   const filteredCategories = SERVICE_CATEGORIES.filter(
     (category) =>
       category.toLowerCase().includes(searchCategory.toLowerCase()) &&
       !selectedTags.includes(category)
   );
 
-  // Change step when clicking on step indicator
   const handleStepClick = (stepNum) => {
-    // Prevent clicking to step 6 directly and prevent navigation when already at step 6
     if (step === 6 || stepNum === 6) {
       return;
     }
-
-    // Only allow clicking on completed steps or the next available step if validation passes
     if (stepNum < step || (stepNum === step + 1 && validateStep())) {
       setStep(stepNum);
     } else if (stepNum === step) {
@@ -272,98 +237,115 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
     }
   };
 
-  // Handle file upload
-  const handleFileUpload = (event) => {
+  const handleAttachmentsUpload = (event) => {
     const files = Array.from(event.target.files);
+    const validTypes = ['image/jpeg', 'image/png'];
+    const filteredFiles = files.filter(file => validTypes.includes(file.type));
 
-    // Check if adding these files would exceed the limit
-    if (attachments.length + files.length > 4) {
-      setErrors({ ...errors, attachments: "Maximum 3 images allowed" });
+    if (filteredFiles.length === 0) {
+      setErrors({ ...errors, attachments: "Hanya gambar format JPG dan PNG yang diperbolehkan." });
       return;
     }
 
-    if (files.length > 0) {
-      // Create preview URLs for the files
-      const newAttachments = files.map((file) => {
-        // Format file size
-        const sizeInKB = file.size / 1024;
-        let formattedSize;
-
-        if (sizeInKB < 1024) {
-          formattedSize = `${sizeInKB.toFixed(1)} KB`;
-        } else {
-          const sizeInMB = sizeInKB / 1024;
-          formattedSize = `${sizeInMB.toFixed(1)} MB`;
-        }
-
-        // Get file extension
-        const fileExtension = file.name.split('.').pop().toUpperCase();
-
-        return {
-          file,
-          preview: URL.createObjectURL(file),
-          name: file.name,
-          size: file.size,
-          formattedSize,
-          extension: fileExtension
-        };
-      });
-
-      setAttachments([...attachments, ...newAttachments]);
-
-      if (errors.attachments) {
-        setErrors({ ...errors, attachments: null });
+    const remainingSlots = 3 - attachments.length;
+    if (remainingSlots <= 0) return;
+    const allowedFiles = filteredFiles.slice(0, remainingSlots);
+    const currentTotalSize = attachments.reduce((sum, att) => sum + att.size, 0);
+    const newFiles = [];
+    let newTotalSize = currentTotalSize;
+    for (const file of allowedFiles) {
+      if (newTotalSize + file.size <= 2 * 1024 * 1024) {
+        newTotalSize += file.size;
+        newFiles.push(file);
+      } else {
+        break;
       }
     }
+    if (newFiles.length === 0) {
+      setErrors({ ...errors, attachments: "Ukuran total upload tidak boleh lebih dari 2 MB." });
+      return;
+    }
+    const newAttachments = newFiles.map((file) => {
+      const sizeInKB = file.size / 1024;
+      const formattedSize = sizeInKB < 1024
+        ? `${sizeInKB.toFixed(1)} KB`
+        : `${(sizeInKB / 1024).toFixed(1)} MB`;
+      const fileExtension = file.name.split('.').pop().toUpperCase();
+
+      return {
+        file,
+        preview: URL.createObjectURL(file),
+        name: file.name,
+        size: file.size,
+        formattedSize,
+        extension: fileExtension
+      };
+    });
+    setAttachments([...attachments, ...newAttachments]);
+    if (errors.attachments) {
+      setErrors({ ...errors, attachments: null });
+    }
+    event.target.value = '';
   };
 
-  // Remove attachment
   const removeAttachment = (indexToRemove) => {
     setAttachments(attachments.filter((_, index) => index !== indexToRemove));
   };
 
-  // Handle save with confirmation
   const handleSave = () => {
     if (window.confirm("Apakah Anda yakin ingin menyimpan product service ini?")) {
-      goNext(); // Proceed to next step if confirmed
+      goNext();
     }
-  };  // Handle input change for Basic package
+  };
+
   const handleBasicChange = (field, value) => {
+    let newValue = value;
+    const numberFields = ['konsep', 'revisi', 'waktu', 'harga'];
+    if (numberFields.includes(field)) {
+      newValue = newValue.replace(/[^0-9]/g, '');
+      if (newValue.length > 1 && newValue.startsWith('0')) {
+        newValue = newValue.replace(/^0+/, '');
+      }
+    }
     setBasicPackage({
       ...basicPackage,
-      [field]: value
+      [field]: newValue
     });
 
-    // Clear error for the field if it exists
-    if (errors[`basic${field.charAt(0).toUpperCase() + field.slice(1)}`]) {
+    const errorKey = `basic${field.charAt(0).toUpperCase() + field.slice(1)}`;
+    if (errors[errorKey]) {
       const updatedErrors = { ...errors };
-      delete updatedErrors[`basic${field.charAt(0).toUpperCase() + field.slice(1)}`];
+      delete updatedErrors[errorKey];
       setErrors(updatedErrors);
     }
   };
 
-  // Handle input change for Advance package
+
   const handleAdvanceChange = (field, value) => {
+    let newValue = value;
+    const numberFields = ['konsep', 'revisi', 'waktu', 'harga'];
+    if (numberFields.includes(field)) {
+      newValue = newValue.replace(/[^0-9]/g, '');
+      if (newValue.length > 1 && newValue.startsWith('0')) {
+        newValue = newValue.replace(/^0+/, '');
+      }
+    }
     setAdvancePackage({
       ...advancePackage,
-      [field]: value
+      [field]: newValue
     });
 
-    // Clear error for the field if it exists
-    if (errors[`advance${field.charAt(0).toUpperCase() + field.slice(1)}`]) {
+    const errorKey = `advance${field.charAt(0).toUpperCase() + field.slice(1)}`;
+    if (errors[errorKey]) {
       const updatedErrors = { ...errors };
-      delete updatedErrors[`advance${field.charAt(0).toUpperCase() + field.slice(1)}`];
+      delete updatedErrors[errorKey];
       setErrors(updatedErrors);
     }
-  };  // Handle price input (numbers only)
-  const handlePriceChange = (packageType, value) => {
-    // Allow all numeric values (no length restriction)
-    const numericValue = value.replace(/[^0-9]/g, "");
+  };
 
+  const handlePriceChange = (packageType, numericValue) => {
     if (packageType === PACKAGE_TYPES.BASIC) {
       handleBasicChange('harga', numericValue);
-
-      // Clear error if exists
       if (errors.basicHarga) {
         const updatedErrors = { ...errors };
         delete updatedErrors.basicHarga;
@@ -371,8 +353,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
       }
     } else {
       handleAdvanceChange('harga', numericValue);
-
-      // Clear error if exists
       if (errors.advanceHarga) {
         const updatedErrors = { ...errors };
         delete updatedErrors.advanceHarga;
@@ -380,7 +360,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
       }
     }
   };
-  // Handle preview functionality
+
   const handlePreview = () => {
     const previewData = {
       title,
@@ -393,26 +373,15 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
         advance: advancePackage
       }
     };
-
-    // Save to localStorage for potential backend use later
     localStorage.setItem('servicePreviewData', JSON.stringify(previewData));
-
-    // Show the preview modal instead of opening a new tab
     setShowPreview(true);
   };
 
-  // Close the preview modal
-  const closePreview = () => {
-    setShowPreview(false);
-  };
-
-  // Handle workflow input changes
   const handleWorkFlowChange = (index, value) => {
     const newWorkFlows = [...workFlows];
     newWorkFlows[index] = value;
     setWorkFlows(newWorkFlows);
 
-    // Clear error for this workflow if it exists
     if (errors[`workflow_${index}`]) {
       const updatedErrors = { ...errors };
       delete updatedErrors[`workflow_${index}`];
@@ -420,19 +389,11 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
     }
   };
 
-  // Add a new workflow input
-  const addWorkFlow = () => {
-    setWorkFlows([...workFlows, ""]);
-  };
-
-  // Remove a workflow input (only for flows beyond the required 3)
   const removeWorkFlow = (index) => {
-    if (index < DEFAULT_WORKFLOW_COUNT) return; // Prevent removing required flows
+    if (index < DEFAULT_WORKFLOW_COUNT) return;
     const newWorkFlows = [...workFlows];
     newWorkFlows.splice(index, 1);
     setWorkFlows(newWorkFlows);
-
-    // Clear any errors associated with removed or shifted workflows
     const updatedErrors = { ...errors };
     for (let i = index; i < workFlows.length; i++) {
       delete updatedErrors[`workflow_${i}`];
@@ -440,7 +401,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
     setErrors(updatedErrors);
   };
 
-  // Animation variants for the modal
   const modalVariants = {
     hidden: {
       opacity: 0,
@@ -493,7 +453,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
 
   return (
     <>
-      {/* Modal Overlay with Animation */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -521,9 +480,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   className="w-9 h-9 cursor-pointer"
                 />
               </nav>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto">{/* Stepper */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
                 <div className="px-8 py-6">
                   <div className="flex justify-between items-center relative">
                     {steps.map((label, index) => {
@@ -539,17 +496,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           onClick={() => handleStepClick(current)}
                           style={{ cursor: isClickable ? "pointer" : "default" }}
                         >
-                          {/* Step Circle */}
                           <div
                             className={`rounded-full flex items-center justify-center w-8 h-8 mb-2
-                                            ${isActive
+                              ${isActive
                                 ? "bg-blue-500 border-2 border-[#2E5077]"
                                 : isCompleted
                                   ? "bg-green-500"
                                   : "bg-gray-200"
                               }
-                                            ${isClickable ? "hover:shadow-md transition-shadow" : ""}
-                                        `}
+                              ${isClickable ? "hover:shadow-md transition-shadow" : ""}
+                            `}
                           >
                             <span
                               className={
@@ -560,31 +516,25 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 ? "✓"
                                 : current < 10
                                   ? `0${current}`
-                                  : current}
+                                  : current
+                              }
                             </span>
                           </div>
-
-                          {/* Step Label */}
                           <span
-                            className={`text-xs ${isActive ? "text-blue-500 font-Archivo font-bold" : "text-gray-500"
-                              }`}
+                            className={`text-xs ${isActive ? "text-blue-500 font-Archivo font-bold" : "text-gray-500"}`}
                           >
                             {label}
                           </span>
-
                           {index < steps.length - 1 && (
                             <div className="absolute top-4 left-[60%] w-[80%] px-1">
                               <div
-                                className={`h-0.5 ${isCompleted ? "bg-green-500" : "bg-gray-300"
-                                  }`}
+                                className={`h-0.5 ${isCompleted ? "bg-green-500" : "bg-gray-300"}`}
                               ></div>
                             </div>
                           )}
                         </div>
                       );
                     })}
-
-                    {/* Progress Bar */}
                     <div className="absolute top-4 h-0.5 bg-gray-200 w-full -z-1">
                       <div
                         className="h-full bg-blue-500"
@@ -594,7 +544,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   </div>
                 </div>
 
-                {/* Step Content - For Title Step */}
                 {step === 1 && (
                   <div className="px-8 py-4 h-[40vh]">
                     <h3 className="text-center font-Archivo text-[32px]">
@@ -607,13 +556,13 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                     <div className="flex flex-col md:flex-row gap-4 px-4 py-4 border border-gray-300 rounded-md">
                       <div className="flex-1 mb-6">
                         <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                          Title here:
+                          Title
                         </label>
                         <input
                           type="text"
                           className={`w-full px-3 py-2 border ${errors.title ? "border-red-500" : "border-gray-400"
                             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                          placeholder="Your Title here"
+                          placeholder="Ketik judul disini"
                           value={title}
                           onChange={(e) => {
                             setTitle(e.target.value);
@@ -628,17 +577,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           </p>
                         )}
                       </div>
-
                       <div className="flex-1 mb-6">
                         <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                          Services Category (Maximum 2):
+                          Category (Maximum 2)
                         </label>
                         <div className="relative" ref={dropdownRef}>
                           <input
                             type="text"
                             className={`w-full px-3 py-2 border ${errors.category ? "border-red-500" : "border-gray-400"
                               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                            placeholder="Search Category"
+                            placeholder={selectedTags.length >= 2 ? "Pilihan Category Sudah Penuh" : "Search Category"}
                             value={searchCategory}
                             disabled={selectedTags.length >= 2}
                             onChange={(e) => {
@@ -694,20 +642,21 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                     <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
                       Tambahkan Gambar pada product servicemu
                     </p>
-
                     <div className="px-4 py-4 border border-gray-300 rounded-md">
                       <div className="mb-6">
-                        {attachments.length < 4 ? (
+                        {attachments.length < 3 ? (
                           <div
                             className="border-2 border-dashed border-gray-300 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50"
-                            onClick={() => fileInputRef.current.click()}
+                            onClick={() => {
+                              fileInputRef.current.click();
+                            }}
                           >
                             <input
                               type="file"
                               className="hidden"
                               ref={fileInputRef}
-                              onChange={handleFileUpload}
-                              accept="image/*"
+                              onChange={handleAttachmentsUpload}
+                              accept=".jpg,.png"
                               multiple
                             />
                             <div className="flex flex-col font-inter items-center">
@@ -726,23 +675,23 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 />
                               </svg>
                               <p className="text-gray-700 font-medium">
-                                Click to upload or drag images here
+                                Klik untuk upload gambar
                               </p>
                               <p className="text-gray-500 text-sm mt-1">
-                                Support for JPG, PNG (Max size: 2MB)
+                                Hanya mendukung format JPG dan PNG (Maksimal ukuran: 2MB)
                               </p>
                               <p className="text-gray-500 text-sm mt-1">
-                                {attachments.length} of 3 images uploaded
+                                {attachments.length} dari 3 gambar diupload
                               </p>
                             </div>
                           </div>
                         ) : (
                           <div className="border-2 border-gray-300 rounded-md p-8 text-center bg-gray-50">
                             <p className="text-gray-700 font-medium">
-                              Maximum limit of 3 images reached
+                              Batas 3 gambar tercapai
                             </p>
                             <p className="text-gray-500 text-sm mt-1">
-                              Remove some images to upload more
+                              Hapus beberapa gambar untukk upload gambar lain
                             </p>
                           </div>
                         )}
@@ -752,8 +701,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           </p>
                         )}
                       </div>
-
-                      {/* Display uploaded images */}
                       {attachments.length > 0 && (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                           {attachments.map((attachment, index) => (
@@ -799,7 +746,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   </div>
                 )}
 
-                {/* Step Content - For Description Step */}
                 {step === 3 && (
                   <div className="px-8 py-4">
                     <h3 className="text-center font-Archivo text-[32px]">
@@ -811,19 +757,17 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
 
                     <div className="px-4 py-4 border border-gray-300 rounded-md">
                       <div className="flex flex-col md:flex-row w-full gap-6">
-                        {/* Work Flow Inputs - Left side */}
                         <div className="md:w-1/2">
                           <label className="block font-inter text-[16px] text-[#424956] mb-3">
-                            Work flow:
+                            Work flow (maksimal 7)
                           </label>
-
                           {workFlows.map((flow, index) => (
                             <div key={index} className="mb-3 relative">
                               <input
                                 type="text"
                                 className={`w-full px-3 py-2 border rounded-md ${errors[`workflow_${index}`] ? "border-red-500" : "border-gray-400"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder={`${index === 0 ? 'First flow' : index === 1 ? 'Second flow' : index === 2 ? 'Third flow' : `Flow ${index + 1}`}`}
+                                placeholder={`${index === 0 ? 'Flow 1' : index === 1 ? 'Flow 2' : index === 2 ? 'Flow 3' : `Flow ${index + 1}`}`}
                                 value={flow}
                                 onChange={(e) => handleWorkFlowChange(index, e.target.value)}
                               />
@@ -845,27 +789,28 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                               )}
                             </div>
                           ))}
-
-                          {/* Add Workflow Button */}
                           <div className="flex justify-end mt-2">
-                            <button
-                              onClick={addWorkFlow}
-                              className="flex items-center justify-center p-0 bg-transparent hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
-                            >
-                              <img src={addFlow} alt="Add Flow" className="h-6 w-6" />
-                            </button>
+                            {workFlows.length < 7 &&
+                              <button
+                                onClick={() => {
+                                  setWorkFlows([...workFlows, ""]);
+                                }}
+                                disabled={workFlows.length > 7}
+                                className="flex items-center justify-center p-0 bg-transparent hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+                              >
+                                <img src={addFlow} alt="Add Flow" className="h-6 w-6" />
+                              </button>
+                            }
                           </div>
                         </div>
-
-                        {/* Description - Right side */}
                         <div className="md:w-1/2">
                           <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                            Description:
+                            Deskripsi
                           </label>
                           <textarea
                             className={`w-full px-3 py-2 border ${errors.description ? "border-red-500" : "border-gray-400"
                               } focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md min-h-[200px]`}
-                            placeholder="Describe your service in detail..."
+                            placeholder="Jelaskan produk anda dengan rinci..."
                             value={description}
                             onChange={(e) => {
                               const input = e.target.value;
@@ -883,7 +828,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                             </p>
                           )}
                           <p className={`text-sm mt-1 ${description.length >= 800 ? "text-red-500" : "text-gray-500"}`}>
-                            {description.length}/800 characters
+                            {description.length}/800 karakter
                             <span className="text-xs ml-1">(minimum 50)</span>
                           </p>
                         </div>
@@ -892,7 +837,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   </div>
                 )}
 
-                {/* Step Content - For Price Step */}
                 {step === 4 && (
                   <div className="px-8 py-4">
                     <h3 className="text-center font-Archivo text-[32px]">
@@ -901,42 +845,69 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                     <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
                       Tambahkan harga dan struktur paket product kamu
                     </p>
-                    <div className="border border-gray-300 rounded-md overflow-hidden">
-                      <div className="flex flex-row">
-                        <div className="flex flex-col w-1/2">                    <h3 className="text-center bg-[#1E617A] font-Archivo text-[24px] text-white flex items-center justify-center w-[115px] h-[39px] mx-auto rounded-b-[14px]">
-                          {PACKAGE_TYPES.BASIC}
-                        </h3><div className="px-4 pt-4 pb-2">                    <div className="mb-6">
-                          <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                            {PRICE_STEP_LABELS.KONSEP}:
-                          </label>
-                          <input
-                            type="text"
-                            className={`w-full px-3 py-2 border ${errors.basicKonsep ? "border-red-500" : "border-gray-300"
-                              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                            placeholder="Click Here"
-                            value={basicPackage.konsep}
-                            onChange={(e) => {
-                              handleBasicChange('konsep', e.target.value);
-                              if (errors.basicKonsep) {
-                                setErrors({ ...errors, basicKonsep: null });
-                              }
-                            }}
-                          />
-                          {errors.basicKonsep && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.basicKonsep}
-                            </p>
-                          )}
-                        </div>                    <div className="mb-6">
+                    <div className="border border-gray-300 rounded-md overflow-auto"
+                      style={{
+                        msOverflowStyle: 'none',
+                        scrollbarWidth: 'none'
+                      }}
+                    >
+                      <div className="flex flex-row h-120">
+                        <div className="flex flex-col w-1/2">
+                          <h3 className="text-center bg-[#1E617A] font-Archivo text-[24px] text-white flex items-center justify-center w-[115px] h-[39px] mx-auto rounded-b-[14px]">
+                            {PACKAGE_TYPES.BASIC}
+                          </h3>
+                          <div className="px-4 pt-4 pb-2">
+                            <div className="mb-3">
+                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                                {PRICE_STEP_LABELS.KONSEP}:
+                              </label>
+                              <input
+                                type="number"
+                                min={0}
+                                className={`w-full px-3 py-2 border ${errors.basicKonsep ? "border-red-500" : "border-gray-300"
+                                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                placeholder="Klik disini"
+                                value={basicPackage.konsep}
+                                onClick={() => {
+                                  if (basicPackage['konsep'] === null) {
+                                    setBasicPackage({
+                                      ...basicPackage,
+                                      ['konsep']: 0
+                                    })
+                                  }
+                                }}
+                                onChange={(e) => {
+                                  handleBasicChange('konsep', e.target.value);
+                                  if (errors.basicKonsep) {
+                                    setErrors({ ...errors, basicKonsep: null });
+                                  }
+                                }}
+                              />
+                              {errors.basicKonsep && (
+                                <p className="text-red-500 text-sm mt-0.5">
+                                  {errors.basicKonsep}
+                                </p>
+                              )}
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.REVISI}:
                               </label>
                               <input
-                                type="text"
+                                type="number"
+                                min={0}
                                 className={`w-full px-3 py-2 border ${errors.basicRevisi ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder="Click Here"
+                                placeholder="Klik disini"
                                 value={basicPackage.revisi}
+                                onClick={() => {
+                                  if (basicPackage['revisi'] === null) {
+                                    setBasicPackage({
+                                      ...basicPackage,
+                                      ['revisi']: 0
+                                    })
+                                  }
+                                }}
                                 onChange={(e) => {
                                   handleBasicChange('revisi', e.target.value);
                                   if (errors.basicRevisi) {
@@ -945,20 +916,30 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.basicRevisi && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.basicRevisi}
                                 </p>
                               )}
-                            </div>                    <div className="mb-6">
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.WAKTU}:
                               </label>
                               <input
-                                type="text"
+                                type="number"
+                                min={0}
                                 className={`w-full px-3 py-2 border ${errors.basicWaktu ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder="Click Here"
+                                placeholder="Klik disini"
                                 value={basicPackage.waktu}
+                                onClick={() => {
+                                  if (basicPackage['waktu'] === null) {
+                                    setBasicPackage({
+                                      ...basicPackage,
+                                      ['waktu']: 0
+                                    })
+                                  }
+                                }}
                                 onChange={(e) => {
                                   handleBasicChange('waktu', e.target.value);
                                   if (errors.basicWaktu) {
@@ -967,42 +948,65 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.basicWaktu && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.basicWaktu}
                                 </p>
                               )}
-                            </div>                    <div className="mb-6">
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.SOURCE}:
                               </label>
-                              <input
-                                type="text"
-                                className={`w-full px-3 py-2 border ${errors.basicSourceFile ? "border-red-500" : "border-gray-300"
-                                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder="Click Here"
+                              <select
+                                className={`w-full px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500
+                                  ${errors.basicSourceFile ? "border-red-500" : "border-gray-300"} 
+                                  ${basicPackage.sourceFile === null ? "text-gray-400" : "text-black"}`
+                                }
                                 value={basicPackage.sourceFile}
+                                onClick={() => {
+                                  if (basicPackage['sourceFile'] === null) {
+                                    setBasicPackage({
+                                      ...basicPackage,
+                                      ['sourceFile']: false
+                                    })
+                                  }
+                                }}
                                 onChange={(e) => {
-                                  handleBasicChange('sourceFile', e.target.value);
+                                  handleBasicChange("sourceFile", e.target.value);
                                   if (errors.basicSourceFile) {
                                     setErrors({ ...errors, basicSourceFile: null });
                                   }
                                 }}
-                              />
+                              >
+                                {basicPackage.sourceFile == null && <option value="">Klik disini</option>}
+                                <option value="true">Ya</option>
+                                <option value="false">Tidak</option>
+                              </select>
                               {errors.basicSourceFile && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.basicSourceFile}
                                 </p>
                               )}
-                            </div>                    <div className="mb-6">
+                            </div>
+                            <div className="">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.HARGA}
-                              </label>                      <div className="relative">
+                              </label>
+                              <div className="relative">
                                 <input
                                   type="text"
                                   className={`w-48 px-3 py-2 border ${errors.basicHarga ? "border-red-500" : "border-gray-300"
                                     } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                  placeholder="Click Here"
+                                  placeholder="Klik disini"
                                   value={basicPackage.harga}
+                                  onClick={() => {
+                                    if (basicPackage['harga'] === null) {
+                                      setBasicPackage({
+                                        ...basicPackage,
+                                        ['harga']: 0
+                                      })
+                                    }
+                                  }}
                                   onChange={(e) => {
                                     handlePriceChange(PACKAGE_TYPES.BASIC, e.target.value);
                                     if (errors.basicHarga) {
@@ -1012,41 +1016,50 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 />
                               </div>
                               {errors.basicHarga && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.basicHarga}
                                 </p>
                               )}
                             </div>
                           </div>
                         </div>
-
-                        <div className="border-r h-[450px] mx-2 translate-y-[40px] border-[#909090]"></div>
-
-                        <div className="flex flex-col w-1/2">                  <h3 className="text-center bg-[#1E617A] font-Archivo text-[24px] text-white flex items-center justify-center w-[115px] h-[39px] mx-auto rounded-b-[14px]">
-                          {PACKAGE_TYPES.ADVANCE}
-                        </h3><div className="px-4 pt-4 pb-2">                    <div className="mb-6">
-                          <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                            {PRICE_STEP_LABELS.KONSEP}:
-                          </label>
-                          <input
-                            type="text"
-                            className={`w-full px-3 py-2 border ${errors.advanceKonsep ? "border-red-500" : "border-gray-300"
-                              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                            placeholder="Click Here"
-                            value={advancePackage.konsep}
-                            onChange={(e) => {
-                              handleAdvanceChange('konsep', e.target.value);
-                              if (errors.advanceKonsep) {
-                                setErrors({ ...errors, advanceKonsep: null });
-                              }
-                            }}
-                          />
-                          {errors.advanceKonsep && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.advanceKonsep}
-                            </p>
-                          )}
-                        </div>                    <div className="mb-6">
+                        <div className="flex flex-col w-1/2">
+                          <h3 className="text-center bg-[#1E617A] font-Archivo text-[24px] text-white flex items-center justify-center w-[115px] h-[39px] mx-auto rounded-b-[14px]">
+                            {PACKAGE_TYPES.ADVANCE}
+                          </h3>
+                          <div className="px-4 pt-4 pb-2">
+                            <div className="mb-3">
+                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                                {PRICE_STEP_LABELS.KONSEP}:
+                              </label>
+                              <input
+                                type="text"
+                                className={`w-full px-3 py-2 border ${errors.advanceKonsep ? "border-red-500" : "border-gray-300"
+                                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                placeholder="Klik disini"
+                                value={advancePackage.konsep}
+                                onClick={() => {
+                                  if (advancePackage['konsep'] === null) {
+                                    setAdvancePackage({
+                                      ...advancePackage,
+                                      ['konsep']: 0
+                                    })
+                                  }
+                                }}
+                                onChange={(e) => {
+                                  handleAdvanceChange('konsep', e.target.value);
+                                  if (errors.advanceKonsep) {
+                                    setErrors({ ...errors, advanceKonsep: null });
+                                  }
+                                }}
+                              />
+                              {errors.advanceKonsep && (
+                                <p className="text-red-500 text-sm mt-0.5">
+                                  {errors.advanceKonsep}
+                                </p>
+                              )}
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.REVISI}:
                               </label>
@@ -1054,8 +1067,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 type="text"
                                 className={`w-full px-3 py-2 border ${errors.advanceRevisi ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder="Click Here"
+                                placeholder="Klik disini"
                                 value={advancePackage.revisi}
+                                onClick={() => {
+                                  if (advancePackage['revisi'] === null) {
+                                    setAdvancePackage({
+                                      ...advancePackage,
+                                      ['revisi']: 0
+                                    })
+                                  }
+                                }}
                                 onChange={(e) => {
                                   handleAdvanceChange('revisi', e.target.value);
                                   if (errors.advanceRevisi) {
@@ -1064,11 +1085,12 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.advanceRevisi && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.advanceRevisi}
                                 </p>
                               )}
-                            </div>                    <div className="mb-6">
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.WAKTU}:
                               </label>
@@ -1076,8 +1098,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 type="text"
                                 className={`w-full px-3 py-2 border ${errors.advanceWaktu ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder="Click Here"
+                                placeholder="Klik disini"
                                 value={advancePackage.waktu}
+                                onClick={() => {
+                                  if (advancePackage['waktu'] === null) {
+                                    setAdvancePackage({
+                                      ...advancePackage,
+                                      ['waktu']: 0
+                                    })
+                                  }
+                                }}
                                 onChange={(e) => {
                                   handleAdvanceChange('waktu', e.target.value);
                                   if (errors.advanceWaktu) {
@@ -1086,42 +1116,65 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.advanceWaktu && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.advanceWaktu}
                                 </p>
                               )}
-                            </div>                    <div className="mb-6">
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.SOURCE}:
                               </label>
-                              <input
-                                type="text"
-                                className={`w-full px-3 py-2 border ${errors.advanceSourceFile ? "border-red-500" : "border-gray-300"
-                                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                placeholder="Click Here"
+                              <select
+                                className={`w-full px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500
+                                  ${errors.advanceSourceFile ? "border-red-500" : "border-gray-300"} 
+                                  ${advancePackage.sourceFile === null ? "text-gray-400" : "text-black"}`
+                                }
                                 value={advancePackage.sourceFile}
+                                onClick={() => {
+                                  if (advancePackage['sourceFile'] === null) {
+                                    setAdvancePackage({
+                                      ...advancePackage,
+                                      ['sourceFile']: false
+                                    })
+                                  }
+                                }}
                                 onChange={(e) => {
-                                  handleAdvanceChange('sourceFile', e.target.value);
+                                  handleAdvanceChange("sourceFile", e.target.value);
                                   if (errors.advanceSourceFile) {
                                     setErrors({ ...errors, advanceSourceFile: null });
                                   }
                                 }}
-                              />
+                              >
+                                {advancePackage.sourceFile === null && <option value="">Klik disini</option>}
+                                <option value="true">Ya</option>
+                                <option value="false">Tidak</option>
+                              </select>
                               {errors.advanceSourceFile && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.advanceSourceFile}
                                 </p>
                               )}
-                            </div>                    <div className="mb-6">
+                            </div>
+                            <div className="mb-3">
                               <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.HARGA}
-                              </label>                      <div className="relative">
+                              </label>
+                              <div className="relative">
                                 <input
                                   type="text"
                                   className={`w-48 px-3 py-2 border ${errors.advanceHarga ? "border-red-500" : "border-gray-300"
                                     } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                  placeholder="Click Here"
+                                  placeholder="Klik disini"
                                   value={advancePackage.harga}
+                                  onClick={() => {
+                                    if (advancePackage['harga'] === null) {
+                                      setAdvancePackage({
+                                        ...advancePackage,
+                                        ['harga']: 0
+                                      })
+                                    }
+                                  }}
                                   onChange={(e) => {
                                     handlePriceChange(PACKAGE_TYPES.ADVANCE, e.target.value);
                                     if (errors.advanceHarga) {
@@ -1131,7 +1184,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 />
                               </div>
                               {errors.advanceHarga && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-sm mt-0.5">
                                   {errors.advanceHarga}
                                 </p>
                               )}
@@ -1143,19 +1196,15 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   </div>
                 )}
 
-                {/* Step Content - For Review Step */}
                 {step === 5 && (
                   <div className="px-8 py-4">
                     <h3 className="text-center font-Archivo text-[32px]">Review the product</h3>
                     <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
                       Mari periksa semua data yg telah kamu isi sebelumnya
                     </p>
-
-
-                    {/* Preview & Save Buttons */}
                     <div className="flex justify-center items-center mt-8 px-4 py-4 border border-gray-300 rounded-md">
                       <div className="text-center">
-                        <p className="mb-3 font-medium text-gray-800">Click Preview button to<br />check your product</p>
+                        <p className="mb-3 font-medium text-gray-800">Klik tombol <strong>Preview</strong> untuk<br />cek produk milikmu</p>
                         <div className="flex space-x-4 mt-3">
                           <button
                             onClick={handlePreview}
@@ -1176,7 +1225,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   </div>
                 )}
 
-                {/* Default content for step 6 - Finish */}
                 {step === 6 && (
                   <div className="relative px-8 py-18 my-10 overflow-hidden">
                     <div className="relative z-10 text-center py-12 -translate-y-32">
@@ -1185,14 +1233,11 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                         Selamat! kamu telah berhasil menambahkan productmu!
                       </p>
                     </div>
-                    {/* Background Image */}
                     <img
                       src={FinishBg}
                       alt="Background"
                       className="absolute inset-0 w-full h-full mt-4 z-0 opacity-80"
                     />
-
-
                   </div>
                 )}
                 {step !== 6 && (
@@ -1215,7 +1260,6 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                       </button>
                     )}
                   </div>
-
                 )}
               </div>
             </motion.div>
@@ -1237,7 +1281,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 advance: advancePackage
               }
             }}
-            onClose={closePreview}
+            onClose={() => setShowPreview(false)}
           />
         )}
       </AnimatePresence>

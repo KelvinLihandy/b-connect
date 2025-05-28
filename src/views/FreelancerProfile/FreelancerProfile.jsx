@@ -691,8 +691,8 @@ const FreelancerProfile = () => {
       <Footer />
 
       <AddService
-        // isOpen={showAddServiceModal}
-        isOpen={true}
+        isOpen={showAddServiceModal}
+        // isOpen={true}
         onClose={() => {setShowAddServiceModal(false)}}
         onCloseAfterSave={async () => {
           await getFreelancerData();

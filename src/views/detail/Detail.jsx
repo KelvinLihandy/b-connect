@@ -460,7 +460,7 @@ const Detail = () => {
             <div className="border-t my-6">
               <h2 className="text-xl font-bold my-2">Workflow Overview</h2>
               <div className="flex flex-col gap-1">
-                {gigDetail?.workflow.map((flows, index) => (
+                {gigDetail?.workflow?.map((flows, index) => (
                   <h3 className="font-bold text-lg">
                     {index + 1}. {flows.flow}
                   </h3>
