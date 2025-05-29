@@ -5,10 +5,6 @@ import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import { AuthContext } from "../../contexts/AuthContext";
 import { userAPI } from "../../constants/APIRoutes";
-import product1 from "../../assets/image 35.png";
-import product2 from "../../assets/image.png";
-import reviewProduct from "../../assets/reviewProduct1.png";
-import reviewProduct2 from "../../assets/reviewProduct2.png";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -17,10 +13,8 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Use AuthContext like in Profile.js
   const { auth } = useContext(AuthContext);
   
-  // Real data from backend
   const [userStats, setUserStats] = useState({
     memberSince: "2020",
     profileCompletion: "0%",
@@ -29,7 +23,6 @@ const UserProfile = () => {
     totalSpent: "Rp 0"
   });
 
-  // Current user data (from AuthContext)
   const [currentUser, setCurrentUser] = useState({
     name: "Loading...",
     email: "Loading...",
@@ -39,7 +32,6 @@ const UserProfile = () => {
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [reviews, setReviews] = useState([]);
   
-  // Pagination state
   const [purchasePagination, setPurchasePagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -54,12 +46,10 @@ const UserProfile = () => {
     hasPrevPage: false
   });
 
-  // Get current user ID from AuthContext (like in Profile.js)
   const getCurrentUserId = () => {
     return auth?.data?.auth?.id || userId;
   };
 
-  // Fetch user profile data using the same pattern as Profile.js
   const fetchUserProfile = async () => {
     const targetUserId = getCurrentUserId();
     if (!targetUserId) return;
@@ -83,7 +73,6 @@ const UserProfile = () => {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      // Fallback to AuthContext data if API fails
       if (auth?.data?.auth) {
         setCurrentUser({
           name: auth.data.auth.name || "User",
@@ -94,12 +83,97 @@ const UserProfile = () => {
     }
   };
 
-  // Load user data on component mount
+  const fetchUserStats = async () => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
+
+    try {
+      const response = await axios.post(
+        `${userAPI}/user-stats/${targetUserId}`,
+        {},
+        {
+          withCredentials: true
+        }
+      );
+      
+      if (response.data && response.data.stats) {
+        setUserStats(response.data.stats);
+      }
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+    }
+  };
+
+  const fetchPurchaseHistory = async (page = 1) => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${userAPI}/purchase-history/${targetUserId}?page=${page}&limit=10`,
+        {},
+        {
+          withCredentials: true
+        }
+      );
+      
+      if (response.data && response.data.purchaseHistory) {
+        const { purchaseHistory, pagination } = response.data;
+        
+        setPurchaseHistory(purchaseHistory);
+        setPurchasePagination({
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          hasNextPage: pagination.hasNextPage,
+          hasPrevPage: pagination.hasPrevPage
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching purchase history:", error);
+      setError("Failed to load purchase history");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReviews = async (page = 1) => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${userAPI}/user-reviews/${targetUserId}?page=${page}&limit=10`,
+        {},
+        {
+          withCredentials: true
+        }
+      );
+      
+      if (response.data && response.data.reviews) {
+        const { reviews, pagination } = response.data;
+        
+        setReviews(reviews);
+        setReviewsPagination({
+          currentPage: pagination.currentPage,  
+          totalPages: pagination.totalPages,
+          hasNextPage: pagination.hasNextPage,
+          hasPrevPage: pagination.hasPrevPage
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      setError("Failed to load reviews");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const loadUserData = async () => {
       setLoading(true);
       try {
-        // First, set user data from AuthContext if available
         if (auth?.data?.auth) {
           setCurrentUser({
             name: auth.data.auth.name || "User",
@@ -108,8 +182,15 @@ const UserProfile = () => {
           });
         }
 
-        // Then try to load detailed user data
         await fetchUserProfile();
+        await fetchUserStats();
+        
+        if (activeTab === "purchase") {
+          await fetchPurchaseHistory(1);
+        } else if (activeTab === "reviews") {
+          await fetchReviews(1);
+        }
+        
       } catch (err) {
         console.error("Error loading user data:", err);
         setError("Failed to load user data");
@@ -119,40 +200,34 @@ const UserProfile = () => {
     };
 
     loadUserData();
-  }, [auth, userId]);
+  }, [auth, userId, activeTab]);
 
-  // Handle tab change
-  const handleTabChange = (tab) => {
+  const handleTabChange = async (tab) => {
     setActiveTab(tab);
     setError(null);
+    
+    if (tab === "purchase" && purchaseHistory.length === 0) {
+      await fetchPurchaseHistory(1);
+    } else if (tab === "reviews" && reviews.length === 0) {
+      await fetchReviews(1);
+    }
   };
 
-  // Handle pagination for purchase history
-  const handlePurchasePagination = (page) => {
-    setPurchasePagination(prev => ({
-      ...prev,
-      currentPage: page
-    }));
+  const handlePurchasePagination = async (page) => {
+    await fetchPurchaseHistory(page);
   };
 
-  // Handle pagination for reviews
-  const handleReviewsPagination = (page) => {
-    setReviewsPagination(prev => ({
-      ...prev,
-      currentPage: page
-    }));
+  const handleReviewsPagination = async (page) => {
+    await fetchReviews(page);
   };
 
-  // Handle settings navigation
   const handleSettingsClick = () => {
     navigate('/profile');
   };
 
-  // Enhanced Purchase Card with fallback images
   const PurchaseCard = ({ item }) => (
     <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
       <div className="flex flex-col lg:flex-row">
-        {/* Product Image with fallback */}
         <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
           <img 
             src={item.image || "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image"} 
@@ -164,7 +239,6 @@ const UserProfile = () => {
           />
         </div>
         
-        {/* Content */}
         <div className="flex-1 p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
@@ -232,7 +306,6 @@ const UserProfile = () => {
               </div>
             </div>
             
-            {/* Price and Actions */}
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
@@ -262,11 +335,9 @@ const UserProfile = () => {
     </div>
   );
 
-  // Enhanced Review Card 
   const ReviewCard = ({ review }) => (
     <div className="group relative bg-white rounded-xl p-8 border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Product Image with fallback */}
         <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
           <img 
             src={review.image || "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image"} 
@@ -278,7 +349,6 @@ const UserProfile = () => {
           />
         </div>
         
-        {/* Content */}
         <div className="flex-1">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
@@ -339,7 +409,6 @@ const UserProfile = () => {
               </div>
             </div>
             
-            {/* Price and Actions */}
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
@@ -358,14 +427,12 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Review Text */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <p className="text-gray-700 leading-relaxed text-sm">
               {review.reviewText}
             </p>
           </div>
           
-          {/* Review Footer */}
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center gap-4">
               <button className="flex items-center gap-1 hover:text-[#2E5077] transition-colors">
@@ -421,14 +488,12 @@ const UserProfile = () => {
     </div>
   );
 
-  // Loading component
   const LoadingSpinner = () => (
     <div className="flex justify-center items-center py-16">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E5077]"></div>
     </div>
   );
 
-  // Error component
   const ErrorMessage = ({ message }) => (
     <div className="text-center py-16">
       <div className="text-red-500 text-xl mb-4">⚠️</div>
@@ -447,12 +512,10 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <Navbar />
 
-      {/* Enhanced spacing from navbar */}
       <div className="h-32"></div>
 
       <div className="w-full px-4 lg:px-8 xl:px-12 2xl:px-16">
         <div className="max-w-none bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden">
-          {/* Enhanced Profile Header - Dynamic User Data from AuthContext */}
           <div className="relative overflow-hidden bg-gradient-to-br from-[#2E5077] via-[#2F5379] to-[#2E5077] p-8 text-white">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#2E90EB] opacity-15 rounded-full blur-2xl"></div>
@@ -477,7 +540,6 @@ const UserProfile = () => {
                   </div>
                 </div>
                 <div>
-                  {/* Dynamic User Information from AuthContext */}
                   <h1 className="text-3xl font-bold mb-2 tracking-tight">{currentUser.name}</h1>
                   <p className="text-lg opacity-90 font-medium mb-1">{currentUser.email}</p>
                   <p className="text-sm opacity-75">Member since {currentUser.memberSince} • Premium User</p>
@@ -505,7 +567,6 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Stats Section */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-8 bg-gradient-to-br from-gray-50/50 to-white">
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📅</div>
@@ -538,7 +599,6 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Tab Navigation */}
           <div className="px-8 pt-6">
             <div className="flex justify-start">
               <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
@@ -566,7 +626,6 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Tab Content */}
           <div className="p-8">
             {loading ? (
               <LoadingSpinner />
@@ -636,7 +695,6 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Enhanced spacing to footer */}
       <div className="h-32"></div>
 
       <Footer />
