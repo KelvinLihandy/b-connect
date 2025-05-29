@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
-import { AuthContext } from "../../contexts/AuthContext"; // Import AuthContext
-import { userAPI } from "../../constants/APIRoutes"; // Import API routes
+import { AuthContext } from "../../contexts/AuthContext";
+import { userAPI } from "../../constants/APIRoutes";
 import product1 from "../../assets/image 35.png";
 import product2 from "../../assets/image.png";
 import reviewProduct from "../../assets/reviewProduct1.png";
@@ -17,11 +17,8 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Use AuthContext like in ProfileUser.js
+  // Use AuthContext like in Profile.js
   const { auth } = useContext(AuthContext);
-  
-  // API Base URL
-  const API_BASE_URL = 'http://localhost:5000/api';
   
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -57,123 +54,49 @@ const UserProfile = () => {
     hasPrevPage: false
   });
 
-  // Get current user ID from AuthContext (like in ProfileUser.js)
+  // Get current user ID from AuthContext (like in Profile.js)
   const getCurrentUserId = () => {
     return auth?.data?.auth?.id || userId;
   };
 
-  // API Functions - Updated to use axios
-  const fetchCurrentUser = async (targetUserId) => {
+  // Fetch user profile data using the same pattern as Profile.js
+  const fetchUserProfile = async () => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
+
     try {
       const response = await axios.post(
         `${userAPI}/get-user/${targetUserId}`,
         {},
         {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          withCredentials: true
         }
       );
       
-      return response.data.user;
+      if (response.data && response.data.user) {
+        const user = response.data.user;
+        setCurrentUser({
+          name: user.name || auth?.data?.auth?.name || "User",
+          email: user.email || auth?.data?.auth?.email || "",
+          memberSince: user.joinedDate ? new Date(user.joinedDate).getFullYear().toString() : "2020"
+        });
+      }
     } catch (error) {
-      console.error('Error fetching current user:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
+      console.error("Error fetching user data:", error);
+      // Fallback to AuthContext data if API fails
+      if (auth?.data?.auth) {
+        setCurrentUser({
+          name: auth.data.auth.name || "User",
+          email: auth.data.auth.email || "",
+          memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
+        });
+      }
     }
   };
 
-  const fetchUserStats = async (targetUserId) => {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/user/${targetUserId}/stats`,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return response.data.stats;
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
-    }
-  };
-
-  const fetchPurchaseHistory = async (targetUserId, page = 1, limit = 4) => {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/user/${targetUserId}/purchase-history`,
-        {
-          params: { page, limit },
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return {
-        purchaseHistory: response.data.purchaseHistory,
-        pagination: response.data.pagination
-      };
-    } catch (error) {
-      console.error('Error fetching purchase history:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
-    }
-  };
-
-  const fetchUserReviews = async (targetUserId, page = 1, limit = 2) => {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/user/${targetUserId}/reviews`,
-        {
-          params: { page, limit },
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return {
-        reviews: response.data.reviews,
-        pagination: response.data.pagination
-      };
-    } catch (error) {
-      console.error('Error fetching user reviews:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
-    }
-  };
-
-  // Reset pagination when switching tabs
-  const resetPagination = () => {
-    setPurchasePagination({
-      currentPage: 1,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false
-    });
-    setReviewsPagination({
-      currentPage: 1,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false
-    });
-  };
-
-  // Load current user and stats on component mount
+  // Load user data on component mount
   useEffect(() => {
     const loadUserData = async () => {
-      const targetUserId = getCurrentUserId();
-      if (!targetUserId) return;
-      
       setLoading(true);
       try {
         // First, set user data from AuthContext if available
@@ -185,29 +108,11 @@ const UserProfile = () => {
           });
         }
 
-        // Then load detailed user data
-        const user = await fetchCurrentUser(targetUserId);
-        setCurrentUser({
-          name: user.name || auth?.data?.auth?.name || "User",
-          email: user.email || auth?.data?.auth?.email || "",
-          memberSince: new Date(user.joinedDate).getFullYear().toString()
-        });
-
-        // Load user stats
-        const stats = await fetchUserStats(targetUserId);
-        setUserStats(stats);
+        // Then try to load detailed user data
+        await fetchUserProfile();
       } catch (err) {
         console.error("Error loading user data:", err);
         setError("Failed to load user data");
-        
-        // Fallback to AuthContext data if API fails
-        if (auth?.data?.auth) {
-          setCurrentUser({
-            name: auth.data.auth.name || "User",
-            email: auth.data.auth.email || "",
-            memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
-          });
-        }
       } finally {
         setLoading(false);
       }
@@ -216,77 +121,10 @@ const UserProfile = () => {
     loadUserData();
   }, [auth, userId]);
 
-  // Load purchase history when tab changes or pagination changes
-  useEffect(() => {
-    const loadPurchaseHistory = async () => {
-      const targetUserId = getCurrentUserId();
-      if (!targetUserId || activeTab !== "purchase") return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchPurchaseHistory(
-          targetUserId, 
-          purchasePagination.currentPage, 
-          4
-        );
-        setPurchaseHistory(data.purchaseHistory);
-        setPurchasePagination({
-          currentPage: data.pagination.currentPage,
-          totalPages: data.pagination.totalPages,
-          hasNextPage: data.pagination.hasNextPage,
-          hasPrevPage: data.pagination.hasPrevPage
-        });
-      } catch (err) {
-        console.error("Error loading purchase history:", err);
-        setError("Failed to load purchase history");
-        setPurchaseHistory([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPurchaseHistory();
-  }, [auth, userId, activeTab, purchasePagination.currentPage]);
-
-  // Load reviews when tab changes or pagination changes
-  useEffect(() => {
-    const loadReviews = async () => {
-      const targetUserId = getCurrentUserId();
-      if (!targetUserId || activeTab !== "reviews") return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchUserReviews(
-          targetUserId, 
-          reviewsPagination.currentPage, 
-          2
-        );
-        setReviews(data.reviews);
-        setReviewsPagination({
-          currentPage: data.pagination.currentPage,
-          totalPages: data.pagination.totalPages,
-          hasNextPage: data.pagination.hasNextPage,
-          hasPrevPage: data.pagination.hasPrevPage
-        });
-      } catch (err) {
-        console.error("Error loading reviews:", err);
-        setError("Failed to load reviews");
-        setReviews([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadReviews();
-  }, [auth, userId, activeTab, reviewsPagination.currentPage]);
-
   // Handle tab change
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setError(null);
-    resetPagination();
   };
 
   // Handle pagination for purchase history
@@ -305,7 +143,7 @@ const UserProfile = () => {
     }));
   };
 
-  // Handle settings navigation - UPDATED TO NAVIGATE TO /profile
+  // Handle settings navigation
   const handleSettingsClick = () => {
     navigate('/profile');
   };
@@ -317,11 +155,11 @@ const UserProfile = () => {
         {/* Product Image with fallback */}
         <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
           <img 
-            src={item.image || product1} 
+            src={item.image || "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image"} 
             alt={item.title}
             className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
             onError={(e) => {
-              e.target.src = product1;
+              e.target.src = "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image";
             }}
           />
         </div>
@@ -431,11 +269,11 @@ const UserProfile = () => {
         {/* Product Image with fallback */}
         <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
           <img 
-            src={review.image || reviewProduct} 
+            src={review.image || "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image"} 
             alt={review.title}
             className="w-full h-full object-cover rounded-lg border border-gray-200"
             onError={(e) => {
-              e.target.src = reviewProduct;
+              e.target.src = "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image";
             }}
           />
         </div>
