@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/navbar/Navbar";
@@ -46,11 +46,25 @@ const UserProfile = () => {
     hasPrevPage: false
   });
 
-  const getCurrentUserId = () => {
+  // Memoize getCurrentUserId to prevent unnecessary re-renders
+  const getCurrentUserId = useCallback(() => {
     return auth?.data?.auth?.id || userId;
-  };
+  }, [auth?.data?.auth?.id, userId]);
 
-  const fetchUserProfile = async () => {
+  // Memoize fallback image URL
+  const fallbackImage = useMemo(() => {
+    // Use a data URL instead of external placeholder to avoid network requests
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIyNCIgdmlld0JveD0iMCAwIDMyMCAyMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMzMuNSA5OEMxMzMuNSA5NC4xMzQgMTM2LjYzNCA5MSAxNDAuNSA5MUgxNzkuNUMxODMuMzY2IDkxIDE86LjUgOTQuMTM0IDE4Ni41IDk4VjEyNkMxODYuNSAxMjkuODY2IDE4My4zNjYgMTMzIDE3OS41IDEzM0gxNDAuNUMxMzYuNjM0IDEzMyAxMzMuNSAxMjkuODY2IDEzMy41IDEyNlY5OFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxNiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgM0MxIDIuNDQ3NzIgMS40NDc3MiAyIDIgMkgxNEMxNC41NTIzIDIgMTUgMi40NDc3MiAxNSAzVjlDMTUgOS41NTIyOCAxNC41NTIzIDEwIDE0IDEwSDJDMS40NDc3MiAxMCAxIDkuNTUyMjggMSA5VjNaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNOSA3TDEyIDQiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE2MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
+  }, []);
+
+  // Memoize image error handler to prevent recreation on every render
+  const handleImageError = useCallback((e) => {
+    if (e.target.src !== fallbackImage) {
+      e.target.src = fallbackImage;
+    }
+  }, [fallbackImage]);
+
+  const fetchUserProfile = useCallback(async () => {
     const targetUserId = getCurrentUserId();
     if (!targetUserId) return;
 
@@ -81,9 +95,9 @@ const UserProfile = () => {
         });
       }
     }
-  };
+  }, [getCurrentUserId, auth?.data?.auth]);
 
-  const fetchUserStats = async () => {
+  const fetchUserStats = useCallback(async () => {
     const targetUserId = getCurrentUserId();
     if (!targetUserId) return;
 
@@ -102,9 +116,9 @@ const UserProfile = () => {
     } catch (error) {
       console.error("Error fetching user stats:", error);
     }
-  };
+  }, [getCurrentUserId]);
 
-  const fetchPurchaseHistory = async (page = 1) => {
+  const fetchPurchaseHistory = useCallback(async (page = 1) => {
     const targetUserId = getCurrentUserId();
     if (!targetUserId) return;
 
@@ -135,9 +149,9 @@ const UserProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getCurrentUserId]);
 
-  const fetchReviews = async (page = 1) => {
+  const fetchReviews = useCallback(async (page = 1) => {
     const targetUserId = getCurrentUserId();
     if (!targetUserId) return;
 
@@ -168,10 +182,11 @@ const UserProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getCurrentUserId]);
 
+  // Initial data loading effect - only run once when component mounts or auth changes
   useEffect(() => {
-    const loadUserData = async () => {
+    const loadInitialData = async () => {
       setLoading(true);
       try {
         if (auth?.data?.auth) {
@@ -182,14 +197,10 @@ const UserProfile = () => {
           });
         }
 
-        await fetchUserProfile();
-        await fetchUserStats();
-        
-        if (activeTab === "purchase") {
-          await fetchPurchaseHistory(1);
-        } else if (activeTab === "reviews") {
-          await fetchReviews(1);
-        }
+        await Promise.all([
+          fetchUserProfile(),
+          fetchUserStats()
+        ]);
         
       } catch (err) {
         console.error("Error loading user data:", err);
@@ -199,10 +210,23 @@ const UserProfile = () => {
       }
     };
 
-    loadUserData();
-  }, [auth, userId, activeTab]);
+    loadInitialData();
+  }, [auth?.data?.auth?.id, userId]); // Only depend on stable auth ID and userId
 
-  const handleTabChange = async (tab) => {
+  // Separate effect for tab-specific data loading
+  useEffect(() => {
+    const loadTabData = async () => {
+      if (activeTab === "purchase" && purchaseHistory.length === 0) {
+        await fetchPurchaseHistory(1);
+      } else if (activeTab === "reviews" && reviews.length === 0) {
+        await fetchReviews(1);
+      }
+    };
+
+    loadTabData();
+  }, [activeTab]); // Only depend on activeTab
+
+  const handleTabChange = useCallback(async (tab) => {
     setActiveTab(tab);
     setError(null);
     
@@ -211,31 +235,30 @@ const UserProfile = () => {
     } else if (tab === "reviews" && reviews.length === 0) {
       await fetchReviews(1);
     }
-  };
+  }, [purchaseHistory.length, reviews.length, fetchPurchaseHistory, fetchReviews]);
 
-  const handlePurchasePagination = async (page) => {
+  const handlePurchasePagination = useCallback(async (page) => {
     await fetchPurchaseHistory(page);
-  };
+  }, [fetchPurchaseHistory]);
 
-  const handleReviewsPagination = async (page) => {
+  const handleReviewsPagination = useCallback(async (page) => {
     await fetchReviews(page);
-  };
+  }, [fetchReviews]);
 
-  const handleSettingsClick = () => {
+  const handleSettingsClick = useCallback(() => {
     navigate('/profile');
-  };
+  }, [navigate]);
 
-  const PurchaseCard = ({ item }) => (
+  const PurchaseCard = React.memo(({ item }) => (
     <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
       <div className="flex flex-col lg:flex-row">
         <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
           <img 
-            src={item.image || "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image"} 
+            src={item.image || fallbackImage} 
             alt={item.title}
             className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
-            onError={(e) => {
-              e.target.src = "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image";
-            }}
+            onError={handleImageError}
+            loading="lazy"
           />
         </div>
         
@@ -333,19 +356,18 @@ const UserProfile = () => {
         </div>
       </div>
     </div>
-  );
+  ));
 
-  const ReviewCard = ({ review }) => (
+  const ReviewCard = React.memo(({ review }) => (
     <div className="group relative bg-white rounded-xl p-8 border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
           <img 
-            src={review.image || "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image"} 
+            src={review.image || fallbackImage} 
             alt={review.title}
             className="w-full h-full object-cover rounded-lg border border-gray-200"
-            onError={(e) => {
-              e.target.src = "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image";
-            }}
+            onError={handleImageError}
+            loading="lazy"
           />
         </div>
         
@@ -447,9 +469,9 @@ const UserProfile = () => {
         </div>
       </div>
     </div>
-  );
+  ));
 
-  const PaginationControls = ({ pagination, onPageChange }) => (
+  const PaginationControls = React.memo(({ pagination, onPageChange }) => (
     <div className="flex justify-center items-center gap-2.5 mt-12">
       <button 
         onClick={() => onPageChange(pagination.currentPage - 1)}
@@ -486,15 +508,15 @@ const UserProfile = () => {
         ›
       </button>
     </div>
-  );
+  ));
 
-  const LoadingSpinner = () => (
+  const LoadingSpinner = React.memo(() => (
     <div className="flex justify-center items-center py-16">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E5077]"></div>
     </div>
-  );
+  ));
 
-  const ErrorMessage = ({ message }) => (
+  const ErrorMessage = React.memo(({ message }) => (
     <div className="text-center py-16">
       <div className="text-red-500 text-xl mb-4">⚠️</div>
       <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
@@ -506,7 +528,7 @@ const UserProfile = () => {
         Retry
       </button>
     </div>
-  );
+  ));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
