@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
-import { AuthContext } from "../../contexts/AuthContext"; // Import AuthContext
-import { userAPI } from "../../constants/APIRoutes"; // Import API routes
+import { AuthContext } from "../../contexts/AuthContext";
+import { userAPI } from "../../constants/APIRoutes";
 import product1 from "../../assets/image 35.png";
 import product2 from "../../assets/image.png";
 import reviewProduct from "../../assets/reviewProduct1.png";
@@ -16,13 +16,10 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("purchase");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Use AuthContext like in ProfileUser.js
+
+  // Use AuthContext like in Profile.js
   const { auth } = useContext(AuthContext);
-  
-  // API Base URL
-  const API_BASE_URL = 'http://localhost:5000/api';
-  
+
   // Real data from backend
   const [userStats, setUserStats] = useState({
     memberSince: "2020",
@@ -38,10 +35,10 @@ const UserProfile = () => {
     email: "Loading...",
     memberSince: "2020"
   });
-  
+
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [reviews, setReviews] = useState([]);
-  
+
   // Pagination state
   const [purchasePagination, setPurchasePagination] = useState({
     currentPage: 1,
@@ -57,123 +54,49 @@ const UserProfile = () => {
     hasPrevPage: false
   });
 
-  // Get current user ID from AuthContext (like in ProfileUser.js)
+  // Get current user ID from AuthContext (like in Profile.js)
   const getCurrentUserId = () => {
     return auth?.data?.auth?.id || userId;
   };
 
-  // API Functions - Updated to use axios
-  const fetchCurrentUser = async (targetUserId) => {
+  // Fetch user profile data using the same pattern as Profile.js
+  const fetchUserProfile = async () => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
+
     try {
       const response = await axios.post(
         `${userAPI}/get-user/${targetUserId}`,
         {},
         {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          withCredentials: true
         }
       );
-      
-      return response.data.user;
+
+      if (response.data && response.data.user) {
+        const user = response.data.user;
+        setCurrentUser({
+          name: user.name || auth?.data?.auth?.name || "User",
+          email: user.email || auth?.data?.auth?.email || "",
+          memberSince: user.joinedDate ? new Date(user.joinedDate).getFullYear().toString() : "2020"
+        });
+      }
     } catch (error) {
-      console.error('Error fetching current user:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
+      console.error("Error fetching user data:", error);
+      // Fallback to AuthContext data if API fails
+      if (auth?.data?.auth) {
+        setCurrentUser({
+          name: auth.data.auth.name || "User",
+          email: auth.data.auth.email || "",
+          memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
+        });
+      }
     }
   };
 
-  const fetchUserStats = async (targetUserId) => {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/user/${targetUserId}/stats`,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return response.data.stats;
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
-    }
-  };
-
-  const fetchPurchaseHistory = async (targetUserId, page = 1, limit = 4) => {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/user/${targetUserId}/purchase-history`,
-        {
-          params: { page, limit },
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return {
-        purchaseHistory: response.data.purchaseHistory,
-        pagination: response.data.pagination
-      };
-    } catch (error) {
-      console.error('Error fetching purchase history:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
-    }
-  };
-
-  const fetchUserReviews = async (targetUserId, page = 1, limit = 2) => {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/user/${targetUserId}/reviews`,
-        {
-          params: { page, limit },
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      return {
-        reviews: response.data.reviews,
-        pagination: response.data.pagination
-      };
-    } catch (error) {
-      console.error('Error fetching user reviews:', error);
-      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
-      throw new Error(errorMessage);
-    }
-  };
-
-  // Reset pagination when switching tabs
-  const resetPagination = () => {
-    setPurchasePagination({
-      currentPage: 1,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false
-    });
-    setReviewsPagination({
-      currentPage: 1,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false
-    });
-  };
-
-  // Load current user and stats on component mount
+  // Load user data on component mount
   useEffect(() => {
     const loadUserData = async () => {
-      const targetUserId = getCurrentUserId();
-      if (!targetUserId) return;
-      
       setLoading(true);
       try {
         // First, set user data from AuthContext if available
@@ -185,29 +108,11 @@ const UserProfile = () => {
           });
         }
 
-        // Then load detailed user data
-        const user = await fetchCurrentUser(targetUserId);
-        setCurrentUser({
-          name: user.name || auth?.data?.auth?.name || "User",
-          email: user.email || auth?.data?.auth?.email || "",
-          memberSince: new Date(user.joinedDate).getFullYear().toString()
-        });
-
-        // Load user stats
-        const stats = await fetchUserStats(targetUserId);
-        setUserStats(stats);
+        // Then try to load detailed user data
+        await fetchUserProfile();
       } catch (err) {
         console.error("Error loading user data:", err);
         setError("Failed to load user data");
-        
-        // Fallback to AuthContext data if API fails
-        if (auth?.data?.auth) {
-          setCurrentUser({
-            name: auth.data.auth.name || "User",
-            email: auth.data.auth.email || "",
-            memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
-          });
-        }
       } finally {
         setLoading(false);
       }
@@ -216,77 +121,10 @@ const UserProfile = () => {
     loadUserData();
   }, [auth, userId]);
 
-  // Load purchase history when tab changes or pagination changes
-  useEffect(() => {
-    const loadPurchaseHistory = async () => {
-      const targetUserId = getCurrentUserId();
-      if (!targetUserId || activeTab !== "purchase") return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchPurchaseHistory(
-          targetUserId, 
-          purchasePagination.currentPage, 
-          4
-        );
-        setPurchaseHistory(data.purchaseHistory);
-        setPurchasePagination({
-          currentPage: data.pagination.currentPage,
-          totalPages: data.pagination.totalPages,
-          hasNextPage: data.pagination.hasNextPage,
-          hasPrevPage: data.pagination.hasPrevPage
-        });
-      } catch (err) {
-        console.error("Error loading purchase history:", err);
-        setError("Failed to load purchase history");
-        setPurchaseHistory([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPurchaseHistory();
-  }, [auth, userId, activeTab, purchasePagination.currentPage]);
-
-  // Load reviews when tab changes or pagination changes
-  useEffect(() => {
-    const loadReviews = async () => {
-      const targetUserId = getCurrentUserId();
-      if (!targetUserId || activeTab !== "reviews") return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchUserReviews(
-          targetUserId, 
-          reviewsPagination.currentPage, 
-          2
-        );
-        setReviews(data.reviews);
-        setReviewsPagination({
-          currentPage: data.pagination.currentPage,
-          totalPages: data.pagination.totalPages,
-          hasNextPage: data.pagination.hasNextPage,
-          hasPrevPage: data.pagination.hasPrevPage
-        });
-      } catch (err) {
-        console.error("Error loading reviews:", err);
-        setError("Failed to load reviews");
-        setReviews([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadReviews();
-  }, [auth, userId, activeTab, reviewsPagination.currentPage]);
-
   // Handle tab change
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setError(null);
-    resetPagination();
   };
 
   // Handle pagination for purchase history
@@ -305,7 +143,7 @@ const UserProfile = () => {
     }));
   };
 
-  // Handle settings navigation - UPDATED TO NAVIGATE TO /profile
+  // Handle settings navigation
   const handleSettingsClick = () => {
     navigate('/profile');
   };
@@ -316,16 +154,16 @@ const UserProfile = () => {
       <div className="flex flex-col lg:flex-row">
         {/* Product Image with fallback */}
         <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
-          <img 
-            src={item.image || product1} 
+          <img
+            src={item.image || "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image"}
             alt={item.title}
             className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
             onError={(e) => {
-              e.target.src = product1;
+              e.target.src = "https://via.placeholder.com/320x224/f5f5f5/9ca3af?text=No+Image";
             }}
           />
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 p-6">
           <div className="flex justify-between items-start mb-4">
@@ -335,15 +173,15 @@ const UserProfile = () => {
                   {item.category}
                 </span>
               </div>
-              
+
               <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
                 {item.title}
               </h3>
-              
+
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                 {item.description}
               </p>
-              
+
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
@@ -360,18 +198,17 @@ const UserProfile = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4 mb-4">
-                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                  item.statusType === "progress"
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${item.statusType === "progress"
                     ? "bg-orange-100 text-orange-800 border border-orange-200"
                     : item.statusType === "delivered"
-                    ? "bg-green-100 text-green-800 border border-green-200"
-                    : "bg-red-100 text-red-800 border border-red-200"
-                }`}>
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : "bg-red-100 text-red-800 border border-red-200"
+                  }`}>
                   {item.status}
                 </span>
-                
+
                 {item.statusType === "delivered" && item.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <span className="text-sm text-gray-600">Your rating:</span>
@@ -385,7 +222,7 @@ const UserProfile = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="text-sm text-gray-500 mb-2">
                 {item.orderNumber} • {item.date}
               </div>
@@ -393,7 +230,7 @@ const UserProfile = () => {
                 {item.deliveryTime}
               </div>
             </div>
-            
+
             {/* Price and Actions */}
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
@@ -401,16 +238,15 @@ const UserProfile = () => {
                   {item.price}
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-2">
-                <button className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                  item.statusType === "progress"
+                <button className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${item.statusType === "progress"
                     ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
                     : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
-                }`}>
+                  }`}>
                   {item.statusType === "progress" ? "View Details" : "Buy Again"}
                 </button>
-                
+
                 {item.statusType === "delivered" && (
                   <button className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300">
                     Contact Seller
@@ -430,16 +266,16 @@ const UserProfile = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Product Image with fallback */}
         <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
-          <img 
-            src={review.image || reviewProduct} 
+          <img
+            src={review.image || "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image"}
             alt={review.title}
             className="w-full h-full object-cover rounded-lg border border-gray-200"
             onError={(e) => {
-              e.target.src = reviewProduct;
+              e.target.src = "https://via.placeholder.com/288x208/f5f5f5/9ca3af?text=No+Image";
             }}
           />
         </div>
-        
+
         {/* Content */}
         <div className="flex-1">
           <div className="flex justify-between items-start mb-4">
@@ -460,11 +296,11 @@ const UserProfile = () => {
                   </span>
                 )}
               </div>
-              
+
               <h3 className="text-xl font-bold text-gray-900 mb-2 leading-tight">
                 {review.title}
               </h3>
-              
+
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
@@ -481,9 +317,9 @@ const UserProfile = () => {
                   </div>
                 </div>
               </div>
-              
+
               <p className="text-sm text-gray-500 mb-4">{review.orderId}</p>
-              
+
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600 font-medium">My Rating:</span>
@@ -496,11 +332,11 @@ const UserProfile = () => {
                   </div>
                   <span className="text-sm text-gray-900 font-semibold ml-1">{review.rating}.0</span>
                 </div>
-                
+
                 <span className="text-sm text-gray-600">• {review.deliveryTime}</span>
               </div>
             </div>
-            
+
             {/* Price and Actions */}
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
@@ -508,7 +344,7 @@ const UserProfile = () => {
                   {review.price}
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-2">
                 <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20">
                   Buy Again
@@ -526,7 +362,7 @@ const UserProfile = () => {
               {review.reviewText}
             </p>
           </div>
-          
+
           {/* Review Footer */}
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center gap-4">
@@ -546,34 +382,33 @@ const UserProfile = () => {
 
   const PaginationControls = ({ pagination, onPageChange }) => (
     <div className="flex justify-center items-center gap-2.5 mt-12">
-      <button 
+      <button
         onClick={() => onPageChange(pagination.currentPage - 1)}
         disabled={!pagination.hasPrevPage}
         className="group w-12 h-12 border-2 border-gray-200 rounded-xl text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-black"
       >
         ‹
       </button>
-      
+
       {[...Array(Math.min(pagination.totalPages, 5))].map((_, index) => {
         const pageNum = index + 1;
         const isActive = pageNum === pagination.currentPage;
-        
+
         return (
-          <button 
+          <button
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
-            className={`w-12 h-12 rounded-xl font-bold text-lg transition-all duration-300 ${
-              isActive 
-                ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-110" 
+            className={`w-12 h-12 rounded-xl font-bold text-lg transition-all duration-300 ${isActive
+                ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-110"
                 : "border-2 border-gray-200 text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] hover:scale-110"
-            }`}
+              }`}
           >
             {pageNum}
           </button>
         );
       })}
-      
-      <button 
+
+      <button
         onClick={() => onPageChange(pagination.currentPage + 1)}
         disabled={!pagination.hasNextPage}
         className="group w-12 h-12 border-2 border-gray-200 rounded-xl text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-black"
@@ -596,7 +431,7 @@ const UserProfile = () => {
       <div className="text-red-500 text-xl mb-4">⚠️</div>
       <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
       <p className="text-gray-500">{message}</p>
-      <button 
+      <button
         onClick={() => window.location.reload()}
         className="mt-4 bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
       >
@@ -618,7 +453,7 @@ const UserProfile = () => {
           <div className="relative overflow-hidden bg-gradient-to-br from-[#2E5077] via-[#2F5379] to-[#2E5077] p-8 text-white">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#2E90EB] opacity-15 rounded-full blur-2xl"></div>
-            
+
             <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
                 <div className="group relative">
@@ -645,8 +480,8 @@ const UserProfile = () => {
                   <p className="text-sm opacity-75">Member since {currentUser.memberSince} • Premium User</p>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleSettingsClick}
                 className="group bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-3 text-white hover:bg-white/25 transition-all duration-300 hover:scale-110"
               >
@@ -674,25 +509,25 @@ const UserProfile = () => {
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Member Since</span>
               <span className="text-lg font-bold text-gray-900">{userStats.memberSince}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📋</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Profile</span>
               <span className="text-lg font-bold text-green-600">{userStats.profileCompletion}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">🎫</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Vouchers</span>
               <span className="text-lg font-bold text-blue-600">{userStats.activeVouchers}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📦</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Orders</span>
               <span className="text-lg font-bold text-purple-600">{userStats.totalOrders}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">💰</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Total Spent</span>
@@ -705,21 +540,19 @@ const UserProfile = () => {
             <div className="flex justify-start">
               <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
                 <button
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${
-                    activeTab === "purchase"
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${activeTab === "purchase"
                       ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
-                  }`}
+                    }`}
                   onClick={() => handleTabChange("purchase")}
                 >
                   Purchase History
                 </button>
                 <button
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${
-                    activeTab === "reviews"
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${activeTab === "reviews"
                       ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
-                  }`}
+                    }`}
                   onClick={() => handleTabChange("reviews")}
                 >
                   My Reviews
@@ -744,9 +577,9 @@ const UserProfile = () => {
                           <PurchaseCard key={item.id} item={item} />
                         ))}
                         {purchasePagination.totalPages > 1 && (
-                          <PaginationControls 
-                            pagination={purchasePagination} 
-                            onPageChange={handlePurchasePagination} 
+                          <PaginationControls
+                            pagination={purchasePagination}
+                            onPageChange={handlePurchasePagination}
                           />
                         )}
                       </>
@@ -771,9 +604,9 @@ const UserProfile = () => {
                           <ReviewCard key={review.id} review={review} />
                         ))}
                         {reviewsPagination.totalPages > 1 && (
-                          <PaginationControls 
-                            pagination={reviewsPagination} 
-                            onPageChange={handleReviewsPagination} 
+                          <PaginationControls
+                            pagination={reviewsPagination}
+                            onPageChange={handleReviewsPagination}
                           />
                         )}
                       </>
@@ -782,7 +615,7 @@ const UserProfile = () => {
                         <div className="text-gray-400 text-8xl mb-6">⭐</div>
                         <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Reviews Yet</h3>
                         <p className="text-gray-500 text-lg">You haven't written any reviews yet.</p>
-                        <button 
+                        <button
                           className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors"
                           onClick={() => handleTabChange("purchase")}
                         >
@@ -797,9 +630,6 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
-
-      {/* Enhanced spacing to footer */}
-      <div className="h-32"></div>
 
       <Footer />
     </div>
