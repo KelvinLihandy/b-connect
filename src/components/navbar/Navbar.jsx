@@ -317,17 +317,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                             >
                               My Freelancer Profile
                             </button>
-                            <button
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                navigate(`/freelancer-gigs/create`);
-                                setShowUserDropdown(false);
-                              }}
-                            >
-                              Create New Gig
-                            </button>
                           </>
                         ) : (
                           <button
