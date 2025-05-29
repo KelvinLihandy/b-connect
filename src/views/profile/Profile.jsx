@@ -365,7 +365,7 @@ const Profile = () => {
     }
   };
 
-  const handleChangeAccount = async () => {
+  const handleChangePaymentNumber = async () => {
     setPaymentNumberError("");
     if (!paymentPhoneNumber) {
       setPaymentNumberError("Nomor pembayaran harus diisi");
@@ -395,33 +395,6 @@ const Profile = () => {
         setPaymentNumberError(error.response.data.error);
       } else {
         setPaymentNumberError("Gagal memperbarui nomor pembayaran. Silakan coba lagi.");
-      }
-    } finally {
-      setIsPaymentUpdating(false);
-    }
-  };
-
-  const handleDisconnectAccount = async () => {
-    if (!window.confirm("Apakah Anda yakin ingin memutuskan koneksi akun pembayaran?")) {
-      return;
-    }
-    setIsPaymentUpdating(true);
-    try {
-      const response = await axios.patch(`${userAPI}/update-payment-number`,
-        { paymentNumber: "" },
-        { withCredentials: true }
-      );
-      if (response.data && response.data.user) {
-        setPaymentPhoneNumber("");
-      }
-    } catch (error) {
-      console.error("Error disconnecting payment account:", error);
-      if (error.message.includes('Network Error') || error.response?.status === 0) {
-        alert("Terjadi masalah koneksi ke server. Periksa apakah CORS diatur dengan benar di backend.");
-      } else if (error.response?.data?.error) {
-        setPaymentNumberError(error.response.data.error);
-      } else {
-        setPaymentNumberError("Gagal memutuskan koneksi. Silakan coba lagi.");
       }
     } finally {
       setIsPaymentUpdating(false);
@@ -655,17 +628,10 @@ const Profile = () => {
             <div className="">
               <button
                 className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
-                onClick={handleChangeAccount}
+                onClick={handleChangePaymentNumber}
                 disabled={isPaymentUpdating}
               >
-                {isPaymentUpdating ? 'Memproses...' : 'Ganti Akun'}
-              </button>
-              <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer"
-                onClick={handleDisconnectAccount}
-                disabled={isPaymentUpdating}
-              >
-                {isPaymentUpdating ? 'Memproses...' : 'Putuskan Koneksi'}
+                {isPaymentUpdating ? 'Memproses...' : 'Ubah Nomor'}
               </button>
             </div>
           </div>
@@ -998,21 +964,6 @@ const Profile = () => {
                   Account Security
                 </span>
               </div>
-              {/* <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "pushNotification" ? "bg-[#DFDFDF]" : ""
-                  }`}
-                onClick={() => setActiveContent("pushNotification")}
-              >
-                <img src={PushNotification} alt="Push Notification" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "pushNotification"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Push Notification
-                </span>
-              </div> */}
             </div>
             <div className="bg-[#FFFFFF] w-[276px] h-fit">
               <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">

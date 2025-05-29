@@ -1,5 +1,5 @@
-import React, { useState, createContext, useEffect } from 'react'
-import { authAPI } from '../constants/APIRoutes';
+import React, { useState, createContext, useEffect, useContext } from 'react'
+import { authAPI, userAPI } from '../constants/APIRoutes';
 import axios from 'axios';
 import { socket } from '../App';
 
@@ -19,8 +19,22 @@ const AuthProvider = ({ children }) => {
       console.log("error", err);
     }
   }
-
+  
+  // const checkRequestStatus = async () => {
+  //   if (auth) {
+  //     const req = await axios.post(`${userAPI}/check-request-status`,
+  //       { remember: remember },
+  //       { withCredentials: true }
+  //     )
+  //     await getAuth();
+  //     console.log(req);
+  //     setRemember(auth?.data.auth.remember);
+  //   }
+    
+  // }
+  
   if (auth) {
+    // if(auth?.data.auth.access === false) checkRequestStatus();
     console.log("auth", auth);
     console.log("retrieving notif");
     socket.emit("retrieve_notifications", auth.data.auth.id)

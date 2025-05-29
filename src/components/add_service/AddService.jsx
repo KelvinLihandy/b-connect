@@ -638,7 +638,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                       </div>
                       <div className="flex-1 mb-6">
                         <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                          Category (Maximum 2)
+                          Category (Maksimal 2)
                         </label>
                         <div className="relative" ref={dropdownRef}>
                           <input
@@ -750,7 +750,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                               Batas 3 gambar tercapai
                             </p>
                             <p className="text-gray-500 text-sm mt-1">
-                              Hapus beberapa gambar untukk upload gambar lain
+                              Hapus beberapa gambar untuk upload gambar lain
                             </p>
                           </div>
                         )}
