@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import { AuthContext } from "../../contexts/AuthContext"; // Import AuthContext
@@ -61,102 +62,93 @@ const UserProfile = () => {
     return auth?.data?.auth?.id || userId;
   };
 
-  // API Functions - Updated to use proper user ID
+  // API Functions - Updated to use axios
   const fetchCurrentUser = async (targetUserId) => {
     try {
-      const response = await fetch(`${userAPI}/get-user/${targetUserId}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.post(
+        `${userAPI}/get-user/${targetUserId}`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return data.user;
+      return response.data.user;
     } catch (error) {
       console.error('Error fetching current user:', error);
-      throw error;
+      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
+      throw new Error(errorMessage);
     }
   };
 
   const fetchUserStats = async (targetUserId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/${targetUserId}/stats`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get(
+        `${API_BASE_URL}/user/${targetUserId}/stats`,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return data.stats;
+      return response.data.stats;
     } catch (error) {
       console.error('Error fetching user stats:', error);
-      throw error;
+      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
+      throw new Error(errorMessage);
     }
   };
 
   const fetchPurchaseHistory = async (targetUserId, page = 1, limit = 4) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/${targetUserId}/purchase-history?page=${page}&limit=${limit}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get(
+        `${API_BASE_URL}/user/${targetUserId}/purchase-history`,
+        {
+          params: { page, limit },
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
       return {
-        purchaseHistory: data.purchaseHistory,
-        pagination: data.pagination
+        purchaseHistory: response.data.purchaseHistory,
+        pagination: response.data.pagination
       };
     } catch (error) {
       console.error('Error fetching purchase history:', error);
-      throw error;
+      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
+      throw new Error(errorMessage);
     }
   };
 
   const fetchUserReviews = async (targetUserId, page = 1, limit = 2) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/${targetUserId}/reviews?page=${page}&limit=${limit}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.get(
+        `${API_BASE_URL}/user/${targetUserId}/reviews`,
+        {
+          params: { page, limit },
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
       return {
-        reviews: data.reviews,
-        pagination: data.pagination
+        reviews: response.data.reviews,
+        pagination: response.data.pagination
       };
     } catch (error) {
       console.error('Error fetching user reviews:', error);
-      throw error;
+      const errorMessage = error.response?.data?.error || error.message || `HTTP error! status: ${error.response?.status}`;
+      throw new Error(errorMessage);
     }
   };
 
