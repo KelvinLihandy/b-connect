@@ -16,17 +16,17 @@ const UserProfile = () => {
   const { auth } = useContext(AuthContext);
   
   const [userStats, setUserStats] = useState({
-    memberSince: "2020",
-    profileCompletion: "0%",
-    activeVouchers: "0",
-    totalOrders: "0",
-    totalSpent: "Rp 0"
+    memberSince: "",
+    profileCompletion: "",
+    activeVouchers: "",
+    totalOrders: "",
+    totalSpent: ""
   });
 
   const [currentUser, setCurrentUser] = useState({
-    name: "Loading...",
-    email: "Loading...",
-    memberSince: "2020"
+    name: "",
+    email: "",
+    memberSince: ""
   });
   
   const [purchaseHistory, setPurchaseHistory] = useState([]);
@@ -54,7 +54,7 @@ const UserProfile = () => {
   // Memoize fallback image URL
   const fallbackImage = useMemo(() => {
     // Use a data URL instead of external placeholder to avoid network requests
-    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIyNCIgdmlld0JveD0iMCAwIDMyMCAyMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMzMuNSA5OEMxMzMuNSA5NC4xMzQgMTM2LjYzNCA5MSAxNDAuNSA5MUgxNzkuNUMxODMuMzY2IDkxIDE86LjUgOTQuMTM0IDE4Ni41IDk4VjEyNkMxODYuNSAxMjkuODY2IDE4My4zNjYgMTMzIDE3OS41IDEzM0gxNDAuNUMxMzYuNjM0IDEzMyAxMzMuNSAxMjkuODY2IDEzMy41IDEyNlY5OFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxNiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgM0MxIDIuNDQ3NzIgMS40NDc3MiAyIDIgMkgxNEMxNC41NTIzIDIgMTUgMi40NDc3MiAxNSAzVjlDMTUgOS41NTIyOCAxNC41NTIzIDEwIDE0IDEwSDJDMS40NDc3MiAxMCAxIDkuNTUyMjggMSA5VjNaIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNOSA3TDEyIDQiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE2MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIyNCIgdmlld0JveD0iMCAwIDMyMCAyMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMzMuNSA5OEMxMzMuNSA5NC4xMzQgMTM2LjYzNCA5MSAxNDAuNSA5MUgxNzkuNUMxODMuMzY2IDkxIDE4Ni41IDk0LjEzNCAxODYuNSA5OFYxMjZDMTg2LjUgMTI5Ljg2NiAxODMuMzY2IDEzMyAxNzkuNSAxMzNIMTQwLjVDMTM2LjYzNCAxMzMgMTMzLjUgMTI5Ljg2NiAxMzMuNSAxMjZWOThaIiBmaWxsPSIjOUNBM0FGIi8+Cjxzdmcgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiB2aWV3Qm94PSIwIDAgMTYgMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDNDMSAyLjQ0NzcyIDEuNDQ3NzIgMiAyIDJIMTRDMTQuNTUyMyAyIDE1IDIuNDQ3NzIgMTUgM1Y5QzE1IDkuNTUyMjggMTQuNTUyMyAxMCAxNCAxMEgyQzEuNDQ3NzIgMTAgMSA5LjU1MjI4IDEgOVYzWiIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjEiIGZpbGw9IiM5Q0EzQUYiLz4KPHN0aCBkPSJNOSA3TDEyIDQiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE2MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
   }, []);
 
   // Memoize image error handler to prevent recreation on every render
@@ -80,18 +80,18 @@ const UserProfile = () => {
       if (response.data && response.data.user) {
         const user = response.data.user;
         setCurrentUser({
-          name: user.name || auth?.data?.auth?.name || "User",
+          name: user.name || auth?.data?.auth?.name || "",
           email: user.email || auth?.data?.auth?.email || "",
-          memberSince: user.joinedDate ? new Date(user.joinedDate).getFullYear().toString() : "2020"
+          memberSince: user.joinedDate ? new Date(user.joinedDate).getFullYear().toString() : ""
         });
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
       if (auth?.data?.auth) {
         setCurrentUser({
-          name: auth.data.auth.name || "User",
+          name: auth.data.auth.name || "",
           email: auth.data.auth.email || "",
-          memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
+          memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : ""
         });
       }
     }
@@ -191,9 +191,9 @@ const UserProfile = () => {
       try {
         if (auth?.data?.auth) {
           setCurrentUser({
-            name: auth.data.auth.name || "User",
+            name: auth.data.auth.name || "",
             email: auth.data.auth.email || "",
-            memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : "2020"
+            memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : ""
           });
         }
 
@@ -530,6 +530,19 @@ const UserProfile = () => {
     </div>
   ));
 
+  // Show loading spinner if essential data is still loading
+  if (loading && !currentUser.name && !userStats.memberSince) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+        <Navbar />
+        <div className="h-32"></div>
+        <LoadingSpinner />
+        <div className="h-32"></div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <Navbar />
@@ -562,9 +575,11 @@ const UserProfile = () => {
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold mb-2 tracking-tight">{currentUser.name}</h1>
+                  <h1 className="text-3xl font-bold mb-2 tracking-tight">{currentUser.name || "User"}</h1>
                   <p className="text-lg opacity-90 font-medium mb-1">{currentUser.email}</p>
-                  <p className="text-sm opacity-75">Member since {currentUser.memberSince} • Premium User</p>
+                  <p className="text-sm opacity-75">
+                    {currentUser.memberSince && `Member since ${currentUser.memberSince}`}
+                  </p>
                 </div>
               </div>
               
@@ -593,31 +608,31 @@ const UserProfile = () => {
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📅</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Member Since</span>
-              <span className="text-lg font-bold text-gray-900">{userStats.memberSince}</span>
+              <span className="text-lg font-bold text-gray-900">{userStats.memberSince || "-"}</span>
             </div>
             
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📋</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Profile</span>
-              <span className="text-lg font-bold text-green-600">{userStats.profileCompletion}</span>
+              <span className="text-lg font-bold text-green-600">{userStats.profileCompletion || "0%"}</span>
             </div>
             
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">🎫</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Vouchers</span>
-              <span className="text-lg font-bold text-blue-600">{userStats.activeVouchers}</span>
+              <span className="text-lg font-bold text-blue-600">{userStats.activeVouchers || "0"}</span>
             </div>
             
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📦</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Orders</span>
-              <span className="text-lg font-bold text-purple-600">{userStats.totalOrders}</span>
+              <span className="text-lg font-bold text-purple-600">{userStats.totalOrders || "0"}</span>
             </div>
             
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">💰</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Total Spent</span>
-              <span className="text-sm font-bold text-green-600">{userStats.totalSpent}</span>
+              <span className="text-sm font-bold text-green-600">{userStats.totalSpent || "Rp 0"}</span>
             </div>
           </div>
 
