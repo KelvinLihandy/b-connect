@@ -173,17 +173,12 @@ const FreelancerProfile = () => {
     <>
       <Navbar alt={true} />
 
-      <main
-        className="flex flex-col min-h-screen bg-gray-50 pt-25"
-      >
-        {/* Main profile section */}
+      <main className="flex flex-col min-h-screen bg-gray-50 pt-25">
         <div className="container mx-auto px-5 mt-8">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left section - Profile and content */}
             <div className="w-full lg:w-8/12">
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                 <div className="flex flex-col md:flex-row">
-                  {/* Left side with profile photo */}
                   <div className="md:w-1/4 flex flex-col items-center mb-6 md:mb-0">
                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-200 overflow-hidden mb-4 flex items-center justify-center relative border">
                       <img
@@ -708,7 +703,7 @@ const FreelancerProfile = () => {
           setShowAddServiceModal(false);
         }}
       />
-    </>
+    </> 
   );
 };
 

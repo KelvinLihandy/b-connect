@@ -2,7 +2,7 @@ import { useRef, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext";
 
-const MorphToggleButton = ({ isFreelancer, setIsFreelancer }) => {
+const MorphToggleButton = ({ isFreelancer, setIsFreelancer, setShowFreelancerRegister }) => {
   const { auth } = useContext(AuthContext);
   const containerRef = useRef(null);
   const navigate = useNavigate();
@@ -10,19 +10,20 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer }) => {
 
   useEffect(() => {
     const storedRole = localStorage.getItem("isFreelancer");
-    if (storedRole !== null) {
+    if (auth?.data?.auth?.access === true) {
       setIsFreelancer(storedRole === "true");
     }
   }, [setIsFreelancer]);
 
   const handleClick = () => {
-    const newState = !isFreelancer;
-    localStorage.setItem("isFreelancer", newState);
-    if (location.pathname.startsWith("/chat")) {
-      setIsFreelancer(newState);
+    if(auth?.data?.auth?.access === false && isFreelancer == false){
+      setShowFreelancerRegister(true);
       return;
     }
-    else if(location.pathname.startsWith("/profile")){
+    const newState = !isFreelancer;
+    localStorage.setItem("isFreelancer", newState);
+    if (location.pathname.startsWith("/chat") ||
+      location.pathname.startsWith("/profile")) {
       setIsFreelancer(newState);
       return;
     }
@@ -31,7 +32,6 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer }) => {
     } else {
       navigate("/home");
     }
-    
     setIsFreelancer(newState);
   };
 
@@ -79,20 +79,18 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer }) => {
             </svg>
           )}
         </div>
-        
+
         {/* Labels with sliding animation */}
         <div className="flex-grow relative h-6 overflow-hidden">
           <div
-            className={`absolute w-full transition-transform duration-300 ease-in-out ${
-              isFreelancer ? "translate-y-0" : "-translate-y-full"
-            }`}
+            className={`absolute w-full transition-transform duration-300 ease-in-out ${isFreelancer ? "translate-y-0" : "-translate-y-full"
+              }`}
           >
             <span className="text-white font-medium">FREELANCER</span>
           </div>
           <div
-            className={`absolute w-full transition-transform duration-300 ease-in-out ${
-              isFreelancer ? "translate-y-full" : "translate-y-0"
-            }`}
+            className={`absolute w-full transition-transform duration-300 ease-in-out ${isFreelancer ? "translate-y-full" : "translate-y-0"
+              }`}
           >
             <span className="text-white font-medium">USER</span>
           </div>

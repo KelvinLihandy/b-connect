@@ -21,6 +21,9 @@ import { CircularProgress } from '@mui/material'
 import { UserTypeContext } from "../../contexts/UserTypeContext";
 import axios from "axios";
 import { authAPI } from "../../constants/APIRoutes";
+import AddService from "../add_service/AddService";
+import FreelancerReg from "../FreelancerRegister/FreelancerReg";
+import { RequestedContext } from "../../contexts/RequestedContext";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
@@ -29,16 +32,12 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const { auth, setAuth } = useContext(AuthContext);
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const list = Array.isArray(notificationList)
-    ? notificationList
-    : Object.values(notificationList || {});
-
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showFreelancerRegister, setShowFreelancerRegister] = useState(false);
+  const { checkRequestedStatus } = useContext(RequestedContext);
 
   useEffect(() => {
     const list = Array.isArray(notificationList)
@@ -262,6 +261,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               <MorphToggleButton
                 isFreelancer={isFreelancer}
                 setIsFreelancer={setIsFreelancer}
+                setShowFreelancerRegister={setShowFreelancerRegister}
               />
 
               <motion.div
@@ -429,6 +429,14 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
           </div>
         </motion.header>
       )}
+      <FreelancerReg
+        isOpen={showFreelancerRegister}
+        onClose={() => setShowFreelancerRegister(false)}
+        onCloseAfterSave={() => {
+          checkRequestedStatus();
+          setShowFreelancerRegister(false);
+        }}
+      />
     </>
   );
 };
