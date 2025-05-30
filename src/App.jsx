@@ -95,11 +95,10 @@ const App = () => {
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/sign-in/forget" element={<ForgotPassword />} />
         <Route path="/sign-in/verify-otp" element={<InputOTP />} />
-        <Route path="/sign-in/change-password" element={<ChangePassword />} />
-        <Route path="/add-service" element={<AddService />} />
+        <Route path="/sign-in/change-password" element={<ChangePassword />} />        <Route path="/add-service" element={<AddService />} />
         <Route path="/become-freelancer" element={<FreelancerReg />} />
-        <Route path="/manage-order" element={<ManageOrder />} />
-        <Route path="/invoice" element={<Invoice />} />
+        <Route path="/manage-order/:orderId" element={<ManageOrder />} />
+        <Route path="/invoice/:orderId" element={<Invoice />} />
 
         {isFreelancer ? (
           <>
