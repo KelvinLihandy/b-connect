@@ -12,9 +12,9 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("purchase");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const { auth } = useContext(AuthContext);
-  
+
   const [userStats, setUserStats] = useState({
     memberSince: "",
     profileCompletion: "",
@@ -28,10 +28,10 @@ const UserProfile = () => {
     email: "",
     memberSince: ""
   });
-  
+
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [reviews, setReviews] = useState([]);
-  
+
   const [purchasePagination, setPurchasePagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -76,7 +76,7 @@ const UserProfile = () => {
           withCredentials: true
         }
       );
-      
+
       if (response.data && response.data.user) {
         const user = response.data.user;
         setCurrentUser({
@@ -109,7 +109,7 @@ const UserProfile = () => {
           withCredentials: true
         }
       );
-      
+
       if (response.data && response.data.stats) {
         setUserStats(response.data.stats);
       }
@@ -131,10 +131,10 @@ const UserProfile = () => {
           withCredentials: true
         }
       );
-      
+
       if (response.data && response.data.purchaseHistory) {
         const { purchaseHistory, pagination } = response.data;
-        
+
         setPurchaseHistory(purchaseHistory);
         setPurchasePagination({
           currentPage: pagination.currentPage,
@@ -164,13 +164,13 @@ const UserProfile = () => {
           withCredentials: true
         }
       );
-      
+
       if (response.data && response.data.reviews) {
         const { reviews, pagination } = response.data;
-        
+
         setReviews(reviews);
         setReviewsPagination({
-          currentPage: pagination.currentPage,  
+          currentPage: pagination.currentPage,
           totalPages: pagination.totalPages,
           hasNextPage: pagination.hasNextPage,
           hasPrevPage: pagination.hasPrevPage
@@ -201,7 +201,7 @@ const UserProfile = () => {
           fetchUserProfile(),
           fetchUserStats()
         ]);
-        
+
       } catch (err) {
         console.error("Error loading user data:", err);
         setError("Failed to load user data");
@@ -229,7 +229,7 @@ const UserProfile = () => {
   const handleTabChange = useCallback(async (tab) => {
     setActiveTab(tab);
     setError(null);
-    
+
     if (tab === "purchase" && purchaseHistory.length === 0) {
       await fetchPurchaseHistory(1);
     } else if (tab === "reviews" && reviews.length === 0) {
@@ -248,37 +248,42 @@ const UserProfile = () => {
   const handleSettingsClick = useCallback(() => {
     navigate('/profile');
   }, [navigate]);
-
+  console.log("history", purchaseHistory)
   const PurchaseCard = React.memo(({ item }) => (
     <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
       <div className="flex flex-col lg:flex-row">
         <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
-          <img 
-            src={item.image || fallbackImage} 
+          <img
+            src={item.image || fallbackImage}
             alt={item.title}
             className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
             onError={handleImageError}
             loading="lazy"
           />
         </div>
-        
+
         <div className="flex-1 p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  {item.category}
-                </span>
+                {item.category.map((cat, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                  >
+                    {cat}
+                  </span>
+                ))}
               </div>
-              
+
               <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
                 {item.title}
               </h3>
-              
+
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                 {item.description}
               </p>
-              
+
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
@@ -295,18 +300,17 @@ const UserProfile = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4 mb-4">
-                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                  item.statusType === "progress"
-                    ? "bg-orange-100 text-orange-800 border border-orange-200"
-                    : item.statusType === "delivered"
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${item.statusType === "progress"
+                  ? "bg-orange-100 text-orange-800 border border-orange-200"
+                  : item.statusType === "delivered"
                     ? "bg-green-100 text-green-800 border border-green-200"
                     : "bg-red-100 text-red-800 border border-red-200"
-                }`}>
+                  }`}>
                   {item.status}
                 </span>
-                
+
                 {item.statusType === "delivered" && item.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <span className="text-sm text-gray-600">Your rating:</span>
@@ -320,7 +324,7 @@ const UserProfile = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="text-sm text-gray-500 mb-2">
                 {item.orderNumber} • {item.date}
               </div>
@@ -328,23 +332,22 @@ const UserProfile = () => {
                 {item.deliveryTime}
               </div>
             </div>
-            
+
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
                   {item.price}
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-2">
-                <button className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                  item.statusType === "progress"
-                    ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
-                    : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
-                }`}>
+                <button className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${item.statusType === "progress"
+                  ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
+                  : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                  }`}>
                   {item.statusType === "progress" ? "View Details" : "Buy Again"}
                 </button>
-                
+
                 {item.statusType === "delivered" && (
                   <button className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300">
                     Contact Seller
@@ -362,15 +365,15 @@ const UserProfile = () => {
     <div className="group relative bg-white rounded-xl p-8 border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
-          <img 
-            src={review.image || fallbackImage} 
+          <img
+            src={review.image || fallbackImage}
             alt={review.title}
             className="w-full h-full object-cover rounded-lg border border-gray-200"
             onError={handleImageError}
             loading="lazy"
           />
         </div>
-        
+
         <div className="flex-1">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
@@ -390,11 +393,11 @@ const UserProfile = () => {
                   </span>
                 )}
               </div>
-              
+
               <h3 className="text-xl font-bold text-gray-900 mb-2 leading-tight">
                 {review.title}
               </h3>
-              
+
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
@@ -411,9 +414,9 @@ const UserProfile = () => {
                   </div>
                 </div>
               </div>
-              
+
               <p className="text-sm text-gray-500 mb-4">{review.orderId}</p>
-              
+
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600 font-medium">My Rating:</span>
@@ -426,18 +429,18 @@ const UserProfile = () => {
                   </div>
                   <span className="text-sm text-gray-900 font-semibold ml-1">{review.rating}.0</span>
                 </div>
-                
+
                 <span className="text-sm text-gray-600">• {review.deliveryTime}</span>
               </div>
             </div>
-            
+
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
                   {review.price}
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-2">
                 <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20">
                   Buy Again
@@ -454,7 +457,7 @@ const UserProfile = () => {
               {review.reviewText}
             </p>
           </div>
-          
+
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center gap-4">
               <button className="flex items-center gap-1 hover:text-[#2E5077] transition-colors">
@@ -473,34 +476,33 @@ const UserProfile = () => {
 
   const PaginationControls = React.memo(({ pagination, onPageChange }) => (
     <div className="flex justify-center items-center gap-2.5 mt-12">
-      <button 
+      <button
         onClick={() => onPageChange(pagination.currentPage - 1)}
         disabled={!pagination.hasPrevPage}
         className="group w-12 h-12 border-2 border-gray-200 rounded-xl text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-black"
       >
         ‹
       </button>
-      
+
       {[...Array(Math.min(pagination.totalPages, 5))].map((_, index) => {
         const pageNum = index + 1;
         const isActive = pageNum === pagination.currentPage;
-        
+
         return (
-          <button 
+          <button
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
-            className={`w-12 h-12 rounded-xl font-bold text-lg transition-all duration-300 ${
-              isActive 
-                ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-110" 
-                : "border-2 border-gray-200 text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] hover:scale-110"
-            }`}
+            className={`w-12 h-12 rounded-xl font-bold text-lg transition-all duration-300 ${isActive
+              ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-110"
+              : "border-2 border-gray-200 text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] hover:scale-110"
+              }`}
           >
             {pageNum}
           </button>
         );
       })}
-      
-      <button 
+
+      <button
         onClick={() => onPageChange(pagination.currentPage + 1)}
         disabled={!pagination.hasNextPage}
         className="group w-12 h-12 border-2 border-gray-200 rounded-xl text-black hover:text-white hover:bg-[#2E5077] hover:border-[#2E5077] transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-black"
@@ -521,7 +523,7 @@ const UserProfile = () => {
       <div className="text-red-500 text-xl mb-4">⚠️</div>
       <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
       <p className="text-gray-500">{message}</p>
-      <button 
+      <button
         onClick={() => window.location.reload()}
         className="mt-4 bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
       >
@@ -554,7 +556,7 @@ const UserProfile = () => {
           <div className="relative overflow-hidden bg-gradient-to-br from-[#2E5077] via-[#2F5379] to-[#2E5077] p-8 text-white">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#2E90EB] opacity-15 rounded-full blur-2xl"></div>
-            
+
             <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
                 <div className="group relative">
@@ -582,8 +584,8 @@ const UserProfile = () => {
                   </p>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleSettingsClick}
                 className="group bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-3 text-white hover:bg-white/25 transition-all duration-300 hover:scale-110"
               >
@@ -610,25 +612,25 @@ const UserProfile = () => {
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Member Since</span>
               <span className="text-lg font-bold text-gray-900">{userStats.memberSince || "-"}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📋</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Profile</span>
               <span className="text-lg font-bold text-green-600">{userStats.profileCompletion || "0%"}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">🎫</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Vouchers</span>
               <span className="text-lg font-bold text-blue-600">{userStats.activeVouchers || "0"}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">📦</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Orders</span>
               <span className="text-lg font-bold text-purple-600">{userStats.totalOrders || "0"}</span>
             </div>
-            
+
             <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">💰</div>
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Total Spent</span>
@@ -640,21 +642,19 @@ const UserProfile = () => {
             <div className="flex justify-start">
               <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
                 <button
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${
-                    activeTab === "purchase"
-                      ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
-                  }`}
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${activeTab === "purchase"
+                    ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                    }`}
                   onClick={() => handleTabChange("purchase")}
                 >
                   Purchase History
                 </button>
                 <button
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${
-                    activeTab === "reviews"
-                      ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
-                  }`}
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${activeTab === "reviews"
+                    ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                    }`}
                   onClick={() => handleTabChange("reviews")}
                 >
                   My Reviews
@@ -678,9 +678,9 @@ const UserProfile = () => {
                           <PurchaseCard key={item.id} item={item} />
                         ))}
                         {purchasePagination.totalPages > 1 && (
-                          <PaginationControls 
-                            pagination={purchasePagination} 
-                            onPageChange={handlePurchasePagination} 
+                          <PaginationControls
+                            pagination={purchasePagination}
+                            onPageChange={handlePurchasePagination}
                           />
                         )}
                       </>
@@ -705,9 +705,9 @@ const UserProfile = () => {
                           <ReviewCard key={review.id} review={review} />
                         ))}
                         {reviewsPagination.totalPages > 1 && (
-                          <PaginationControls 
-                            pagination={reviewsPagination} 
-                            onPageChange={handleReviewsPagination} 
+                          <PaginationControls
+                            pagination={reviewsPagination}
+                            onPageChange={handleReviewsPagination}
                           />
                         )}
                       </>
@@ -716,7 +716,7 @@ const UserProfile = () => {
                         <div className="text-gray-400 text-8xl mb-6">⭐</div>
                         <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Reviews Yet</h3>
                         <p className="text-gray-500 text-lg">You haven't written any reviews yet.</p>
-                        <button 
+                        <button
                           className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors"
                           onClick={() => handleTabChange("purchase")}
                         >
