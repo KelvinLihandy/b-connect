@@ -3,14 +3,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import CTAIcon from "../../assets/CTA_Icon.png";
 import NextIcon from "../../assets/Continue_icon.png";
 import { RequestedContext } from "../../contexts/RequestedContext";
+import { userAPI } from "../../constants/APIRoutes";
+import axios from "axios";
 
 const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
   const { requested } = useContext(RequestedContext);
   const [step, setStep] = useState(0);
-  const [selectedName, setSelectedName] = useState("");
   const [selectedDescription, setSelectedDescription] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStudentFile, setSelectedStudentFile] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("");
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formErrors, setFormErrors] = useState({
+    category: "",
+    description: "",
+    studentIdFile: "",
+  });
+  const dropdownRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const SERVICE_CATEGORIES = [
@@ -22,33 +33,14 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     "Photography",
     "Web Development",
   ];
-
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchCategory, setSearchCategory] = useState("");
-  const dropdownRef = useRef(null);
-
-  const [formErrors, setFormErrors] = useState({
-    category: "",
-    description: "",
-    studentIdFile: "",
-  });
-
-  // Track if form has been submitted
-  const [formSubmitted, setFormSubmitted] = useState(false);
-
-  // Tag input state
-  const [tagInput, setTagInput] = useState("");
-
   const steps = ["Welcome", "Form", "Review", "Finish"];
 
-  // Filter categories based on search and exclude already selected ones
   const filteredCategories = SERVICE_CATEGORIES.filter(
     (category) =>
       category.toLowerCase().includes(searchCategory.toLowerCase()) &&
       !selectedCategories.includes(category)
   );
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -141,33 +133,12 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "name") {
-      setSelectedName(value);
-    } else if (name === "description") {
-      setSelectedDescription(value);
-    }
-
-    // Clear error when user types
-    if (formSubmitted) {
-      setFormErrors({
-        ...formErrors,
-        [name]: "",
-      });
-    }
-  };
-
-  // Handle category selection (updated function name)
-  const handleTagSelect = (category) => {
+  const handleCategorySelect = (category) => {
     if (selectedCategories.length < 2 && !selectedCategories.includes(category)) {
       setSelectedCategories([...selectedCategories, category]);
     }
     setSearchCategory("");
     setShowDropdown(false);
-
-    // Clear category error
     if (formSubmitted) {
       setFormErrors({
         ...formErrors,
@@ -180,53 +151,30 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     setSelectedCategories(selectedCategories.filter(cat => cat !== categoryToRemove));
   };
 
-  const handleTagInputChange = (e) => {
-    setTagInput(e.target.value);
-  };
-
-  const handleTagInputKeyDown = (e) => {
-    if (e.key === "Enter" && tagInput.trim() !== "") {
-      e.preventDefault();
-      if (!selectedCategories.includes(tagInput.trim())) {
-        setSelectedCategories([...selectedCategories, tagInput.trim()]);
-      }
-      setTagInput("");
-    }
-  };
-
-  // Fixed file upload handler
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png'];
-
-    // Validate file type
     if (!validTypes.includes(file.type)) {
-      setFormErrors({ 
-        ...formErrors, 
-        studentIdFile: "Only JPG and PNG images are allowed." 
+      setFormErrors({
+        ...formErrors,
+        studentIdFile: "Only JPG and PNG images are allowed."
       });
       return;
     }
-
-    // Validate file size (2MB limit)
     if (file.size > 2 * 1024 * 1024) {
-      setFormErrors({ 
-        ...formErrors, 
-        studentIdFile: "File size must not exceed 2 MB." 
+      setFormErrors({
+        ...formErrors,
+        studentIdFile: "File size must not exceed 2 MB."
       });
       return;
     }
-
-    // Calculate formatted file size
     const sizeInKB = file.size / 1024;
     const formattedSize = sizeInKB < 1024
       ? `${sizeInKB.toFixed(1)} KB`
       : `${(sizeInKB / 1024).toFixed(1)} MB`;
     const fileExtension = file.name.split('.').pop().toUpperCase();
-
-    // Create file object with preview
     const fileObject = {
       file,
       preview: URL.createObjectURL(file),
@@ -237,20 +185,15 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     };
 
     setSelectedStudentFile(fileObject);
-
-    // Clear any previous errors
     if (formSubmitted) {
       setFormErrors({
         ...formErrors,
         studentIdFile: "",
       });
     }
-
-    // Reset input value to allow re-uploading the same file
     event.target.value = '';
   };
 
-  // Handle file removal
   const handleFileRemove = () => {
     if (selectedStudentFile && selectedStudentFile.preview) {
       URL.revokeObjectURL(selectedStudentFile.preview);
@@ -258,7 +201,6 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     setSelectedStudentFile(null);
   };
 
-  // Cleanup URL objects when component unmounts
   useEffect(() => {
     return () => {
       if (selectedStudentFile && selectedStudentFile.preview) {
@@ -273,6 +215,79 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
       selectedDescription.trim().length >= 20 &&
       selectedStudentFile !== null
     );
+  };
+
+  const handleCreateRequest = async () => {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const formData = new FormData();
+      formData.append("studentPicture", selectedStudentFile.file);
+      formData.append("description", selectedDescription);
+      formData.append("categories", JSON.stringify(selectedCategories));
+      const response = await axios.post(`${userAPI}/request-freelancer`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true
+        }
+      );
+      console.log(response.data)
+    }
+    catch (error) {
+      console.log("error save new gig", error);
+    }
+    setIsSaving(false);
+  }
+
+  const renderStartPage = () => {
+    if (requested) {
+      return (
+        <div className="p-6 flex flex-col items-center justify-center text-center h-[520px]">
+          <div className="flex justify-center mb-6">
+            <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center">
+              <span className="text-yellow-500 text-4xl">⏳</span>
+            </div>
+          </div>
+          <h3 className="text-3xl font-bold mb-1">Request Already Submitted</h3>
+          <h3 className="text-2xl font-bold mb-4 text-gray-600">We're reviewing your application</h3>
+          <p className="text-gray-600 text-sm mb-6 max-w-md">
+            Terima kasih sudah mengirimkan permintaan untuk menjadi freelancer kami. 
+            Tim kami sedang mereview profil Anda dan akan menghubungi Anda segera.
+          </p>
+        </div>
+      );
+    } else {
+      return (
+        <div className="p-6 flex flex-col items-center justify-center text-center h-[520px]">
+          <h3 className="text-3xl font-bold mb-1">Hey, you just one step</h3>
+          <h3 className="text-3xl font-bold mb-1">ahead became freelancer</h3>
+          <p className="text-gray-600 text-sm mb-4">
+            Ayo isi beberapa form ini sebelum kamu menjadi freelancer kami!
+          </p>
+
+          <div className="flex justify-center mb-4">
+            <img
+              src={CTAIcon}
+              alt="Freelancer illustration"
+              className="w-64 h-64"
+            />
+          </div>
+
+          <div className="flex flex-col items-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mb-2"
+              onClick={handleContinue}
+            >
+              <img src={NextIcon} alt="Continue" className="w-16 h-16" />
+            </motion.button>
+            <span className="text-sm text-gray-500">Click to continue</span>
+          </div>
+        </div>
+      );
+    }
   };
 
   return (
@@ -310,42 +325,19 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                         <h3 className="text-2xl text-white font-bold">
                           {step === 0 ? "Became our Freelancer" : "Become Our Freelancer"}
                         </h3>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          className="w-10 h-10 cursor-pointer text-white font-bold"
-                          onClick={onClose}
-                        >
-                          ✕
-                        </motion.button>
+                        {step < 3 &&
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            className="w-10 h-10 cursor-pointer text-white font-bold"
+                            onClick={onClose}
+                          >
+                            ✕
+                          </motion.button>
+                        }
                       </div>
 
                       {step === 0 ? (
-                        <div className="p-6 flex flex-col items-center justify-center text-center h-[520px]">
-                          <h3 className="text-3xl font-bold mb-1">Hey, you just one step</h3>
-                          <h3 className="text-3xl font-bold mb-1">ahead became freelancer</h3>
-                          <p className="text-gray-600 text-sm mb-4">
-                            Ayo isi beberapa form ini sebelum kamu menjadi B-Partner kami!
-                          </p>
-
-                          <div className="flex justify-center mb-4">
-                            <img
-                              src={CTAIcon}
-                              alt="Freelancer illustration"
-                              className="w-64 h-64"
-                            />
-                          </div>
-
-                          <div className="flex flex-col items-center">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mb-2"
-                              onClick={handleContinue}
-                            >
-                              <img src={NextIcon} alt="Continue" className="w-16 h-16" />
-                            </motion.button>
-                            <span className="text-sm text-gray-500">Click to continue</span>
-                          </div>
-                        </div>
+                        renderStartPage()
                       ) : (
                         <div className="p-6 flex flex-col min-h-[480px] max-h-[70vh] overflow-y-auto">
                           <div className="w-full mb-6">
@@ -405,9 +397,9 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                               </div>
                               {formSubmitted && Object.values(formErrors).some((err) => err) && (
                                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
-                                  <p className="font-bold">Please complete all required fields</p>
+                                  <p className="font-bold">Tolong isi semua yang dibutuhkan</p>
                                   <p className="text-sm">
-                                    All fields must be filled before continuing
+                                    Semua data harus diisi sebelum lanjut
                                   </p>
                                 </div>
                               )}
@@ -415,7 +407,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                               <div className="bg-white rounded-lg p-6 border border-gray-200">
                                 <div className="flex-1 mb-6">
                                   <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                                    Category (Maksimal 2)
+                                    Category (Maksimal 2) <span className="text-red-500">*</span>
                                   </label>
                                   <div className="relative" ref={dropdownRef}>
                                     <input
@@ -438,7 +430,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                           <div
                                             key={index}
                                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                            onClick={() => handleTagSelect(category)}
+                                            onClick={() => handleCategorySelect(category)}
                                           >
                                             {category}
                                           </div>
@@ -471,16 +463,25 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
 
                                 <div className="mb-4">
                                   <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                                    Description: <span className="text-red-500">*</span>
+                                    Description <span className="text-red-500">*</span>
                                   </label>
                                   <textarea
                                     name="description"
                                     value={selectedDescription}
-                                    onChange={handleInputChange}
-                                    placeholder="Tell us about yourself and the services you offer (min. 20 characters)"
-                                    className={`w-full p-2 border ${formErrors.description ? "border-red-500" : "border-gray-300"
-                                      } rounded h-32`}
-                                  ></textarea>
+                                    onChange={(e) => {
+                                      setSelectedDescription(e.target.value);
+                                      if (formSubmitted) {
+                                        setFormErrors({
+                                          ...formErrors,
+                                          [name]: "",
+                                        })
+                                      }
+                                    }}
+                                    placeholder="Ceritakan tentang dirimu dan jasa apa yang akan kamu tawarkan (minimal 20 karakter)"
+                                    className={`w-full p-2 border rounded h-32
+                                      ${formErrors.description ? "border-red-500" : "border-gray-300"}`
+                                    }
+                                  />
                                   {formErrors.description && (
                                     <p className="mt-1 text-sm text-red-500">
                                       {formErrors.description}
@@ -494,10 +495,9 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
 
                                 <div>
                                   <label className="block font-inter text-[16px] text-[#424956] mb-1">
-                                    Add your student ID Card for validation:{" "}
-                                    <span className="text-red-500">*</span>
+                                    Upload gambar kartu pelajar anda untuk validasi <span className="text-red-500">*</span>
                                   </label>
-                                  
+
                                   <div className={`px-4 py-4 border ${formErrors.studentIdFile ? "border-red-500" : "border-gray-300"} rounded-md`}>
                                     <div className="mb-4">
                                       {!selectedStudentFile ? (
@@ -538,21 +538,21 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                       ) : (
                                         <div className="border-2 border-gray-300 rounded-md p-4 text-center bg-gray-50">
                                           <p className="text-gray-700 font-medium mb-2">
-                                            File uploaded successfully!
+                                            Gambar Berhasil Diupload!
                                           </p>
                                           <p className="text-gray-500 text-sm">
-                                            Remove the current file to upload a different one
+                                            Hapus gambar sekarang untuk upload gambar lain
                                           </p>
                                         </div>
                                       )}
-                                      
+
                                       {formErrors.studentIdFile && (
                                         <p className="mt-2 text-sm text-red-500">
                                           {formErrors.studentIdFile}
                                         </p>
                                       )}
                                     </div>
-                                    
+
                                     {selectedStudentFile && (
                                       <div className="grid grid-cols-1 gap-4">
                                         <div className="relative group">
@@ -620,11 +620,9 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                         : "No categories selected"}
                                     </dd>
                                   </div>
-                                  <div>
-                                    <dt className="font-medium">Description:</dt>
-                                    <dd className="whitespace-pre-line">
-                                      {selectedDescription || "Not provided"}
-                                    </dd>
+                                  <div className="flex flex-wrap gap-2">
+                                    <dt className="font-medium whitespace-nowrap">Description:</dt>
+                                    <dd className="whitespace-pre-line break-words">{selectedDescription || "Not provided"}</dd>
                                   </div>
                                   <div>
                                     <dt className="font-medium">Student ID:</dt>
@@ -639,7 +637,6 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                             </div>
                           )}
 
-                          {/* Finish Step (Step 3) */}
                           {step === 3 && (
                             <div className="space-y-4 text-center">
                               <div className="flex justify-center mb-6">
@@ -647,12 +644,12 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                   <span className="text-green-500 text-4xl">✓</span>
                                 </div>
                               </div>
-                              <h4 className="text-xl font-bold">Registration Complete!</h4>
+                              <h4 className="text-xl font-bold">Registration Selesai!</h4>
                               <p className="text-gray-600">
-                                Congratulations! You are now registered as a B-Partner freelancer.
+                                Selamat! Permintaan anda sudah dikirim.
                               </p>
                               <p className="text-gray-600">
-                                Your profile will be reviewed by our team and will be active soon.
+                                Profil anda akan kami review untuk menjadikan ada bagian dari freelancer kami
                               </p>
                             </div>
                           )}
@@ -667,19 +664,32 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                   {step === 1 ? "Back" : "Cancel"}
                                 </button>
                                 <button
-                                  onClick={handleContinue}
+                                  onClick={async () => {
+                                    if (step === 2) {
+                                      setIsSaving(true);
+                                      await handleCreateRequest();
+                                    }
+                                    handleContinue();
+                                  }}
+                                  disabled={isSaving}
                                   className={`px-4 py-2 rounded ${step === 1 && !isFormValid()
                                     ? "bg-blue-300 cursor-not-allowed"
                                     : "bg-blue-500 hover:bg-blue-600"
                                     } text-white`}
                                 >
-                                  {step === 2 ? "Submit" : "Save"}
+                                  {step === 2 ?
+                                    isSaving ?
+                                      "Saving"
+                                      :
+                                      "Submit"
+                                    :
+                                    "Save"}
                                 </button>
                               </>
                             )}
                             {step === 3 && (
                               <button
-                                onClick={onClose}
+                                onClick={onCloseAfterSave}
                                 className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                               >
                                 Close
@@ -692,10 +702,10 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                   </div>
                 </motion.div>
               </div>
-            </div>
-          </motion.div>
+            </div >
+          </motion.div >
         )}
-      </AnimatePresence>
+      </AnimatePresence >
     </>
   );
 };

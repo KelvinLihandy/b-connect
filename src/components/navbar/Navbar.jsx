@@ -430,13 +430,11 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
         </motion.header>
       )}
       <FreelancerReg
-        // isOpen={showFreelancerRegister}
-        isOpen
+        isOpen={showFreelancerRegister}
         onClose={() => setShowFreelancerRegister(false)}
         onCloseAfterSave={() => {
           checkRequestedStatus();
           setShowFreelancerRegister(false);
-          //cek status langsung
         }}
       />
     </>
