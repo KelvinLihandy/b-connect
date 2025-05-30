@@ -338,10 +338,11 @@ const UserProfile = () => {
                 <div className="text-2xl font-bold text-gray-900">
                   {item.price}
                 </div>
-              </div>
-
+              </div>              
               <div className="flex flex-col gap-2">
-                <button className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${item.statusType === "progress"
+                <button 
+                  onClick={item.statusType === "progress" ? () => navigate(`/manage-order/${item.orderNumber}`) : undefined}
+                  className={`px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 ${item.statusType === "progress"
                   ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
                   : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
                   }`}>
@@ -587,7 +588,7 @@ const UserProfile = () => {
 
               <button
                 onClick={handleSettingsClick}
-                className="group bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-3 text-white hover:bg-white/25 transition-all duration-300 hover:scale-110"
+                className="group bg-white/15 backdrop-blur-sm border border-white/20 cursor-pointer rounded-xl p-3 text-white hover:bg-white/25 transition-all duration-300 hover:scale-110"
               >
                 <svg
                   width="20"
@@ -642,7 +643,7 @@ const UserProfile = () => {
             <div className="flex justify-start">
               <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
                 <button
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${activeTab === "purchase"
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 ${activeTab === "purchase"
                     ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
                     }`}
@@ -651,7 +652,7 @@ const UserProfile = () => {
                   Purchase History
                 </button>
                 <button
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-all duration-300 ${activeTab === "reviews"
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 ${activeTab === "reviews"
                     ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
                     }`}
@@ -717,7 +718,7 @@ const UserProfile = () => {
                         <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Reviews Yet</h3>
                         <p className="text-gray-500 text-lg">You haven't written any reviews yet.</p>
                         <button
-                          className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors"
+                          className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg cursor-pointer font-medium hover:bg-[#1e3a5f] transition-colors"
                           onClick={() => handleTabChange("purchase")}
                         >
                           View Purchase History
