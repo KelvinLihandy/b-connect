@@ -165,14 +165,6 @@ const SignUp = () => {
 						<span> </span>
 						<Link to="">
 							<span className='underline'>
-								Terms of Use
-							</span>
-						</Link>
-						<span> </span>
-						and
-						<span> </span>
-						<Link to="">
-							<span className='underline'>
 								Privacy Policy
 							</span>
 						</Link>

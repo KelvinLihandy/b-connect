@@ -381,11 +381,16 @@ const FreelancerProfile = () => {
                           animate="visible"
                         >
                           {gigData
-                            ?.filter(
-                              (g) =>
+                            ?.filter((g) => {
+                              const matchesCategory =
                                 selectedCategory === "All" ||
-                                (Array.isArray(g.categories) && g.categories.includes(selectedCategory))
-                            )
+                                (Array.isArray(g.categories) && g.categories.includes(selectedCategory));
+
+                              const shouldShow =
+                                isOwnProfile || g.accepted;
+
+                              return matchesCategory && shouldShow;
+                            })
                             .sort((a, b) => {
                               return a.accepted === b.accepted ? 0 : a.accepted ? 1 : -1;
                             })
@@ -420,7 +425,7 @@ const FreelancerProfile = () => {
                                         e.target.src = fallbackImage;
                                       }}
                                     />
-                                    {!gig.accepted && (
+                                    {!gig.accepted && isOwnProfile && (
                                       <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                                         Pending Acceptance
                                       </div>
@@ -486,14 +491,6 @@ const FreelancerProfile = () => {
                             ? "This freelancer hasn't published any gigs yet."
                             : "Create your first gig to start offering your services to potential clients."}
                         </p>
-                        {isOwnProfile && isFreelancer && (
-                          <button
-                            onClick={() => setShowAddServiceModal(true)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                          >
-                            Create New Gig
-                          </button>
-                        )}
                       </div>
                     )
                   }
@@ -703,7 +700,7 @@ const FreelancerProfile = () => {
           setShowAddServiceModal(false);
         }}
       />
-    </> 
+    </>
   );
 };
 

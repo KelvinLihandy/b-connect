@@ -5,8 +5,9 @@ import { CircularProgress } from '@mui/material'
 import { Notebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../App";
+import default_avatar from '../../assets/default-avatar.png'
 
-const NotificationItem = ({ notification, unreadCount,setUnreadCount }) => {
+const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [read, setRead] = useState(notification.read);
@@ -52,7 +53,7 @@ const NotificationItem = ({ notification, unreadCount,setUnreadCount }) => {
           setLocalRead(true);
           navigate(url);
         })
-        setUnreadCount(unreadCount-1);
+        setUnreadCount(unreadCount - 1);
       }}
     >
       <div className="flex text-black min-h-20">
@@ -62,25 +63,21 @@ const NotificationItem = ({ notification, unreadCount,setUnreadCount }) => {
 
         <div className="flex flex-row gap-4 w-full">
           <div className="relative w-12 h-12 min-w-12 self-center">
-            {!imageLoaded && !imageError && (
-              <CircularProgress color='inherit' />
-            )}
-
-            {!imageError ? (
-              <img
-                src={`${imageShow}${notification.sender.picture}`}
-                alt="profile"
-                className={`w-full h-full object-cover rounded-full ${imageLoaded ? '' : 'invisible'}`}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => {
-                  setImageLoaded(false);
-                }}
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-xs text-white">
-                N/A
-              </div>
-            )}
+            <img
+              className={`w-full h-full rounded-full object-cover`}
+              src={
+                !notification.sender.picture || notification.sender.picture === "temp"
+                  ? default_avatar
+                  : `${imageShow}${notification.sender.picture}`
+              }
+              alt="chatter"
+              onLoad={() => setImageLoaded(false)}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = default_avatar;
+                setImageLoaded(false)
+              }}
+            />
           </div>
           <div className="flex flex-col w-full h-full">
             <div className="flex flex-row justify-between gap-3">
