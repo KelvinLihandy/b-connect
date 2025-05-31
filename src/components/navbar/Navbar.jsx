@@ -7,6 +7,7 @@ import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
 import { socket } from "../../App";
 
 // Import assets
+import message from "../../assets/message_icon.svg";
 import bell from "../../assets/bell_icon.svg";
 import searchBtn from "../../assets/search_btn.svg";
 import default_avatar from "../../assets/default-avatar.png";
@@ -17,13 +18,12 @@ import { imageShow } from "../../constants/DriveLinkPrefixes";
 import MorphToggleButton from "../../components/togglebutton/togglebutton";
 import { NotificationContext } from "../../contexts/NotificationContext";
 import NotificationItem from "../notification_item/NotificationItem";
-import { CircularProgress } from '@mui/material'
 import { UserTypeContext } from "../../contexts/UserTypeContext";
 import axios from "axios";
-import { authAPI } from "../../constants/APIRoutes";
-import AddService from "../add_service/AddService";
+import { authAPI, orderAPI } from "../../constants/APIRoutes";
 import FreelancerReg from "../FreelancerRegister/FreelancerReg";
 import { RequestedContext } from "../../contexts/RequestedContext";
+import { get, set } from "lodash";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
@@ -37,8 +37,9 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showFreelancerRegister, setShowFreelancerRegister] = useState(false);
-  const { checkRequestedStatus } = useContext(RequestedContext);
-
+  const { checkRequestStatus } = useContext(RequestedContext);
+  const [showOrderDropdown, setShowOrderDropdown] = useState(false);
+  const [orderList, setOrderList] = useState([]);
   useEffect(() => {
     const list = Array.isArray(notificationList)
       ? notificationList
@@ -46,11 +47,33 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     setUnreadCount(list.filter(n => n && !n.read).length)
   }, [notificationList]);
 
+  const getRelativeDate = (isoDateStr) => {
+    const now = new Date();
+    const date = new Date(isoDateStr);
+    const diffMs = now - date;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffHours < 1) {
+      const minutes = Math.floor(diffMs / (1000 * 60));
+      return minutes <= 1 ? 'Just now' : `${minutes} minutes ago`;
+    }
+    if (diffHours < 24) {
+      const hours = Math.floor(diffHours);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    }
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays > 1) return `${diffDays} days ago`;
+    return 'Just now'; // fallback
+  };
+
+
   const handleClickOutside = (event) => {
     const isNotificationClick = event.target.closest('.notification-dropdown') ||
       event.target.closest('[data-notification-trigger]');
     const isUserClick = event.target.closest('.user-dropdown') ||
       event.target.closest('[data-user-trigger]');
+    const isOrderClick = event.target.closest('.order-dropdown') ||
+      event.target.closest('[data-order-trigger]');
 
     if (!isNotificationClick && showNotificationDropdown) {
       setShowNotificationDropdown(false);
@@ -58,7 +81,40 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     if (!isUserClick && showUserDropdown) {
       setShowUserDropdown(false);
     }
+    if (!isOrderClick && showOrderDropdown) {
+      setShowOrderDropdown(false);
+    }
   };
+
+  const getOrders = async () => {
+    console.log("Fetching orders for freelancer:", auth?.data?.auth?.id);
+    try {
+      const response = await axios.get(`${orderAPI}/orders`, {
+        withCredentials: true
+      });
+      const res = response.data;
+      console.log("Orders fetched:", res);
+      if (res.orderList) {
+        setOrderList(res.orderList);
+      };
+    }
+    catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  }
+  useEffect(() => {
+    const load = async () => {
+      await getOrders();
+    }
+
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (showOrderDropdown && isFreelancer) {
+      getOrders();
+    }
+  }, [showOrderDropdown]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
@@ -83,6 +139,13 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
       month: "short",
       day: "numeric",
       year: "numeric",
+    });
+  };
+
+  const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
+    return (price ?? 0).toLocaleString(locale, {
+      minimumFractionDigits: minFraction,
+      maximumFractionDigits: maxFraction,
     });
   };
 
@@ -144,18 +207,173 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                 >
                   Dashboard
                 </motion.p>
-                <motion.p
-                  className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
-                  whileHover={{ scale: 1.1 }}
-                  onClick={() => { navigate(`/freelancer-orders`) }}
-                >
-                  Orders
-                </motion.p>
+                <div className="relative">
+                  <motion.p
+                    className="inline-block text-xl cursor-pointer transition-colors duration-300 font-bold"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowOrderDropdown(!showOrderDropdown);
+                    }}
+                    data-order-trigger
+                  >
+                    Orders
+                  </motion.p>
+                  <AnimatePresence>
+                    {showOrderDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute top-14 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-[99998] overflow-hidden order-dropdown"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
+                          <h3 className="font-semibold text-white text-xl">Orders</h3>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {orderList && orderList.length > 0 ?
+                            (
+                              <motion.div initial="hidden" animate="visible" className="text-black font-Archivo">
+                                {orderList.map((order, index) => {
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="h-25 flex items-center px-4 py-2 gap-4 border-t"
+                                      onClick={() => navigate(`/manage-order/${order.orderId}`)}
+                                    >
+                                      <div className="h-full flex items-center">
+                                        <img
+                                          className="w-15 h-15 object-cover rounded-full border"
+                                          src={
+                                            order.gig.images[0] === "temp"
+                                              ? default_avatar
+                                              : `${imageShow}${order.gig.images[0]}`
+                                          }
+                                          alt="profile"
+                                          onLoad={() => setImageLoading(false)}
+                                          onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = default_avatar;
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="flex flex-col justify-between h-full">
+                                        <p className="font-semibold text-xl">{order.gig.name}</p>
+                                        <div
+                                          className={`mb-3 text-sm p-1 border text-center w-25 ${order.progress === 0
+                                              ? "bg-gray-200 text-gray-700 border-gray-400"
+                                              : order.progress === 1
+                                                ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                                                : order.progress === 2
+                                                  ? "bg-blue-100 text-blue-800 border-blue-300"
+                                                  : order.progress === 3
+                                                    ? "bg-green-100 text-green-800 border-green-300"
+                                                    : "bg-red-100 text-red-800 border-red-300"
+                                            }`}
+                                        >
+                                          {order.progress === 0
+                                            ? "Waiting"
+                                            : order.progress === 1
+                                              ? "In Progress"
+                                              : order.progress === 2
+                                                ? "Delivered"
+                                                : order.progress === 3
+                                                  ? "Finished"
+                                                  : "Unknown"}
+                                        </div>
+
+
+                                      </div>
+                                      <div className="flex flex-col justify-between h-full py-2 ml-auto">
+                                        <p className="text-gray-600 text-sm">{getRelativeDate(order.startTime)}</p>
+                                        <p className="font-semibold text-lg mb-3">Rp. {formattedPrice(order.package.price) || 0}</p>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </motion.div>
+                            )
+                            :
+                            (
+                              <motion.div
+                                className="p-8 text-center text-gray-500"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                              >
+                                No Orders yet
+                              </motion.div>
+                            )
+                          }
+                        </div>
+
+                        {/* <div className="max-h-96 overflow-y-auto">
+                          {notificationList && notificationList.length > 0 ? (
+                            <motion.div initial="hidden" animate="visible">
+                              {notificationList.map((notification, index) => {
+                                if (!notification) return null;
+
+                                const messageDate = new Date(notification.message.time);
+                                const messageMidnight = new Date(messageDate);
+                                messageMidnight.setHours(0, 0, 0, 0);
+
+                                let showDateLabel = false;
+
+                                if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
+                                  showDateLabel = true;
+                                  lastRenderedDate = messageMidnight;
+                                }
+
+                                const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
+
+                                return (
+                                  <React.Fragment key={notification._id}>
+                                    {label && (
+                                      <div className="text-black font-Archivo p-3 text-lg font-semibold">
+                                        {label}
+                                      </div>
+                                    )}
+                                    <NotificationItem notification={notification} unreadCount={unreadCount} setUnreadCount={setUnreadCount} />
+                                  </React.Fragment>
+                                );
+                              })}
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              className="p-8 text-center text-gray-500"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.2 }}
+                            >
+                              No notifications yet
+                            </motion.div>
+                          )}
+                        </div> */}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
           </div>
           <div className="w-3/10 flex justify-end">
             <motion.div className="flex items-center gap-6 text-white">
+              <div className="cursor-pointer w-12">
+                <motion.img
+                  src={message}
+                  alt="Messages"
+                  className="w-10 h-10"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/chat/def");
+                  }}
+                />
+              </div>
               <div className="relative w-11">
                 <div className="cursor-pointer w-12">
                   <motion.img
@@ -433,7 +651,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
         isOpen={showFreelancerRegister}
         onClose={() => setShowFreelancerRegister(false)}
         onCloseAfterSave={() => {
-          checkRequestedStatus();
+          checkRequestStatus();
           setShowFreelancerRegister(false);
         }}
       />

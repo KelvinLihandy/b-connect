@@ -18,13 +18,16 @@ import status from '../../assets/mo_status.svg';
 // Importing API routes
 import { baseAPI, orderAPI, gigAPI } from '../../constants/APIRoutes';
 import { imageShow } from '../../constants/DriveLinkPrefixes';
+import { m } from 'framer-motion';
+import { set } from 'lodash';
+import { AuthContext } from '../../contexts/AuthContext';
 
 // Status constants based on current step
 const STATUS_COLORS = {
-  0: "bg-orange-500",
-  1: "bg-green-500",  
-  2: "bg-yellow-500",
-  3: "bg-green-500"  
+  0: "bg-gray-500",
+  1: "bg-yellow-500",
+  2: "bg-blue-500",
+  3: "bg-green-500"
 };
 
 const STATUS_ICONS = {
@@ -36,9 +39,9 @@ const STATUS_ICONS = {
 
 const STATUS_TEXT = {
   0: "Waiting",
-  1: "Order Confirmed",
-  2: "In Progress",
-  3: "Delivered"
+  1: "In Progress",
+  2: "Delivered",
+  3: "Finished"
 };
 
 // Format currency as Indonesian Rupiah
@@ -48,25 +51,25 @@ const formatRupiah = (amount) => {
 
 const ManageOrder = () => {
   const { orderId } = useParams();
-  
+
   const { isFreelancer } = useContext(UserTypeContext);
-  
-  // 0 = Waiting, 1 = Order Confirmed, 2 = In Progress, 3 = Delivered
+  const { auth } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(0);
-  
+
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [isGigCreator, setIsGigCreator] = useState(false);
-  
+
   const [orderDates, setOrderDates] = useState({
-    ORDER_CONFIRMATION_DATE: "",
+    START_DATE: "",
     EXPECTED_DELIVERY: "",
     IN_PROGRESS_DATE: "",
-    DELIVERY_DATE: ""
+    DELIVERY_DATE: "",
+    FINISHED_DATE: ""
   });
-  
+
   // Order details state
   const [orderDetails, setOrderDetails] = useState({
     ORDER_NUMBER: "",
@@ -76,18 +79,18 @@ const ManageOrder = () => {
     DISCOUNT: 0,
     SERVICE_IMAGE: image
   });
-  
+
   // Payment method state
   const [paymentMethod, setPaymentMethod] = useState({
-    TYPE: "Bank Transfer", 
+    TYPE: "Bank Transfer",
     STATUS: "Paid"
-  });  
+  });
   const handleInvoiceClick = () => {
     const invoiceUrl = `/invoice/${orderId}`;
-    
+
     window.open(invoiceUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
   };
-    // Handle updating order progress
+
   const handleUpdateProgress = async (newProgress) => {
     try {
       const response = await axios.put(
@@ -95,27 +98,28 @@ const ManageOrder = () => {
         { progress: newProgress },
         { withCredentials: true }
       );
-      
+      console.log("Update response:", response);
       if (response.status === 200) {
-        setCurrentStep(newProgress);
-        
-        if (newProgress === 2) {
-          const today = new Date();
-          const formattedToday = formatDate(today);
-          
+        setCurrentStep(response.data.contract.progress);
+        const today = new Date();
+        const formattedToday = formatDate(today);
+
+        if (newProgress === 1) {
           setOrderDates(prevDates => ({
             ...prevDates,
             IN_PROGRESS_DATE: formattedToday
           }));
         }
-        
-        if (newProgress === 3) {
-          const today = new Date();
-          const formattedToday = formatDate(today);
-          
+        else if (newProgress === 2) {
           setOrderDates(prevDates => ({
             ...prevDates,
             DELIVERY_DATE: formattedToday
+          }));
+        }
+        else if (newProgress === 3) {
+          setOrderDates(prevDates => ({
+            ...prevDates,
+            FINISHED_DATE: formattedToday
           }));
         }
       }
@@ -128,7 +132,7 @@ const ManageOrder = () => {
       }
     }
   };
-  
+
   // Helper function to format a date nicely
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -138,73 +142,81 @@ const ManageOrder = () => {
       year: 'numeric'
     });
   };
-  
+
   // Helper function to add days to a date
   const addDays = (dateString, days) => {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days);
     return date;
   };
+  if(isGigCreator) console.log("Gig Creator:", isGigCreator, auth?.data.auth.id);
 
   // Fetch order data from API
-  useEffect(() => {    
+  useEffect(() => {
     const fetchOrderData = async () => {
       try {
         setLoading(true);
-        
+
         try {
           const response = await axios.get(`${orderAPI}/${orderId}`, {
             withCredentials: true
           });
-          
+
           setOrderData(response.data);
           setCurrentStep(response.data.progress);
-          
-          let gigDetails = null;          
+
+          let gigDetails = null;
           try {
             const gigResponse = await axios.post(`${gigAPI}/get-gig/${response.data.gigId}`);
             gigDetails = gigResponse.data.detail;
-            
-            setIsGigCreator(isFreelancer && response.data.gigInfo.creator.id === response.data.gigInfo.creator.id);
+
+            setIsGigCreator(isFreelancer && auth?.data.auth.id === response.data.gigInfo.creator.id);
           } catch (gigError) {
             setIsGigCreator(false);
+            console.error("Error fetching gig details:", gigError);
           }
-          
+
           // Update order details with gig information
           setOrderDetails({
             ORDER_NUMBER: response.data.orderId,
             SERVICE_NAME: gigDetails ? gigDetails.name : response.data.gigInfo.title,
             SERVICE_PRICE: response.data.package.price || 0,
-            PROCESSING_FEE: 0, 
+            PROCESSING_FEE: 0,
             DISCOUNT: 0, // No discount by default
-            SERVICE_IMAGE: gigDetails && gigDetails.images && gigDetails.images.length > 0 
-                          ? gigDetails.images[0] 
-                          : response.data.gigInfo.image || image
+            SERVICE_IMAGE: gigDetails && gigDetails.images && gigDetails.images.length > 0
+              ? gigDetails.images[0]
+              : response.data.gigInfo.image || image
           });
-          
+
           // Update payment method if available
           if (response.data.transaction) {
             setPaymentMethod({
-              TYPE: "Bank Transfer", 
+              TYPE: "Bank Transfer",
               STATUS: response.data.transaction.status === "paid" ? "Paid" : "Pending"
             });
           }
-          
-          const startDate = new Date(response.data.startTime);
-          const formattedStartDate = formatDate(startDate);
-          const workDuration = response.data.package.workDuration || 3; 
-          
-          const expectedDelivery = addDays(startDate, workDuration);
-          const formattedDelivery = formatDate(expectedDelivery);
-          
+
+          const formatIfExists = (dateStr) => dateStr ? formatDate(new Date(dateStr)) : "";
+
+          const formattedStartDate = formatIfExists(response.data.startTime);
+          const formattedProgressDate = formatIfExists(response.data.progressTime);
+          const formattedDeliveredDate = formatIfExists(response.data.deliveredTime);
+          const formattedFinishedDate = formatIfExists(response.data.finishedTime);
+
+
+          const workDuration = response.data.package.workDuration || 3;
+          const expectedDelivery = addDays(new Date(response.data.startTime), workDuration);
+          const formattedDeliveryExpected = formatDate(expectedDelivery);
+
           // Set order dates
           setOrderDates({
-            ORDER_CONFIRMATION_DATE: formattedStartDate,
-            EXPECTED_DELIVERY: formattedDelivery,
-            IN_PROGRESS_DATE: formattedStartDate, 
-            DELIVERY_DATE: `Expected by ${formattedDelivery}`
+            START_DATE: formattedStartDate,
+            EXPECTED_DELIVERY: formattedDeliveryExpected,
+            IN_PROGRESS_DATE: formattedProgressDate,
+            DELIVERY_DATE: formattedDeliveredDate,
+            FINISHED_DATE: formattedFinishedDate,
           });
-          
+
         } catch (err) {
           if (err.response && err.response.status === 403) {
             // User is not authorized to view this order
@@ -218,7 +230,7 @@ const ManageOrder = () => {
             setError(`Failed to load order data: ${err.response?.data?.error || err.message || "Unknown error"}`);
           }
         }
-        
+
         setLoading(false);
       } catch (err) {
         console.error("Error in fetchOrderData:", err);
@@ -226,34 +238,40 @@ const ManageOrder = () => {
         setLoading(false);
       }
     };
-    
+
     if (orderId) {
       fetchOrderData();
     }
   }, [orderId]);
   const totalPrice = orderDetails.SERVICE_PRICE + orderDetails.PROCESSING_FEE - orderDetails.DISCOUNT;
-  
+
   const steps = [
     {
-      id: 1,
-      name: "Order Confirmed", 
-      icon: check, 
-      date: orderDates.ORDER_CONFIRMATION_DATE
+      id: 0,
+      name: "Order Sent",
+      icon: check,
+      date: orderDates.START_DATE
     },
     {
-      id: 2,
-      name: "In Progress", 
-      icon: clock, 
+      id: 1,
+      name: "In Progress",
+      icon: clock,
       date: orderDates.IN_PROGRESS_DATE
     },
     {
+      id: 2,
+      name: "Delivered",
+      icon: send,
+      date: orderDates.DELIVERY_DATE
+    },
+    {
       id: 3,
-      name: "Delivered", 
-      icon: send, 
+      name: "Finished",
+      icon: check,
       date: orderDates.DELIVERY_DATE
     }
   ];
-  
+
   // Show loading state
   if (loading) {
     return (
@@ -268,7 +286,7 @@ const ManageOrder = () => {
       </div>
     );
   }
-  
+
   // Show error state
   if (error) {
     return (
@@ -287,12 +305,12 @@ const ManageOrder = () => {
   return (
     <div className="font-Archivo">
       <Navbar alt />
-      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>        
+      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>
         {/* Order Header */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-semibold">Order #{orderDetails.ORDER_NUMBER}</h1>
           <div className="flex text-lg gap-8">
-            <button 
+            <button
               onClick={handleInvoiceClick}
               className="flex items-center gap-2 border-4 border-gray-300 bg-white cursor-pointer rounded px-4 hover:bg-gray-50 transition-colors"
             >
@@ -300,10 +318,10 @@ const ManageOrder = () => {
               <span>Invoice</span>
             </button>
             <div className={`flex items-center gap-2 ${STATUS_COLORS[currentStep]} text-white rounded px-4`}>
-              <img 
-                src={STATUS_ICONS[currentStep]} 
-                alt={STATUS_TEXT[currentStep]} 
-                className="w-[37px] h-[37px]" 
+              <img
+                src={STATUS_ICONS[currentStep]}
+                alt={STATUS_TEXT[currentStep]}
+                className="w-[37px] h-[37px]"
               />
               <span>{STATUS_TEXT[currentStep]}</span>
             </div>
@@ -313,70 +331,75 @@ const ManageOrder = () => {
         {/* Order Date Info */}
         <div className="pb-4">
           <div className="flex text-lg gap-8">
-            <p>Order date: {orderDates.ORDER_CONFIRMATION_DATE}</p>
+            <p>Order date: {orderDates.START_DATE}</p>
             <p>Expected delivery: <span className="text-green-500">{orderDates.EXPECTED_DELIVERY}</span></p>
           </div>
         </div>
-        
-        <div className="border-t border-[#000] w-full mb-6"></div>        
-        {/* Order Status Timeline*/}        
+
+        <div className="border-t border-[#000] w-full mb-6"></div>
         <div className="mb-8">
-          {/* Progress bar background */}
           <div className="flex justify-between items-center px-[5%] mb-1 relative">
-            <div className="absolute h-1 top-[35px] -translate-y-1/2 left-[10%] right-[10%]">
-              <div className="absolute left-0 right-1/2 h-full bg-gray-200">
-                {currentStep > 1 && <div className="h-full bg-green-500 w-full transition-all duration-300"></div>}
+            <div className="absolute h-1 top-[35px] -translate-y-1/2 left-[10%] right-[10%] flex">
+              <div className="flex-1 bg-gray-200 relative">
+                {currentStep > 0 && (
+                  <div className="absolute inset-0 bg-green-500 transition-all duration-300" />
+                )}
               </div>
-              <div className="absolute left-1/2 right-0 h-full bg-gray-200">
-                {currentStep > 2 && <div className="h-full bg-green-500 w-full transition-all duration-300"></div>}
+              <div className="flex-1 bg-gray-200 relative">
+                {currentStep > 1 && (
+                  <div className="absolute inset-0 bg-green-500 transition-all duration-300" />
+                )}
+              </div>
+              <div className="flex-1 bg-gray-200 relative">
+                {currentStep > 2 && (
+                  <div className="absolute inset-0 bg-green-500 transition-all duration-300" />
+                )}
               </div>
             </div>
-            
-            {/* Steps indicators */}
             {steps.map((step, index) => (
               <div key={step.id} className="z-10 flex flex-col items-center">
                 {/* Circle indicator */}
-                <div 
+                <div
                   className={`w-[70px] h-[70px] flex items-center justify-center rounded-full 
-                    ${index + 1 <= currentStep ? 'bg-green-500' : 'bg-gray-300'} 
+                    ${index <= currentStep ? 'bg-green-500' : 'bg-gray-300'} 
                     border-4 border-white shadow-md mb-2`}
                 >
-                  <img 
-                    src={step.icon} 
-                    alt={step.name} 
+                  <img
+                    src={step.icon}
+                    alt={step.name}
                     className="w-8 h-8"
                   />
-                </div>                
+                </div>
                 {/* Step name and date */}
                 <div className="text-center mt-2">
                   <p className="font-medium text-lg">{step.name}</p>
-                  <p className="text-gray-500 text-base">{step.date}</p>
+                  <p className="text-gray-500 text-base">{step.date ? step.date : '\u00A0'}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
         <div className="border-t border-[#000] w-full mb-6"></div>
-              {/* Order Item */}        <div className="flex items-center py-4 mb-6">
+        {/* Order Item */}        <div className="flex items-center py-4 mb-6">
           <div className="rounded mr-4">
             {orderDetails.SERVICE_IMAGE && orderDetails.SERVICE_IMAGE.startsWith('1') ? (
-              <img 
-                src={`${imageShow}${orderDetails.SERVICE_IMAGE}`} 
-                alt="Service" 
+              <img
+                src={`${imageShow}${orderDetails.SERVICE_IMAGE}`}
+                alt="Service"
                 className="w-[120px] h-[120px] object-cover rounded bg-gray-200"
               />
             ) : (
-              <img 
-                src={image} 
-                alt="Service" 
-                className="w-[80px] h-[80px] rounded bg-gray-200" 
+              <img
+                src={image}
+                alt="Service"
+                className="w-[80px] h-[80px] rounded bg-gray-200"
               />
             )}
           </div>
           <div className="flex-grow">
             <h3 className="font-medium text-2xl">{orderDetails.SERVICE_NAME}</h3>
             <div className="text-gray-500 text-lg flex items-center gap-2">
-              <p>Order #{orderDetails.ORDER_NUMBER}</p>
+              <p>Order {orderDetails.ORDER_NUMBER}</p>
               <p>{orderDates.ORDER_CONFIRMATION_DATE}</p>
             </div>
             <span className={`inline-block ${STATUS_COLORS[currentStep]} text-white rounded px-2 py-1 text-sm mt-1`}>{STATUS_TEXT[currentStep]}</span>
@@ -385,46 +408,63 @@ const ManageOrder = () => {
             <p className="font-bold text-xl">{formatRupiah(orderDetails.SERVICE_PRICE)}</p>
           </div>
         </div>
-        
-        <div className="border-t border-[#000] w-full mb-6"></div>        
+
+        <div className="border-t border-[#000] w-full mb-6"></div>
         {/* Payment Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-medium mb-2">Payment</h2>            <div className="flex items-center">            <div className="flex items-center gap-2 text-xl font-Archivo">              
-              <img src={bankTransfer} alt="Bank Transfer" className="" />
-              <span>Bank Transfer</span>
-              <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
+          <h2 className="text-2xl font-medium mb-2">Payment</h2>            <div className="flex items-center">            <div className="flex items-center gap-2 text-xl font-Archivo">
+            <img src={bankTransfer} alt="Bank Transfer" className="" />
+            <span>Bank Transfer</span>
+            <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
+          </div>
+            <div className="ml-auto">
+              {isGigCreator ?
+                (
+                  <div className='flex'>
+                    {currentStep === 0 && (
+                      <button
+                        onClick={() => handleUpdateProgress(1)}
+                        className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                      >
+                        <img src={status} alt="Status" className="h-10" />
+                        <span>Confirm Order</span>
+                      </button>
+                    )}
+                    {currentStep === 1 && (
+                      <button
+                        onClick={() => handleUpdateProgress(2)}
+                        className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                      >
+                        <img src={check} alt="Check" className="h-10 w-10" />
+                        <span>Deliver Order</span>
+                      </button>
+                    )}
+                  </div>
+                )
+                :
+                (
+                  <>
+                    {currentStep === 2 && (
+                      <button
+                        onClick={() => handleUpdateProgress(3)}
+                        className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                      >
+                        <img src={check} alt="Check" className="" />
+                        <span>Finish Order</span>
+                      </button>
+                    )}
+                  </>
+                )}
             </div>
-            
-            {isGigCreator && (              <div className="ml-auto">
-                {currentStep === 0 && (
-                  <button 
-                    onClick={() => handleUpdateProgress(2)} 
-                    className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
-                  >
-                    <img src={status} alt="Status" className="" />
-                    <span>Confirm Order</span>
-                  </button>
-                )}
-                {currentStep === 2 && (
-                  <button 
-                    onClick={() => handleUpdateProgress(3)} 
-                    className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
-                  >
-                    <img src={check} alt="Check" className="" />
-                    <span>Finish Order</span>
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         </div>
-        
+
         <div className="border-t border-[#000] w-full mb-6"></div>
 
         {/* Help and Order Summary */}
-        <div className="flex">          
+        <div className="flex">
           {/* Need Help Section */}
-          <div className="w-1/2 pr-4">
+          {/* <div className="w-1/2 pr-4">
             <h2 className="text-2xl font-medium font-Archivo mb-3">Need Help</h2>
             <div className="space-y-3 font-Archivo text-lg">
               <button className="flex items-center gap-2 cursor-pointer">
@@ -441,7 +481,7 @@ const ManageOrder = () => {
               </button>
             </div>
           </div>
-          
+           */}
           {/* Order Summary Section */}
           <div className="w-1/2 pl-4">
             <h2 className="text-2xl mb-3">Order Summary</h2>

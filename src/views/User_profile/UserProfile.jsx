@@ -12,7 +12,6 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("purchase");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const { auth } = useContext(AuthContext);
 
   const [userStats, setUserStats] = useState({
@@ -690,7 +689,9 @@ const UserProfile = () => {
                         <div className="text-gray-400 text-8xl mb-6">📦</div>
                         <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Purchase History</h3>
                         <p className="text-gray-500 text-lg">You haven't made any purchases yet.</p>
-                        <button className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors">
+                        <button className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors"
+                        onClick={() => navigate("/catalog")}
+                        >
                           Browse Services
                         </button>
                       </div>

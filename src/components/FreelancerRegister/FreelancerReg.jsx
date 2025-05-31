@@ -9,6 +9,7 @@ import axios from "axios";
 const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
   const { requested } = useContext(RequestedContext);
   const [step, setStep] = useState(0);
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedDescription, setSelectedDescription] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStudentFile, setSelectedStudentFile] = useState(null);
@@ -17,6 +18,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
   const [searchCategory, setSearchCategory] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState({
+    location: "",
     category: "",
     description: "",
     studentIdFile: "",
@@ -93,11 +95,16 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
 
   const validateForm = () => {
     const errors = {
+      location: "",
       category: "",
       description: "",
       studentIdFile: "",
     };
     let isValid = true;
+    if (!selectedLocation.trim()) {
+      errors.location = "Location is required";
+      isValid = false;
+    }
     if (selectedCategories.length === 0) {
       errors.category = "At least one category is required";
       isValid = false;
@@ -222,6 +229,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     try {
       const formData = new FormData();
       formData.append("studentPicture", selectedStudentFile.file);
+      formData.append("location", selectedLocation);
       formData.append("description", selectedDescription);
       formData.append("categories", JSON.stringify(selectedCategories));
       const response = await axios.post(`${userAPI}/request-freelancer`,
@@ -253,7 +261,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
           <h3 className="text-3xl font-bold mb-1">Request Already Submitted</h3>
           <h3 className="text-2xl font-bold mb-4 text-gray-600">We're reviewing your application</h3>
           <p className="text-gray-600 text-sm mb-6 max-w-md">
-            Terima kasih sudah mengirimkan permintaan untuk menjadi freelancer kami. 
+            Terima kasih sudah mengirimkan permintaan untuk menjadi freelancer kami.
             Tim kami sedang mereview profil Anda dan akan menghubungi Anda segera.
           </p>
         </div>
@@ -405,6 +413,33 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                               )}
 
                               <div className="bg-white rounded-lg p-6 border border-gray-200">
+                                <div className="mb-4">
+                                  <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                                    Location <span className="text-red-500">*</span>
+                                  </label>
+                                  <textarea
+                                    name="location"
+                                    value={selectedLocation}
+                                    onChange={(e) => {
+                                      setSelectedLocation(e.target.value);
+                                      if (formSubmitted) {
+                                        setFormErrors({
+                                          ...formErrors,
+                                          [location]: "",
+                                        })
+                                      }
+                                    }}
+                                    placeholder="Berikan lokasi kamu (misal: Jakarta, Bandung, Surabaya)"
+                                    className={`w-full p-2 border rounded h-15
+                                      ${formErrors.location ? "border-red-500" : "border-gray-300"}`
+                                    }
+                                  />
+                                  {formErrors.location && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                      {formErrors.location}
+                                    </p>
+                                  )}
+                                </div>
                                 <div className="flex-1 mb-6">
                                   <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                     Category (Maksimal 2) <span className="text-red-500">*</span>

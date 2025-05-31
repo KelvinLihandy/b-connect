@@ -6,18 +6,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../../contexts/AuthContext";
 import { socket } from '../../App';
 
-// Import images directly
+import dummy1 from "../../assets/Gemini_Generated_Image_at3j5bat3j5bat3j.png";
+import dummy2 from "../../assets/Gemini_Generated_Image_at3j5fat3j5fat3j.png";
+import dummy3 from "../../assets/Gemini_Generated_Image_sgjvdqsgjvdqsgjv.png";
+import dummy4 from "../../assets/Gemini_Generated_Image_zhjybwzhjybwzhjy.png";
 import default_avatar from '../../assets/default-avatar.png'
 import profile_square from "../../assets/user-profile-square.svg"
-import profileReview1 from "../../assets/profileReview1.png";
-import profileReview2 from "../../assets/profileReview2.png";
-import profileReview3 from "../../assets/profileReview3.png";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { gigAPI, userAPI } from "../../constants/APIRoutes";
 import { DynamicStars } from "../../components/dynamic_stars/DynamicStars";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
-import { CircularProgress } from "@mui/material";
 import Contract from "../../components/contract/Contract";
 import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
 
@@ -42,7 +41,16 @@ const Detail = () => {
   const [reviews, setReviews] = useState([]);
   const [isOwnGig, setIsOwnGig] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
-
+  const [randomDummy, setRandomDummy] = useState(null);
+  const dummyImages = [
+    dummy1,
+    dummy2,
+    dummy3,
+    dummy4
+  ];
+  useEffect(() => {
+    setRandomDummy(dummyImages[Math.floor(Math.random() * dummyImages.length)]);
+  }, [])
   useEffect(() => {
     const reasons = disabledGigs[gigId];
     if (reasons && reasons.length > 0) {
@@ -269,6 +277,10 @@ const Detail = () => {
                 animate="center"
                 exit="exit"
                 transition={transition}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = randomDummy;
+                }}
               />
             </AnimatePresence>
 
@@ -362,6 +374,10 @@ const Detail = () => {
                       backgroundColor: '#f9fafb',
                       objectPosition: 'center'
                     }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = randomDummy;
+                    }}
                   />
                 </motion.div>
               </AnimatePresence>
@@ -447,6 +463,10 @@ const Detail = () => {
                     alt={`Thumbnail ${index + 1}`}
                     className={`w-24 h-16 object-cover ${index !== currentImage ? 'opacity-70 hover:opacity-100' : ''
                       } transition-opacity`}
+                    onError={(e) => { 
+                      e.target.onerror = null;
+                      e.target.src = randomDummy;
+                    }}
                   />
                 </motion.div>
               ))}

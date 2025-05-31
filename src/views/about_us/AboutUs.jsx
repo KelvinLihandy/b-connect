@@ -1,20 +1,10 @@
 import React, { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-import bell from "../../assets/bell_icon.svg";
-import heart from "../../assets/heart_icon.svg";
-import message from "../../assets/message_icon.svg";
-import people from "../../assets/people_icon.svg";
-import order from "../../assets/order_icon.svg";
-import search from "../../assets/search_btn.svg";
 import Footer from "../../components/footer/Footer";
-import logo from "../../assets/logo.svg";
 import downarrow from "../../assets/down_arrow.svg";
 import diagram from "../../assets/diagram.png";
 import about_us_image from "../../assets/about_us_img.svg";
 import cantfind from "../../assets/yuppies_managing.svg";
-import { authAPI } from "../../constants/APIRoutes";
-import axios from "axios";
 import Navbar from "../../components/navbar/Navbar";
 
 const AboutUs = () => {

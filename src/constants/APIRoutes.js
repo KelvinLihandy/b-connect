@@ -11,5 +11,3 @@ export const orderAPI = `${baseAPI}/api/order`;
 export const paymentMethodsAPI = `${baseAPI}/api/user/payment-methods`;
 export const userSettingsAPI = `${baseAPI}/api/user/settings`;
 export const userSessionsAPI = `${baseAPI}/api/user/sessions`;
-
-

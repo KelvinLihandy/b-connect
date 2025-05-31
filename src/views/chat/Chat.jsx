@@ -263,7 +263,7 @@ const Chat = () => {
               ) : (
                 <div className="text-center text-gray-400 py-10 text-xl h-180 flex items-center justify-center px-5">
                   Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
-                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -287,9 +287,16 @@ const Chat = () => {
               <>
                 <div className="w-20 h-20">
                   <img
-                    src={availableUsers[roomIndex]?.picture == "temp" ? default_avatar : `${imageShow}${availableUsers[roomIndex]?.picture}`}
+                    src={availableUsers[roomIndex]?.picture == "temp" ?
+                      default_avatar
+                      :
+                      `${imageShow}${availableUsers[roomIndex]?.picture}`}
                     alt={availableUsers[roomIndex]?.name}
                     className="w-full h-full rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = default_avatar;
+                    }}
                   />
                 </div>
                 <div className="ml-4">
