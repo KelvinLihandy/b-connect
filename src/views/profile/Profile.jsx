@@ -832,7 +832,7 @@ const Profile = () => {
 
               <div className="border-t border-[#ACACAC] w-full pt-4 mt-6">
                 <p className="text-[14px] text-[#565E6D]">
-                  <strong>Terakhir Diperbarui:</strong> Januari 2025
+                  <strong>Terakhir Diperbarui:</strong> Juni 2025
                 </p>
               </div>
             </div>

@@ -11,18 +11,17 @@ import check from '../../assets/mo_check.svg';
 import clock from '../../assets/mo_clock.svg';
 import bankTransfer from '../../assets/mo_bank_transfer.svg';
 import image from '../../assets/mo_image.svg';
-import information from '../../assets/mo_information.svg';
 import invoice from '../../assets/mo_invoice.svg';
-import Return from '../../assets/mo_return.svg';
 import send from '../../assets/mo_send.svg';
 import status from '../../assets/mo_status.svg';
 import message_icon from '../../assets/message_icon.svg';
+import dummy1 from "../../assets/Gemini_Generated_Image_at3j5bat3j5bat3j.png";
+import dummy2 from "../../assets/Gemini_Generated_Image_at3j5fat3j5fat3j.png";
+import dummy3 from "../../assets/Gemini_Generated_Image_sgjvdqsgjvdqsgjv.png";
+import dummy4 from "../../assets/Gemini_Generated_Image_zhjybwzhjybwzhjy.png";
 
-// Importing API routes
-import { baseAPI, orderAPI, gigAPI } from '../../constants/APIRoutes';
+import { orderAPI, gigAPI } from '../../constants/APIRoutes';
 import { imageShow } from '../../constants/DriveLinkPrefixes';
-import { m } from 'framer-motion';
-import { set } from 'lodash';
 import { AuthContext } from '../../contexts/AuthContext';
 
 // Status constants based on current step
@@ -47,24 +46,35 @@ const STATUS_TEXT = {
   3: "Finished"
 };
 
-// Format currency as Indonesian Rupiah
-const formatRupiah = (amount) => {
-  return `Rp ${amount.toLocaleString('id-ID')}`;
+const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
+  return (price ?? 0).toLocaleString(locale, {
+    minimumFractionDigits: minFraction,
+    maximumFractionDigits: maxFraction,
+  });
 };
 
 const ManageOrder = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-
   const { isFreelancer } = useContext(UserTypeContext);
   const { auth } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(0);
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [isGigCreator, setIsGigCreator] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [randomDummy, setRandomDummy] = useState(null);
+  const dummyImages = [
+    dummy1,
+    dummy2,
+    dummy3,
+    dummy4
+  ];
+
+  useEffect(() => {
+    setRandomDummy(dummyImages[Math.floor(Math.random() * dummyImages.length)]);
+  }, [])
 
   const [orderDates, setOrderDates] = useState({
     START_DATE: "",
@@ -88,24 +98,24 @@ const ManageOrder = () => {
   const [paymentMethod, setPaymentMethod] = useState({
     TYPE: "Bank Transfer",
     STATUS: "Paid"
-  });    const handleInvoiceClick = () => {
+  }); const handleInvoiceClick = () => {
     const invoiceUrl = `/invoice/${orderId}`;
 
     window.open(invoiceUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-  };  const initiateChat = () => {
+  }; const initiateChat = () => {
     if (!auth) {
       navigate("/sign-in");
       return;
     }
-    
+
     if (!orderData) {
       alert("Order data not available. Please wait for data to load.");
       return;
     }
-    
+
     // Get the other party's ID based on current user role
     let otherPartyId;
-    
+
     if (isFreelancer) {
       // If current user is freelancer, chat with the buyer
       otherPartyId = orderData.buyer?._id || orderData.userId;
@@ -113,7 +123,7 @@ const ManageOrder = () => {
       // If current user is buyer, chat with the freelancer
       otherPartyId = orderData.gigInfo?.creator?.id;
     }
-    
+
     if (!otherPartyId) {
       console.error("Order data structure:", orderData);
       console.error("Current user is freelancer:", isFreelancer);
@@ -122,12 +132,12 @@ const ManageOrder = () => {
       alert("Unable to start chat. User information not available.");
       return;
     }
-    
+
     console.log("Initiating chat between:", auth?.data?.auth?.id, "and", otherPartyId);
-    
+
     // Create room and navigate to chat
     socket.emit("create_room", [auth?.data?.auth?.id, otherPartyId]);
-    
+
     // Handle room creation response
     const handleSwitchRoom = (url) => {
       console.log("Navigating to chat:", url);
@@ -135,7 +145,7 @@ const ManageOrder = () => {
       // Clean up the listener to prevent memory leaks
       socket.off("switch_room", handleSwitchRoom);
     };
-    
+
     socket.on("switch_room", handleSwitchRoom);
   };
 
@@ -150,7 +160,7 @@ const ManageOrder = () => {
   const handleReviewSubmit = async (reviewData) => {
     try {
       console.log("Review submitted:", reviewData);
-      
+
       const reviewResponse = await axios.post(
         `${orderAPI}/${orderId}/review`,
         {
@@ -159,17 +169,17 @@ const ManageOrder = () => {
         },
         { withCredentials: true }
       );
-      
+
       if (reviewResponse.status === 200) {
         setCurrentStep(3);
         const today = new Date();
         const formattedToday = formatDate(today);
-        
+
         setOrderDates(prevDates => ({
           ...prevDates,
           FINISHED_DATE: formattedToday
         }));
-        
+
         setShowReviewModal(false);
         // alert("Order finished successfully! Thank you for your review.");
       }
@@ -240,7 +250,7 @@ const ManageOrder = () => {
   // Helper function to add days to a date
   const addDays = (dateString, days) => {
     const date = new Date(dateString);
-    date.setDate(date.getDate() + days);    return date;
+    date.setDate(date.getDate() + days); return date;
   };
   // Fetch order data from API
   useEffect(() => {
@@ -259,7 +269,7 @@ const ManageOrder = () => {
           let gigDetails = null;
           try {
             const gigResponse = await axios.post(`${gigAPI}/get-gig/${response.data.gigId}`);
-            gigDetails = gigResponse.data.detail;            
+            gigDetails = gigResponse.data.detail;
             setIsGigCreator(isFreelancer && auth?.data.auth.id === response.data.gigInfo.creator.id.toString());
           } catch (gigError) {
             setIsGigCreator(false);
@@ -400,18 +410,18 @@ const ManageOrder = () => {
   return (
     <div className="font-Archivo">
       <Navbar alt />
-      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>        
+      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>
         {/* Order Header */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-semibold">Order #{orderDetails.ORDER_NUMBER}</h1>
-          <div className="flex text-lg gap-4">            
+          <div className="flex text-lg gap-4">
             <button
               onClick={initiateChat}
               className="flex items-center gap-2 border-4 border-blue-500 bg-blue-400 cursor-pointer rounded px-4 transition-colors"
             >
-              <img 
-                src={message_icon} 
-                alt="Contact" 
+              <img
+                src={message_icon}
+                alt="Contact"
                 className="w-[25px] h-[25px]"
               />
               <span className='text-white'>Contact</span>
@@ -486,19 +496,27 @@ const ManageOrder = () => {
           </div>
         </div>
         <div className="border-t border-[#000] w-full mb-6"></div>
-        {/* Order Item */}        <div className="flex items-center py-4 mb-6">
+        <div className="flex items-center py-4 mb-6">
           <div className="rounded mr-4">
             {orderDetails.SERVICE_IMAGE && orderDetails.SERVICE_IMAGE.startsWith('1') ? (
               <img
                 src={`${imageShow}${orderDetails.SERVICE_IMAGE}`}
                 alt="Service"
                 className="w-[120px] h-[120px] object-cover rounded bg-gray-200"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = randomDummy;
+                }}
               />
             ) : (
               <img
                 src={image}
                 alt="Service"
                 className="w-[80px] h-[80px] rounded bg-gray-200"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = randomDummy;
+                }}
               />
             )}
           </div>
@@ -511,21 +529,21 @@ const ManageOrder = () => {
             <span className={`inline-block ${STATUS_COLORS[currentStep]} text-white rounded px-2 py-1 text-sm mt-1`}>{STATUS_TEXT[currentStep]}</span>
           </div>
           <div className="text-right">
-            <p className="font-bold text-xl">{formatRupiah(orderDetails.SERVICE_PRICE)}</p>
+            <p className="font-bold text-xl">RP. {formattedPrice(orderDetails.SERVICE_PRICE)}</p>
           </div>
         </div>
 
         <div className="border-t border-[#000] w-full mb-6"></div>
         {/* Payment Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-medium mb-2">Payment</h2>            
-          <div className="flex items-center">            
+          <h2 className="text-2xl font-medium mb-2">Payment</h2>
+          <div className="flex items-center">
             <div className="flex items-center gap-2 text-xl font-Archivo">
-            <img src={bankTransfer} alt="Bank Transfer" className="" />
-            <span>Bank Transfer</span>
-            <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
-          </div>
-            <div className="ml-auto">              
+              <img src={bankTransfer} alt="Bank Transfer" className="" />
+              <span>Bank Transfer</span>
+              <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
+            </div>
+            <div className="ml-auto">
               {isGigCreator ?
                 (
                   <div className='flex'>
@@ -547,7 +565,7 @@ const ManageOrder = () => {
                         <span>Deliver Order</span>
                       </button>
                     )}
-                  </div>                )
+                  </div>)
                 :
                 (
                   <>
@@ -568,53 +586,32 @@ const ManageOrder = () => {
 
         <div className="border-t border-[#000] w-full mb-6"></div>
 
-        {/* Help and Order Summary */}
         <div className="flex">
-          {/* Need Help Section */}
-          {/* <div className="w-1/2 pr-4">
-            <h2 className="text-2xl font-medium font-Archivo mb-3">Need Help</h2>
-            <div className="space-y-3 font-Archivo text-lg">
-              <button className="flex items-center gap-2 cursor-pointer">
-                <img src={information} alt="Order Issues" className="" />
-                <span>Order Issues</span>
-              </button>
-              <button className="flex items-center gap-2 cursor-pointer">
-                <img src={information} alt="Delivery Info" className="" />
-                <span>Delivery Info</span>
-              </button>
-              <button className="flex items-center gap-2 cursor-pointer">
-                <img src={Return} alt="Returns" className="" />
-                <span>Returns</span>
-              </button>
-            </div>
-          </div>
-           */}
-          {/* Order Summary Section */}
           <div className="w-1/2 pl-4">
             <h2 className="text-2xl mb-3">Order Summary</h2>
             <div className="space-y-2 text-lg font-Archivo">
               <div className="flex justify-between">
                 <span>Service Price</span>
-                <span>{formatRupiah(orderDetails.SERVICE_PRICE)}</span>
+                <span>Rp. {formattedPrice(orderDetails.SERVICE_PRICE)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Discount</span>
-                <span>{formatRupiah(orderDetails.DISCOUNT)}</span>
+                <span>Rp. {formattedPrice(orderDetails.DISCOUNT)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Processing Fee</span>
-                <span>{formatRupiah(orderDetails.PROCESSING_FEE)}</span>
+                <span>Rp. {formattedPrice(orderDetails.PROCESSING_FEE)}</span>
               </div>
               <div className="border-t border-gray-300 pt-2 mt-2">
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>{formatRupiah(totalPrice)}</span>
+                  <span>Rp. {formattedPrice(totalPrice)}</span>
                 </div>
               </div>            </div>
           </div>
         </div>
       </div>      <Footer />
-      
+
       {/* Review Modal - Only for buyers (non-freelancers) */}
       {!isFreelancer && (
         <Review
