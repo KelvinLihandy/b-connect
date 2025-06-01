@@ -87,11 +87,10 @@ const Detail = () => {
       navigate("/catalog");
     }
   }
-
   const getFreelancer = async () => {
     try {
-      const response = await axios.post(`${userAPI}/get-user/${gigDetail?.creator}`, {});
-      const res = response.data.user;
+      const response = await axios.post(`${userAPI}/get-freelancer-data/${gigDetail?.creator}`, {});
+      const res = response.data.freelancer;
       if (res._id === auth?.data?.auth?.id) {
         setIsOwnGig(true);
         setIsDisabled(true);
