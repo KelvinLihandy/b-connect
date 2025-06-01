@@ -49,8 +49,7 @@ const FreelancerProfile = () => {
   const [freelancerData, setFreelancerData] = useState();
   const [gigData, setGigData] = useState([]);
   const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
-  const [copied, setCopied] = useState(false);
-  const [reviews, setReviews] = useState([]);
+  const [copied, setCopied] = useState(false);  const [reviews, setReviews] = useState([]);
   const [ratingCounts, setRatingCounts] = useState({
     5: 0,
     4: 0,
@@ -58,6 +57,7 @@ const FreelancerProfile = () => {
     2: 0,
     1: 0
   });
+  const [totalRatingSum, setTotalRatingSum] = useState(0);
   const categoryList = ["All", "Graphics Design", "UI/UX Design", "Video Editing", "Content Writing", "Translation", "Photography", "Web Development"];
   const [selectedCategory, setSelectedCategory] = useState(categoryList[0]);
   const [fallbackMap, setFallbackMap] = useState({});
@@ -109,22 +109,28 @@ const FreelancerProfile = () => {
       setTotalGigs(response.freelancerGigs.length);
       setTotalPages(Math.max(1, Math.ceil(response.freelancerGigs.length / itemsPerPage)));
       setFreelancerData(response?.freelancer);
-      setGigData(response?.freelancerGigs);
-      setReviews(response?.reviews);
+      setGigData(response?.freelancerGigs);      setReviews(response?.reviews);
       const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      let totalSum = 0;
       response?.reviews.forEach(review => {
         const rating = Math.round(review.rating);
         if (counts[rating] !== undefined) {
           counts[rating]++;
         }
+        totalSum += review.rating;
       });
       setRatingCounts(counts);
+      setTotalRatingSum(totalSum);
+      
+      if (response?.freelancer) {
+        setFreelancerData(response.freelancer);
+      }
     }
     catch (error) {
-      console.log("error freelancer data", error);
-      setFreelancerData(null);
+      console.log("error freelancer data", error);      setFreelancerData(null);
       setGigData([]);
       setRatingCounts({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+      setTotalRatingSum(0);
     }
   };
 

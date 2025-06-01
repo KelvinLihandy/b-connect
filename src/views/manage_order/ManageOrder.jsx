@@ -3,8 +3,9 @@ import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import Review from '../../components/review/Review';
 import { UserTypeContext } from '../../contexts/UserTypeContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { socket } from '../../App';
 
 import check from '../../assets/mo_check.svg';
 import clock from '../../assets/mo_clock.svg';
@@ -15,6 +16,7 @@ import invoice from '../../assets/mo_invoice.svg';
 import Return from '../../assets/mo_return.svg';
 import send from '../../assets/mo_send.svg';
 import status from '../../assets/mo_status.svg';
+import message_icon from '../../assets/message_icon.svg';
 
 // Importing API routes
 import { baseAPI, orderAPI, gigAPI } from '../../constants/APIRoutes';
@@ -52,6 +54,7 @@ const formatRupiah = (amount) => {
 
 const ManageOrder = () => {
   const { orderId } = useParams();
+  const navigate = useNavigate();
 
   const { isFreelancer } = useContext(UserTypeContext);
   const { auth } = useContext(AuthContext);
@@ -85,12 +88,57 @@ const ManageOrder = () => {
   const [paymentMethod, setPaymentMethod] = useState({
     TYPE: "Bank Transfer",
     STATUS: "Paid"
-  });  
-  const handleInvoiceClick = () => {
+  });    const handleInvoiceClick = () => {
     const invoiceUrl = `/invoice/${orderId}`;
 
     window.open(invoiceUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+  };  const initiateChat = () => {
+    if (!auth) {
+      navigate("/sign-in");
+      return;
+    }
+    
+    if (!orderData) {
+      alert("Order data not available. Please wait for data to load.");
+      return;
+    }
+    
+    // Get the other party's ID based on current user role
+    let otherPartyId;
+    
+    if (isFreelancer) {
+      // If current user is freelancer, chat with the buyer
+      otherPartyId = orderData.buyer?._id || orderData.userId;
+    } else {
+      // If current user is buyer, chat with the freelancer
+      otherPartyId = orderData.gigInfo?.creator?.id;
+    }
+    
+    if (!otherPartyId) {
+      console.error("Order data structure:", orderData);
+      console.error("Current user is freelancer:", isFreelancer);
+      console.error("Looking for buyer ID:", orderData.buyer?._id || orderData.userId);
+      console.error("Looking for freelancer ID:", orderData.gigInfo?.creator?.id);
+      alert("Unable to start chat. User information not available.");
+      return;
+    }
+    
+    console.log("Initiating chat between:", auth?.data?.auth?.id, "and", otherPartyId);
+    
+    // Create room and navigate to chat
+    socket.emit("create_room", [auth?.data?.auth?.id, otherPartyId]);
+    
+    // Handle room creation response
+    const handleSwitchRoom = (url) => {
+      console.log("Navigating to chat:", url);
+      navigate(url);
+      // Clean up the listener to prevent memory leaks
+      socket.off("switch_room", handleSwitchRoom);
+    };
+    
+    socket.on("switch_room", handleSwitchRoom);
   };
+
   const handleFinishOrder = () => {
     // Only allow non-freelancers (buyers) to access review modal
     if (!isFreelancer) {
@@ -194,7 +242,6 @@ const ManageOrder = () => {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days);    return date;
   };
-
   // Fetch order data from API
   useEffect(() => {
     const fetchOrderData = async () => {
@@ -285,6 +332,11 @@ const ManageOrder = () => {
     if (orderId) {
       fetchOrderData();
     }
+
+    // Cleanup function to remove socket listeners when component unmounts
+    return () => {
+      socket.off("switch_room");
+    };
   }, [orderId]);
   const totalPrice = orderDetails.SERVICE_PRICE + orderDetails.PROCESSING_FEE - orderDetails.DISCOUNT;
 
@@ -348,11 +400,22 @@ const ManageOrder = () => {
   return (
     <div className="font-Archivo">
       <Navbar alt />
-      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>
+      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>        
         {/* Order Header */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-semibold">Order #{orderDetails.ORDER_NUMBER}</h1>
-          <div className="flex text-lg gap-8">
+          <div className="flex text-lg gap-4">            
+            <button
+              onClick={initiateChat}
+              className="flex items-center gap-2 border-4 border-blue-500 bg-blue-400 cursor-pointer rounded px-4 transition-colors"
+            >
+              <img 
+                src={message_icon} 
+                alt="Contact" 
+                className="w-[25px] h-[25px]"
+              />
+              <span className='text-white'>Contact</span>
+            </button>
             <button
               onClick={handleInvoiceClick}
               className="flex items-center gap-2 border-4 border-gray-300 bg-white cursor-pointer rounded px-4 hover:bg-gray-50 transition-colors"
