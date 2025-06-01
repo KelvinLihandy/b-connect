@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import cancel from "../../assets/icons8-cancel (1).svg";
-import contract_done from "../../assets/contract_done.svg";
+import contract_done from "../../assets/Contract_done.svg";
 import contract_pending from "../../assets/newsletter.svg";
 import contract_fail from "../../assets/asking-question.svg";
 import { motion, AnimatePresence } from "framer-motion";
