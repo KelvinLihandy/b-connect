@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Direct imports for vector decorative elements (these exist in your assets folder)
 import Vector from "../../assets/Vector.png";
-import Vector1 from "../../assets/vector-1.png";
+import Vector1 from "../../assets/Vector-1.png";
 import Vector2 from "../../assets/Vector-2.png";
 import Vector3 from "../../assets/Vector-3.png";
 import Vector4 from "../../assets/Vector-4.png";
@@ -31,9 +31,6 @@ import fireworks from "../../assets/fireworks.png";
 
 // Particel dot dot
 import particle from "../../assets/Group 14582649.png";
-
-// gambar untuk product
-import product1 from "../../assets/image.png";
 
 // Direct imports for service images
 import WebDevImage from "../../assets/webdev.png";
