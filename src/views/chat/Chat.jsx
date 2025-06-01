@@ -7,14 +7,9 @@ import upload from "../../assets/chat_upload.svg"
 import emote from "../../assets/chat_emote.svg"
 import send from "../../assets/chat_send.svg"
 import sendfrom from "../../assets/chat_uploadFromComp.svg"
-import file from "../../assets/chat_file.png"
 import default_avatar from "../../assets/default-avatar.png"
 import Footer from '../../components/footer/Footer'
 import Navbar from '../../components/navbar/Navbar'
-import Alex from "../../assets/img_alex-sutejo.svg"
-import Salsabila from "../../assets/img_Salsabila.svg"
-import AlexLamar from "../../assets/img_Alex-Lamar.svg"
-import Nina from "../../assets/img_Nina-Lanae.svg"
 import logo from '../../assets/logo_in_chat.png'
 import { authAPI, chatAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
