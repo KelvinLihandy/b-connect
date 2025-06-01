@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import Review from '../../components/review/Review';
 import { UserTypeContext } from '../../contexts/UserTypeContext';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -55,12 +56,12 @@ const ManageOrder = () => {
   const { isFreelancer } = useContext(UserTypeContext);
   const { auth } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(0);
-
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [isGigCreator, setIsGigCreator] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const [orderDates, setOrderDates] = useState({
     START_DATE: "",
@@ -84,11 +85,56 @@ const ManageOrder = () => {
   const [paymentMethod, setPaymentMethod] = useState({
     TYPE: "Bank Transfer",
     STATUS: "Paid"
-  });
+  });  
   const handleInvoiceClick = () => {
     const invoiceUrl = `/invoice/${orderId}`;
 
     window.open(invoiceUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+  };
+  const handleFinishOrder = () => {
+    // Only allow non-freelancers (buyers) to access review modal
+    if (!isFreelancer) {
+      setShowReviewModal(true);
+    } else {
+      alert("Only buyers can finish orders and leave reviews.");
+    }
+  };
+  const handleReviewSubmit = async (reviewData) => {
+    try {
+      console.log("Review submitted:", reviewData);
+      
+      const reviewResponse = await axios.post(
+        `${orderAPI}/${orderId}/review`,
+        {
+          rating: reviewData.rating,
+          feedback: reviewData.feedback
+        },
+        { withCredentials: true }
+      );
+      
+      if (reviewResponse.status === 200) {
+        setCurrentStep(3);
+        const today = new Date();
+        const formattedToday = formatDate(today);
+        
+        setOrderDates(prevDates => ({
+          ...prevDates,
+          FINISHED_DATE: formattedToday
+        }));
+        
+        setShowReviewModal(false);
+        // alert("Order finished successfully! Thank you for your review.");
+      }
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      if (err.response && err.response.status === 403) {
+        alert("You are not authorized to review this order. Only buyers can submit reviews.");
+      } else if (err.response && err.response.status === 400) {
+        alert("Order must be delivered before submitting a review.");
+      } else {
+        alert("Failed to submit review. Please try again.");
+      }
+    }
   };
 
   const handleUpdateProgress = async (newProgress) => {
@@ -146,10 +192,8 @@ const ManageOrder = () => {
   // Helper function to add days to a date
   const addDays = (dateString, days) => {
     const date = new Date(dateString);
-    date.setDate(date.getDate() + days);
-    return date;
+    date.setDate(date.getDate() + days);    return date;
   };
-  if(isGigCreator) console.log("Gig Creator:", isGigCreator, auth?.data.auth.id);
 
   // Fetch order data from API
   useEffect(() => {
@@ -168,9 +212,8 @@ const ManageOrder = () => {
           let gigDetails = null;
           try {
             const gigResponse = await axios.post(`${gigAPI}/get-gig/${response.data.gigId}`);
-            gigDetails = gigResponse.data.detail;
-
-            setIsGigCreator(isFreelancer && auth?.data.auth.id === response.data.gigInfo.creator.id);
+            gigDetails = gigResponse.data.detail;            
+            setIsGigCreator(isFreelancer && auth?.data.auth.id === response.data.gigInfo.creator.id.toString());
           } catch (gigError) {
             setIsGigCreator(false);
             console.error("Error fetching gig details:", gigError);
@@ -412,12 +455,14 @@ const ManageOrder = () => {
         <div className="border-t border-[#000] w-full mb-6"></div>
         {/* Payment Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-medium mb-2">Payment</h2>            <div className="flex items-center">            <div className="flex items-center gap-2 text-xl font-Archivo">
+          <h2 className="text-2xl font-medium mb-2">Payment</h2>            
+          <div className="flex items-center">            
+            <div className="flex items-center gap-2 text-xl font-Archivo">
             <img src={bankTransfer} alt="Bank Transfer" className="" />
             <span>Bank Transfer</span>
             <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
           </div>
-            <div className="ml-auto">
+            <div className="ml-auto">              
               {isGigCreator ?
                 (
                   <div className='flex'>
@@ -439,14 +484,13 @@ const ManageOrder = () => {
                         <span>Deliver Order</span>
                       </button>
                     )}
-                  </div>
-                )
+                  </div>                )
                 :
                 (
                   <>
-                    {currentStep === 2 && (
+                    {currentStep === 2 && !isFreelancer && (
                       <button
-                        onClick={() => handleUpdateProgress(3)}
+                        onClick={handleFinishOrder}
                         className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
                       >
                         <img src={check} alt="Check" className="" />
@@ -503,12 +547,23 @@ const ManageOrder = () => {
                   <span>Total</span>
                   <span>{formatRupiah(totalPrice)}</span>
                 </div>
-              </div>
-            </div>
+              </div>            </div>
           </div>
         </div>
-      </div>
-      <Footer />
+      </div>      <Footer />
+      
+      {/* Review Modal - Only for buyers (non-freelancers) */}
+      {!isFreelancer && (
+        <Review
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          onSubmit={handleReviewSubmit}
+          orderData={{
+            orderNumber: orderDetails.ORDER_NUMBER,
+            serviceName: orderDetails.SERVICE_NAME
+          }}
+        />
+      )}
     </div>
   );
 };
