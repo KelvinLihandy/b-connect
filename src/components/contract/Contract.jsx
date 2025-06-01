@@ -358,7 +358,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                     </div>
                                     <div className="flex flex-row justify-between">
                                       <p>Metode</p>
-                                      <p className="font-bold">Gopay</p>
+                                      <p className="font-bold">Bank Transfer</p>
                                     </div>
                                     <div className="flex flex-row justify-between">
                                       <p>Harga</p>
@@ -366,7 +366,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                         Rp. {formattedPrice(selectedPackage?.price)}
                                       </p>
                                     </div>
-                                    <div className="flex flex-row justify-between">
+                                    {/* <div className="flex flex-row justify-between">
                                       <p>Pajak</p>
                                       <p className="font-bold">
                                         Rp.{" "}
@@ -376,19 +376,19 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                             : (0.7 / 100) * selectedPackage?.price
                                         )}
                                       </p>
-                                    </div>
+                                    </div> */}
                                   </div>
                                   <div className="border-t" />
                                   <div className="flex flex-row font-bold justify-between text-3xl">
                                     <p>Total</p>
                                     <p className="text-wrap">
-                                      Rp.{" "}
-                                      {formattedPrice(
+                                      Rp. {selectedPackage?.price}
+                                      {/* {formattedPrice(
                                         selectedPackage?.price +
                                         ((0.7 / 100) * selectedPackage?.price <= 1
                                           ? 0
                                           : (0.7 / 100) * selectedPackage?.price)
-                                      )}
+                                      )} */}
                                     </p>
                                   </div>
                                   <div className="flex flex-col justify-center mx-5">
@@ -447,7 +447,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 draggable={false}
-                                onClick={() => { }} //nav ke user history
+                                onClick={() => {navigate(`/user-profile/${auth?.data?.auth?.id}`)}} //nav ke user history
                               />
                             </div>
                           </>
@@ -467,7 +467,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 draggable={false}
-                                onClick={() => { }}//nav ke user history
+                                onClick={() => {navigate(`/user-profile/${auth?.data?.auth?.id}`)}}//nav ke user history
                               />
                             </div>
                           </>
