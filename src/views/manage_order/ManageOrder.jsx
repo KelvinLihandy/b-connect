@@ -149,7 +149,7 @@ const ManageOrder = () => {
     date.setDate(date.getDate() + days);
     return date;
   };
-  if(isGigCreator) console.log("Gig Creator:", isGigCreator, auth?.data.auth.id);
+  if (isGigCreator) console.log("Gig Creator:", isGigCreator, auth?.data.auth.id);
 
   // Fetch order data from API
   useEffect(() => {
@@ -412,11 +412,13 @@ const ManageOrder = () => {
         <div className="border-t border-[#000] w-full mb-6"></div>
         {/* Payment Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-medium mb-2">Payment</h2>            <div className="flex items-center">            <div className="flex items-center gap-2 text-xl font-Archivo">
-            <img src={bankTransfer} alt="Bank Transfer" className="" />
-            <span>Bank Transfer</span>
-            <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
-          </div>
+          <h2 className="text-2xl font-medium mb-2">Payment</h2>
+          <div className="flex items-center">
+            <div className="flex items-center gap-2 text-xl font-Archivo">
+              <img src={bankTransfer} alt="Bank Transfer" className="" />
+              <span>Bank Transfer</span>
+              <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
+            </div>
             <div className="ml-auto">
               {isGigCreator ?
                 (
