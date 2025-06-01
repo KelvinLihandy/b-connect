@@ -27,7 +27,6 @@ import ManageOrder from "./views/manage_order/ManageOrder";
 import Invoice from "./views/invoice/Invoice";
 import { DisabledGigsContext } from "./contexts/DisabledGigsContext";
 
-
 // export const socket = io("https://b-connect-socket.webpubsub.azure.com", {
 //   path: "/clients/socketio/hubs/Hub",
 //   transports: ["polling"],
@@ -95,7 +94,8 @@ const App = () => {
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/sign-in/forget" element={<ForgotPassword />} />
         <Route path="/sign-in/verify-otp" element={<InputOTP />} />
-        <Route path="/sign-in/change-password" element={<ChangePassword />} />        <Route path="/add-service" element={<AddService />} />
+        <Route path="/sign-in/change-password" element={<ChangePassword />} />        
+        <Route path="/add-service" element={<AddService />} />
         <Route path="/become-freelancer" element={<FreelancerReg />} />
         <Route path="/manage-order/:orderId" element={<ManageOrder />} />
         <Route path="/invoice/:orderId" element={<Invoice />} />
