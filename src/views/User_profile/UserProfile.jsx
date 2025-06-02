@@ -30,7 +30,7 @@ const UserProfile = () => {
 
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [reviews, setReviews] = useState([]);
-
+  console.log("review", reviews);
   const [purchasePagination, setPurchasePagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -122,77 +122,6 @@ const UserProfile = () => {
     } else {
       console.log('   ❓ Status unclear, defaulting to unknown');
       return { type: 'unknown', color: 'gray', display: item.status || 'Status Unknown' };
-    }
-  }, []);
-
-  // Button action handlers
-  const handleViewDetails = useCallback((orderNumber) => {
-    console.log('🔍 Viewing order details for:', orderNumber);
-    navigate(`/manage-order/${orderNumber}`);
-  }, [navigate]);
-
-  const handleBuyAgain = useCallback((item) => {
-    console.log('🛒 Buy again for service:', item.title);
-    // You can navigate to the service page or open a buy again modal
-    navigate(`/service/${item.serviceId || item.id}`);
-  }, [navigate]);
-
-  const handleContactSeller = useCallback((item) => {
-    console.log('💬 Contacting seller:', item.seller);
-    // Navigate to chat or contact page
-    navigate(`/chat/${item.sellerId || item.seller}`);
-  }, [navigate]);
-
-  // Review interaction handlers
-  const handleHelpfulReview = useCallback(async (reviewId) => {
-    try {
-      console.log('👍 Marking review as helpful:', reviewId);
-      const response = await axios.post(
-        `${userAPI}/review-helpful/${reviewId}`,
-        {},
-        { withCredentials: true }
-      );
-      
-      if (response.data.success) {
-        // Update the helpful count in the reviews state
-        setReviews(prevReviews => 
-          prevReviews.map(review => 
-            review.id === reviewId 
-              ? { ...review, helpful: (review.helpful || 0) + 1 }
-              : review
-          )
-        );
-        console.log('✅ Review marked as helpful successfully');
-      }
-    } catch (error) {
-      console.error('❌ Error marking review as helpful:', error);
-    }
-  }, []);
-
-  const handleShareReview = useCallback((reviewId, reviewTitle) => {
-    console.log('📤 Sharing review:', reviewId, reviewTitle);
-    
-    if (navigator.share) {
-      // Use native Web Share API if available
-      navigator.share({
-        title: `Review: ${reviewTitle}`,
-        text: `Check out this review for ${reviewTitle}`,
-        url: `${window.location.origin}/review/${reviewId}`
-      }).then(() => {
-        console.log('✅ Review shared successfully');
-      }).catch((error) => {
-        console.error('❌ Error sharing review:', error);
-      });
-    } else {
-      // Fallback to clipboard
-      const shareUrl = `${window.location.origin}/review/${reviewId}`;
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Review link copied to clipboard!');
-        console.log('✅ Review link copied to clipboard');
-      }).catch(() => {
-        // Further fallback
-        prompt('Copy this link to share the review:', shareUrl);
-      });
     }
   }, []);
 
@@ -552,9 +481,9 @@ const UserProfile = () => {
                   <button 
                     onClick={() => {
                       if (statusInfo.type === "progress") {
-                        handleViewDetails(item.orderNumber);
+                        navigate(`/manage-order/${item.orderNumber}`);
                       } else {
-                        handleBuyAgain(item);
+                        navigate(`/detail/${item.serviceId || item.id}`);
                       }
                     }}
                     className={`px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 ${
@@ -568,7 +497,7 @@ const UserProfile = () => {
 
                   {statusInfo.type === "delivered" && (
                     <button 
-                      onClick={() => handleContactSeller(item)}
+                      onClick={() => navigate(`/chat/${item.sellerId || item.seller}`)}
                       className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
                     >
                       Contact Seller
@@ -601,9 +530,20 @@ const UserProfile = () => {
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  {review.category || 'General'}
-                </span>
+                  {Array.isArray(review.category) ? (
+                    review.category.map((cat, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      {review.category || 'General'}
+                    </span>
+                  )}
                 <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
                   COMPLETED
                 </span>
@@ -666,13 +606,13 @@ const UserProfile = () => {
 
               <div className="flex flex-col gap-2">
                 <button 
-                  onClick={() => handleBuyAgain(review)}
+                  onClick={() => navigate(`/detail/${review.serviceId || review.id}`)}
                   className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20"
                 >
                   Buy Again
                 </button>
                 <button 
-                  onClick={() => handleContactSeller(review)}
+                  onClick={() => {}}//revisi redirect ke roomid
                   className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
                 >
                   Contact Seller
@@ -685,26 +625,6 @@ const UserProfile = () => {
             <p className="text-gray-700 leading-relaxed text-sm">
               {review.reviewText || 'No review text available.'}
             </p>
-          </div>
-
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => handleHelpfulReview(review.id)}
-                className="flex items-center gap-1 hover:text-[#2E5077] transition-colors cursor-pointer"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V9a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 12m5-2v10m-5-2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-7.5" />
-                </svg>
-                Helpful ({review.helpful || 0})
-              </button>
-              <button 
-                onClick={() => handleShareReview(review.id, review.title)}
-                className="hover:text-[#2E5077] transition-colors cursor-pointer"
-              >
-                Share
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -767,14 +687,6 @@ const UserProfile = () => {
         >
           Retry
         </button>
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={debugOrderStatus}
-            className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
-          >
-            Debug Status
-          </button>
-        )}
       </div>
     </div>
   ));
@@ -907,16 +819,6 @@ const UserProfile = () => {
                   My Reviews
                 </button>
               </div>
-              
-              {/* Debug button for development */}
-              {process.env.NODE_ENV === 'development' && (
-                <button
-                  onClick={debugOrderStatus}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors"
-                >
-                  🐛 Debug Status
-                </button>
-              )}
             </div>
           </div>
 
