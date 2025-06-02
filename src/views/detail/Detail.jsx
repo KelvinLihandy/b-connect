@@ -49,7 +49,7 @@ const Detail = () => {
   useEffect(() => {
     setRandomDummy(dummyImages[Math.floor(Math.random() * dummyImages.length)]);
   }, [])
-  
+
   useEffect(() => {
     const reasons = disabledGigs[gigId];
     if (reasons && reasons.length > 0) {
@@ -83,7 +83,6 @@ const Detail = () => {
       console.log("detail", res);
     } catch (error) {
       console.error('Error fetching detail:', error.response || error);
-      navigate("/catalog");
     }
   }
   const getFreelancer = async () => {
@@ -214,7 +213,18 @@ const Detail = () => {
             </h1>
             <div className="flex items-center mt-2 mb-6 text-lg font-bold">
               <span className="font-bold text-gray-700 mr-2">
-                {freelancer?.name}
+                {Array.isArray(gigDetail?.categories) ? (
+                  gigDetail.categories.map((cat, index) => (
+                    <span key={index} className="">
+                      {cat}
+                      {index < gigDetail.categories.length - 1 && ', '}
+                    </span>
+                  ))
+                ) : (
+                  <span className="">
+                    {'Not Registered Category'}
+                  </span>
+                )}
               </span>
               <span className="px-2">|</span>
               <div className="flex text-yellow-400">
