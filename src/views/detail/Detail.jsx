@@ -83,7 +83,6 @@ const Detail = () => {
       console.log("detail", res);
     } catch (error) {
       console.error('Error fetching detail:', error.response || error);
-      navigate("/catalog");
     }
   }
   const getFreelancer = async () => {
