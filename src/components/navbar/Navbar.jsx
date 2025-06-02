@@ -581,12 +581,12 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
             </div>
           )}
           <div className="flex flex-row items-center gap-8 text-xl">
-            {/* <motion.p
+            <motion.p
               className="flex flex-row items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-300"
               whileHover={{ scale: 1.05 }}
             >
-              Explore <span><img className="self-center" src={dropdown_tri} alt="" /></span>
-            </motion.p> */}
+              <Link to="/privacy-policy" className="hover:text-blue-300 transition-colors duration-300">Privacy Policy</Link>
+            </motion.p>
             <motion.div whileHover={{ scale: 1.05 }}>
               <Link to="/about-us" className="hover:text-blue-300 transition-colors duration-300">About Us</Link>
             </motion.div>
