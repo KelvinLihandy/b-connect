@@ -50,31 +50,22 @@ const UserProfile = () => {
     return auth?.data?.auth?.id || userId;
   }, [auth?.data?.auth?.id, userId]);
 
-  // Memoize fallback image URL
+  // Simple fallback image that always works
   const fallbackImage = useMemo(() => {
-    // Use a data URL instead of external placeholder to avoid network requests
-    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIyNCIgdmlld0JveD0iMCAwIDMyMCAyMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMzMuNSA5OEMxMzMuNSA5NC4xMzQgMTM2LjYzNCA5MSAxNDAuNSA5MUgxNzkuNUMxODMuMzY2IDkxIDE4Ni41IDk0LjEzNCAxODYuNSA5OFYxMjZDMTg2LjUgMTI5Ljg2NiAxODMuMzY2IDEzMyAxNzkuNSAxMzNIMTQwLjVDMTM2LjYzNCAxMzMgMTMzLjUgMTI5Ljg2NiAxMzMuNSAxMjZWOThaIiBmaWxsPSIjOUNBM0FGIi8+Cjxzdmcgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiB2aWV3Qm94PSIwIDAgMTYgMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDNDMSAyLjQ0NzcyIDEuNDQ3NzIgMiAyIDJIMTRDMTQuNTUyMyAyIDE1IDIuNDQ3NzIgMTUgM1Y5QzE1IDkuNTUyMjggMTQuNTUyMyAxMCAxNCAxMEgyQzEuNDQ3NzIgMTAgMSA5LjU1MjI4IDEgOVYzWiIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjEiIGZpbGw9IiM5Q0EzQUYiLz4KPHN0aCBkPSJNOSA3TDEyIDQiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE2MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
+    // Simple SVG that creates a gray placeholder
+    return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='224' viewBox='0 0 320 224'%3E%3Crect width='320' height='224' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3ENo Image Available%3C/text%3E%3C/svg%3E";
   }, []);
 
-  // Enhanced image error handler with debugging
+  // Simple and reliable image error handler
   const handleImageError = useCallback((e) => {
-    console.log('🖼️ Image failed to load:', e.target.src);
-    console.log('🖼️ Image alt text:', e.target.alt);
-    
-    if (e.target.src !== fallbackImage) {
-      console.log('🖼️ Switching to fallback image');
-      e.target.src = fallbackImage;
-    } else {
-      console.error('❌ Even fallback image failed to load');
-    }
+    console.log('Image failed, using fallback');
+    e.target.src = fallbackImage;
   }, [fallbackImage]);
 
-  // Function to process and validate image URLs
+  // Simplified image processing - just return fallback if no valid URL
   const processImageUrl = useCallback((imageUrl, itemTitle = '') => {
-    console.log('🔍 Processing image URL:', imageUrl, 'for item:', itemTitle);
-    
+    // If no image URL or it's empty/null, return fallback
     if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '') {
-      console.log('⚠️ No valid image URL provided, using fallback');
       return fallbackImage;
     }
     
@@ -83,70 +74,49 @@ const UserProfile = () => {
       return imageUrl;
     }
     
-    try {
-      // Try to create URL object to validate
-      const url = new URL(imageUrl);
-      console.log('✅ Valid URL format:', url.href);
-      return imageUrl;
-    } catch (error) {
-      console.error('❌ Invalid URL format:', error);
-      return fallbackImage;
-    }
+    // For any other URL, try to use it but fallback will handle errors
+    return imageUrl;
   }, [fallbackImage]);
 
-  // Enhanced status detection function
+  // Simplified status detection
   const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
     const statusType = (item.statusType || '').toLowerCase();
-    
-    console.log('🔍 Analyzing status for:', item.title || 'Unknown item');
-    console.log('   - status:', item.status);
-    console.log('   - statusType:', item.statusType);
     
     // More comprehensive status detection
     if (status.includes('delivered') || status.includes('completed') || 
         status.includes('done') || statusType === 'delivered' || 
         statusType === 'completed') {
-      console.log('   ✅ Detected as: DELIVERED');
       return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
     } else if (status.includes('progress') || status.includes('processing') || 
                status.includes('ongoing') || status.includes('active') || 
                statusType === 'progress' || statusType === 'processing') {
-      console.log('   🟡 Detected as: IN PROGRESS');
       return { type: 'progress', color: 'orange', display: item.status || 'In Progress' };
     } else if (status.includes('cancelled') || status.includes('canceled') || 
                status.includes('failed') || status.includes('rejected') || 
                statusType === 'cancelled' || statusType === 'canceled') {
-      console.log('   ❌ Detected as: CANCELLED');
       return { type: 'cancelled', color: 'red', display: item.status || 'Cancelled' };
     } else {
-      console.log('   ❓ Status unclear, defaulting to unknown');
       return { type: 'unknown', color: 'gray', display: item.status || 'Status Unknown' };
     }
   }, []);
 
-  // Button action handlers
+  // Button action handlers - simplified
   const handleViewDetails = useCallback((orderNumber) => {
-    console.log('🔍 Viewing order details for:', orderNumber);
     navigate(`/manage-order/${orderNumber}`);
   }, [navigate]);
 
   const handleBuyAgain = useCallback((item) => {
-    console.log('🛒 Buy again for service:', item.title);
-    // You can navigate to the service page or open a buy again modal
     navigate(`/service/${item.serviceId || item.id}`);
   }, [navigate]);
 
   const handleContactSeller = useCallback((item) => {
-    console.log('💬 Contacting seller:', item.seller);
-    // Navigate to chat or contact page
     navigate(`/chat/${item.sellerId || item.seller}`);
   }, [navigate]);
 
-  // Review interaction handlers
+  // Review interaction handlers - simplified
   const handleHelpfulReview = useCallback(async (reviewId) => {
     try {
-      console.log('👍 Marking review as helpful:', reviewId);
       const response = await axios.post(
         `${userAPI}/review-helpful/${reviewId}`,
         {},
@@ -154,7 +124,6 @@ const UserProfile = () => {
       );
       
       if (response.data.success) {
-        // Update the helpful count in the reviews state
         setReviews(prevReviews => 
           prevReviews.map(review => 
             review.id === reviewId 
@@ -162,35 +131,24 @@ const UserProfile = () => {
               : review
           )
         );
-        console.log('✅ Review marked as helpful successfully');
       }
     } catch (error) {
-      console.error('❌ Error marking review as helpful:', error);
+      console.error('Error marking review as helpful:', error);
     }
   }, []);
 
   const handleShareReview = useCallback((reviewId, reviewTitle) => {
-    console.log('📤 Sharing review:', reviewId, reviewTitle);
-    
     if (navigator.share) {
-      // Use native Web Share API if available
       navigator.share({
         title: `Review: ${reviewTitle}`,
         text: `Check out this review for ${reviewTitle}`,
         url: `${window.location.origin}/review/${reviewId}`
-      }).then(() => {
-        console.log('✅ Review shared successfully');
-      }).catch((error) => {
-        console.error('❌ Error sharing review:', error);
-      });
+      }).catch(console.error);
     } else {
-      // Fallback to clipboard
       const shareUrl = `${window.location.origin}/review/${reviewId}`;
       navigator.clipboard.writeText(shareUrl).then(() => {
         alert('Review link copied to clipboard!');
-        console.log('✅ Review link copied to clipboard');
       }).catch(() => {
-        // Further fallback
         prompt('Copy this link to share the review:', shareUrl);
       });
     }
@@ -268,24 +226,13 @@ const UserProfile = () => {
       if (response.data && response.data.purchaseHistory) {
         const { purchaseHistory, pagination } = response.data;
 
-        console.log('📊 Raw purchase history data:', purchaseHistory);
+        // Process each item with simplified validation
+        const processedHistory = purchaseHistory.map(item => ({
+          ...item,
+          image: processImageUrl(item.image, item.title),
+          id: item.id || Date.now() + Math.random() // Ensure unique ID
+        }));
 
-        // Process each item with enhanced validation
-        const processedHistory = purchaseHistory.map(item => {
-          const processedItem = {
-            ...item,
-            image: processImageUrl(item.image, item.title),
-            id: item.id || Date.now() + Math.random() // Ensure unique ID
-          };
-          
-          // Log status info for debugging
-          const statusInfo = getStatusInfo(processedItem);
-          console.log(`📋 Item "${item.title}" status info:`, statusInfo);
-          
-          return processedItem;
-        });
-
-        console.log('✅ Processed purchase history:', processedHistory);
         setPurchaseHistory(processedHistory);
         setPurchasePagination({
           currentPage: pagination.currentPage,
@@ -295,12 +242,12 @@ const UserProfile = () => {
         });
       }
     } catch (error) {
-      console.error("❌ Error fetching purchase history:", error);
+      console.error("Error fetching purchase history:", error);
       setError("Failed to load purchase history");
     } finally {
       setLoading(false);
     }
-  }, [getCurrentUserId, processImageUrl, getStatusInfo]);
+  }, [getCurrentUserId, processImageUrl]);
 
   const fetchReviews = useCallback(async (page = 1) => {
     const targetUserId = getCurrentUserId();
@@ -320,16 +267,13 @@ const UserProfile = () => {
       if (response.data && response.data.reviews) {
         const { reviews, pagination } = response.data;
 
-        console.log('📊 Raw reviews data:', reviews);
-
-        // Process each review with enhanced validation
+        // Process each review with simplified validation
         const processedReviews = reviews.map(review => ({
           ...review,
           image: processImageUrl(review.image, review.title),
           id: review.id || Date.now() + Math.random() // Ensure unique ID
         }));
 
-        console.log('✅ Processed reviews:', processedReviews);
         setReviews(processedReviews);
         setReviewsPagination({
           currentPage: pagination.currentPage,
@@ -339,19 +283,18 @@ const UserProfile = () => {
         });
       }
     } catch (error) {
-      console.error("❌ Error fetching reviews:", error);
+      console.error("Error fetching reviews:", error);
       setError("Failed to load reviews");
     } finally {
       setLoading(false);
     }
   }, [getCurrentUserId, processImageUrl]);
 
-  // Debug function for troubleshooting
+  // Simplified debug function
   const debugOrderStatus = useCallback(() => {
-    console.log('🔍 === DEBUG ORDER STATUS ===');
-    console.log('Purchase History:', purchaseHistory);
-    console.log('Current User ID:', getCurrentUserId());
-    console.log('Auth Data:', auth?.data?.auth);
+    console.log('=== DEBUG ORDER STATUS ===');
+    console.log('Purchase History Count:', purchaseHistory.length);
+    console.log('User ID:', getCurrentUserId());
     
     // Check for stuck orders
     const progressOrders = purchaseHistory.filter(item => {
@@ -359,17 +302,17 @@ const UserProfile = () => {
       return statusInfo.type === 'progress';
     });
     
-    console.log('🟡 Orders in progress:', progressOrders);
+    console.log('Orders in progress:', progressOrders.length);
     
     if (progressOrders.length > 0) {
-      console.log('⚠️ Found orders stuck in progress. Check backend status update logic.');
+      console.log('Orders stuck in progress:');
       progressOrders.forEach(order => {
-        console.log(`   - Order ${order.orderNumber}: Status="${order.status}", Type="${order.statusType}"`);
+        console.log(`- ${order.title}: Status="${order.status}", Type="${order.statusType}"`);
       });
     }
     
-    console.log('🔍 === END DEBUG ===');
-  }, [purchaseHistory, getCurrentUserId, auth?.data?.auth, getStatusInfo]);
+    console.log('=== END DEBUG ===');
+  }, [purchaseHistory, getCurrentUserId, getStatusInfo]);
 
   // Initial data loading effect - only run once when component mounts or auth changes
   useEffect(() => {
@@ -435,8 +378,6 @@ const UserProfile = () => {
   const handleSettingsClick = useCallback(() => {
     navigate('/profile');
   }, [navigate]);
-
-  console.log("📊 Purchase history debug:", purchaseHistory);
 
   const PurchaseCard = React.memo(({ item }) => {
     const statusInfo = getStatusInfo(item);
@@ -593,7 +534,6 @@ const UserProfile = () => {
             className="w-full h-full object-cover rounded-lg border border-gray-200"
             onError={handleImageError}
             loading="lazy"
-            onLoad={() => console.log('✅ Review image loaded for:', review.title)}
           />
         </div>
 
@@ -772,7 +712,7 @@ const UserProfile = () => {
             onClick={debugOrderStatus}
             className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
           >
-            Debug Status
+            Debug
           </button>
         )}
       </div>
@@ -908,13 +848,13 @@ const UserProfile = () => {
                 </button>
               </div>
               
-              {/* Debug button for development */}
+              {/* Debug button for development only */}
               {process.env.NODE_ENV === 'development' && (
                 <button
                   onClick={debugOrderStatus}
                   className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors"
                 >
-                  🐛 Debug Status
+                  Debug
                 </button>
               )}
             </div>
