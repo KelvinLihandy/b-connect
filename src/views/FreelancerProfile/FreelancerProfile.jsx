@@ -18,7 +18,8 @@ import {
   Eye,
   Home,
   User,
-  ChevronLeft
+  ChevronLeft,
+  CircleCheckBig,
 } from "lucide-react";
 import { socket } from "../../App";
 
@@ -261,6 +262,12 @@ const FreelancerProfile = () => {
                               Member since {new Date(freelancerData?.joinedDate).getFullYear()}
                             </span>
                           </div>
+                        </div>
+                        <div className="mb-4 flex items-center text-gray-600">
+                          <CircleCheckBig className="h-4 w-4 mr-1" />
+                          <span className="text-sm">
+                            Completed {freelancerData?.completes} gig(s)
+                          </span>
                         </div>
                       </div>
                     </div>

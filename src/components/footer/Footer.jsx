@@ -63,15 +63,6 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
         </motion.p>
       </motion.div>
 
-      {/* Vertical divider for desktop, horizontal for mobile */}
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className='md:h-full md:w-[1px] w-full h-[1px] bg-black my-4 md:my-0'
-      />
-
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -79,12 +70,42 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
         variants={staggerChildren}
         className='flex flex-col min-w-[200px] md:min-w-[360px] w-full md:w-auto'
       >
-        <div className='flex flex-col p-5 text-xl md:text-2xl gap-5 md:gap-10'>
+        <div className='flex flex-col p-5 text-xl md:text-2xl gap-5'>
           <motion.div variants={fadeInUp}>
-            <div onClick={() => navigate("/about-us")} className="hover:text-blue-600 transition-colors duration-300">About</div>
+            <div
+              onClick={() => navigate("/sign-up")}
+              className="hover:text-blue-600 transition-colors duration-300"
+            >
+              Register
+            </div>
           </motion.div>
           <motion.div variants={fadeInUp}>
-            <div onClick={() => navigate("/catalog")} className="hover:text-blue-600 transition-colors duration-300">Services</div>
+            <div onClick={() => navigate("/sign-in")}
+              className="hover:text-blue-600 transition-colors duration-300"
+            >
+              Login
+            </div>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <div onClick={() => navigate("/about-us")}
+              className="hover:text-blue-600 transition-colors duration-300"
+            >
+              About Us
+            </div>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <div onClick={() => navigate("/catalog")}
+              className="hover:text-blue-600 transition-colors duration-300"
+            >
+              Gigs
+            </div>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <div onClick={() => navigate("/privacy-policy")}
+              className="hover:text-blue-600 transition-colors duration-300"
+            >
+              Privacy Policy
+            </div>
           </motion.div>
         </div>
         <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
@@ -92,7 +113,7 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
           variants={fadeInUp}
           className='px-5 py-6 md:py-10 text-base md:text-lg text-[#92989F] font-bold self-center'
         >
-          © 2025 B-Connect • Privacy • Terms
+          © 2025 B-Connect
         </motion.p>
       </motion.div>
 
@@ -131,38 +152,8 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
         </div>
         <motion.div
           variants={fadeInUp}
-          className='flex flex-row justify-between mt-8 md:mt-0'
+          className='flex flex-row justify-end mt-8 md:mt-0'
         >
-          <div className='flex flex-row gap-4 md:gap-7'>
-            <motion.img
-              src={linkedin_ball}
-              alt="LinkedIn"
-              whileHover="hover"
-              variants={socialIconHover}
-              className="cursor-pointer"
-            />
-            <motion.img
-              src={youtube_ball}
-              alt="YouTube"
-              whileHover="hover"
-              variants={socialIconHover}
-              className="cursor-pointer"
-            />
-            <motion.img
-              src={facebook_ball}
-              alt="Facebook"
-              whileHover="hover"
-              variants={socialIconHover}
-              className="cursor-pointer"
-            />
-            <motion.img
-              src={twitter_ball}
-              alt="Twitter"
-              whileHover="hover"
-              variants={socialIconHover}
-              className="cursor-pointer"
-            />
-          </div>
           <motion.div
             whileHover={{ scale: 1.1, backgroundColor: '#333' }}
             whileTap={{ scale: 0.9 }}

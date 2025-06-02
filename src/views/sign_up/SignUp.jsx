@@ -160,15 +160,17 @@ const SignUp = () => {
 				</div>
 
 				<div className='font-poppins flex flex-col justify-start min-w-180 max-w-200 gap-3 mb-8'>
-					<label className='text-base'>
+					<label className="text-base">
 						By creating an account, you agree to the
 						<span> </span>
-						<Link to="">
-							<span className='underline'>
-								Privacy Policy
-							</span>
-						</Link>
-						.
+						<a
+							href="/privacy-policy"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="underline"
+						>
+							Privacy Policy
+						</a>.
 					</label>
 					<button className='text-lg bg-[#111111]/25 text-white font-bold rounded-full h-18 transition cursor-pointer hover:text-black hover:opacity-90'
 						onClick={() => {
