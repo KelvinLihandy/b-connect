@@ -50,7 +50,7 @@ const FreelancerProfile = () => {
   const [freelancerData, setFreelancerData] = useState();
   const [gigData, setGigData] = useState([]);
   const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
-  const [copied, setCopied] = useState(false);  const [reviews, setReviews] = useState([]);
+  const [copied, setCopied] = useState(false); const [reviews, setReviews] = useState([]);
   const [ratingCounts, setRatingCounts] = useState({
     5: 0,
     4: 0,
@@ -110,7 +110,7 @@ const FreelancerProfile = () => {
       setTotalGigs(response.freelancerGigs.length);
       setTotalPages(Math.max(1, Math.ceil(response.freelancerGigs.length / itemsPerPage)));
       setFreelancerData(response?.freelancer);
-      setGigData(response?.freelancerGigs);      setReviews(response?.reviews);
+      setGigData(response?.freelancerGigs); setReviews(response?.reviews);
       const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
       let totalSum = 0;
       response?.reviews.forEach(review => {
@@ -122,13 +122,13 @@ const FreelancerProfile = () => {
       });
       setRatingCounts(counts);
       setTotalRatingSum(totalSum);
-      
+
       if (response?.freelancer) {
         setFreelancerData(response.freelancer);
       }
     }
     catch (error) {
-      console.log("error freelancer data", error);      setFreelancerData(null);
+      console.log("error freelancer data", error); setFreelancerData(null);
       setGigData([]);
       setRatingCounts({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
       setTotalRatingSum(0);
@@ -446,24 +446,38 @@ const FreelancerProfile = () => {
                                   </div>
 
                                   <div className="p-5 h-42">
-                                    <h3 className="text-base font-medium mb-2 line-clamp-2 transition-colors duration-100">
+                                    <h3 className="text-sm font-medium mb-2 line-clamp-2 transition-colors duration-100">
                                       {gig.name}
                                     </h3>
                                     <div className="flex-col items-center mb-2">
-                                      <p className="text-base font-semibold text-black">
+                                      <p className="text-sm font-semibold text-black">
                                         Rp. {formattedPrice(gig.packages[0].price)}
                                       </p>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center text-base w-full justify-between">
-                                        <div className="flex flex-row items-center gap-3 flex-wrap">
-                                          <div className="flex flex-row">
-                                            <DynamicStars number={gig.rating} />
-                                          </div>
-                                          <div>{gig.rating}</div>
+                                    <div className="flex items-center text-base w-full justify-between mb-4">
+                                      <div className="flex flex-row items-center gap-3 flex-wrap">
+                                        <div className="flex flex-row">
+                                          <DynamicStars number={gig.rating} />
                                         </div>
-                                        <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
+                                        <div className="text-sm">{gig.rating}</div>
                                       </div>
+                                      <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
+                                    </div>
+                                    <div className="flex gap-2 mb-2">
+                                      {Array.isArray(gig.categories) ? (
+                                        gig.categories.map((cat, index) => (
+                                          <span
+                                            key={index}
+                                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                                          >
+                                            {cat}
+                                          </span>
+                                        ))
+                                      ) : (
+                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                          {'No Registered Category'}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 </motion.div>

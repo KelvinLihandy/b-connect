@@ -541,7 +541,7 @@ const UserProfile = () => {
                     ))
                   ) : (
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                      {review.category || 'General'}
+                      {'No Registered Category'}
                     </span>
                   )}
                 <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">

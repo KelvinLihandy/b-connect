@@ -222,7 +222,7 @@ const Detail = () => {
                   ))
                 ) : (
                   <span className="">
-                    {'Not Registered Category'}
+                    {'No Registered Category'}
                   </span>
                 )}
               </span>
