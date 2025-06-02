@@ -12,21 +12,19 @@ const Preview = ({ serviceData, onClose }) => {
   const [direction, setDirection] = useState(0);
   const [imageMode, setImageMode] = useState("cover");
   const [activePackage, setActivePackage] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showZoomOverlay, setShowZoomOverlay] = useState(false);
   const [isAutoplay, setIsAutoplay] = useState(true);
   const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     let interval;
-    if (isAutoplay && !isFullscreen) {
+    if (isAutoplay) {
       interval = setInterval(() => {
         setDirection(1);
         setCurrentImage((prev) => (prev + 1) % images?.length);
-      }, 5000); // Change image every 5 seconds
+      }, 5000);
     }
     return () => clearInterval(interval);
-  }, [isAutoplay, images?.length, isFullscreen]);
+  }, [isAutoplay, images?.length]);
 
   const handleMouseEnter = () => setIsAutoplay(false);
   const handleMouseLeave = () => setIsAutoplay(true);
@@ -44,20 +42,6 @@ const Preview = ({ serviceData, onClose }) => {
       x: direction > 0 ? -1000 : 1000,
       opacity: 0
     })
-  };
-
-  const fullscreenVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.3 }
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      transition: { duration: 0.2 }
-    }
   };
 
   const previewModalVariants = {
@@ -112,14 +96,6 @@ const Preview = ({ serviceData, onClose }) => {
     setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
-  const toggleImageMode = () => {
-    setImageMode(prev => prev === "cover" ? "contain" : "cover");
-  };
-
-  const toggleFullscreen = () => {
-    setIsFullscreen(prev => !prev);
-    setIsAutoplay(false);
-  };
 
   const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
     return (price ?? 0).toLocaleString(locale, {
@@ -146,73 +122,6 @@ const Preview = ({ serviceData, onClose }) => {
           />
         ))}
       </div>
-    );
-  };
-
-  const FullscreenView = () => {
-    if (!isFullscreen) return null;
-
-    return (
-      <motion.div
-        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        variants={fullscreenVariants}
-        onClick={toggleFullscreen}
-      >
-        <div className="relative w-full h-full max-w-6xl max-h-screen p-8" onClick={e => e.stopPropagation()}>
-          <button
-            className="absolute top-4 right-4 bg-white rounded-full p-2 z-10"
-            onClick={toggleFullscreen}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-
-          <div className="relative h-full flex items-center justify-center">
-            <AnimatePresence initial={false} custom={direction}>
-              <motion.img
-                key={currentImage}
-                src={images[currentImage].preview}
-                alt={`Preview ${currentImage + 1}`}
-                className="max-w-full max-h-full object-contain"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={transition}
-              />
-            </AnimatePresence>
-
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 opacity-80 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                prevImage();
-              }}
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 opacity-80 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                nextImage();
-              }}
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            <div className="absolute bottom-4 left-0 right-0">
-              <ProgressIndicator current={currentImage} total={images.length} />
-            </div>
-          </div>
-        </div>
-      </motion.div>
     );
   };
 
@@ -275,11 +184,9 @@ const Preview = ({ serviceData, onClose }) => {
                     className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-150 shadow-lg"
                     onMouseEnter={() => {
                       handleMouseEnter();
-                      setShowZoomOverlay(true);
                     }}
                     onMouseLeave={() => {
                       handleMouseLeave();
-                      setShowZoomOverlay(false);
                     }}
                   >
                     {images && images.length > 0 ? (
@@ -345,26 +252,7 @@ const Preview = ({ serviceData, onClose }) => {
                           <Maximize2 size={18} />
                         )}
                       </motion.button>
-                      <motion.button
-                        className="bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 transition-all"
-                        onClick={toggleFullscreen}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        title="View fullscreen"
-                      >
-                        <Maximize2 size={18} />
-                      </motion.button>
                     </div>
-                    {showZoomOverlay && images && images.length > 0 && (
-                      <div
-                        className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                        onClick={toggleFullscreen}
-                      >
-                        <div className="bg-white bg-opacity-80 rounded-full p-3 shadow-lg">
-                          <ZoomIn size={24} className="text-gray-800" />
-                        </div>
-                      </div>
-                    )}
                     {images && images.length > 1 && (
                       <ProgressIndicator current={currentImage} total={images.length} />
                     )}

@@ -62,7 +62,7 @@ const UserProfile = () => {
     e.target.src = fallbackImage;
   }, [fallbackImage]);
 
-  // Simplified image processing - just return fallback if no valid URL
+  // ✅ IMPROVED: Better image processing with multiple fallbacks
   const processImageUrl = useCallback((imageUrl, itemTitle = '') => {
     // If no image URL or it's empty/null, return fallback
     if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '') {
@@ -71,6 +71,11 @@ const UserProfile = () => {
     
     // If it's already a data URL, return as is
     if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    
+    // ✅ FIX: Check if it's a Google Drive URL format
+    if (imageUrl.includes('drive.google.com')) {
       return imageUrl;
     }
     
@@ -101,21 +106,42 @@ const UserProfile = () => {
     }
   }, []);
 
-  // Button action handlers - simplified
+  // ✅ FIXED: Button action handlers dengan data yang benar
   const handleViewDetails = useCallback((orderNumber) => {
-    navigate(`/manage-order/${orderNumber}`);
+    if (orderNumber) {
+      navigate(`/manage-order/${orderNumber}`);
+    } else {
+      console.error('Order number is missing');
+    }
   }, [navigate]);
 
   const handleBuyAgain = useCallback((item) => {
-    navigate(`/service/${item.serviceId || item.id}`);
+    // ✅ FIX: Use serviceId from BE response
+    const serviceId = item.serviceId || item.id;
+    if (serviceId) {
+      navigate(`/service/${serviceId}`);
+    } else {
+      console.error('Service ID is missing for buy again:', item);
+    }
   }, [navigate]);
 
   const handleContactSeller = useCallback((item) => {
-    navigate(`/chat/${item.sellerId || item.seller}`);
+    // ✅ FIX: Use sellerId from BE response
+    const sellerId = item.sellerId || item.seller;
+    if (sellerId) {
+      navigate(`/chat/${sellerId}`);
+    } else {
+      console.error('Seller ID is missing for contact seller:', item);
+    }
   }, [navigate]);
 
-  // Review interaction handlers - simplified
+  // ✅ IMPROVED: Review interaction handlers dengan better error handling
   const handleHelpfulReview = useCallback(async (reviewId) => {
+    if (!reviewId) {
+      console.error('Review ID is missing');
+      return;
+    }
+
     try {
       const response = await axios.post(
         `${userAPI}/review-helpful/${reviewId}`,
@@ -134,23 +160,75 @@ const UserProfile = () => {
       }
     } catch (error) {
       console.error('Error marking review as helpful:', error);
+      // ✅ Optional: Show user feedback
+      // alert('Failed to mark review as helpful. Please try again.');
     }
   }, []);
 
   const handleShareReview = useCallback((reviewId, reviewTitle) => {
+    if (!reviewId) {
+      console.error('Review ID is missing');
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/review/${reviewId}`;
+    const shareTitle = `Review: ${reviewTitle || 'Service Review'}`;
+    const shareText = `Check out this review for ${reviewTitle || 'this service'}`;
+
+    // ✅ IMPROVED: Better sharing with fallbacks
     if (navigator.share) {
       navigator.share({
-        title: `Review: ${reviewTitle}`,
-        text: `Check out this review for ${reviewTitle}`,
-        url: `${window.location.origin}/review/${reviewId}`
-      }).catch(console.error);
-    } else {
-      const shareUrl = `${window.location.origin}/review/${reviewId}`;
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Review link copied to clipboard!');
-      }).catch(() => {
-        prompt('Copy this link to share the review:', shareUrl);
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl
+      }).catch((error) => {
+        console.error('Error sharing:', error);
+        // Fallback to clipboard
+        copyToClipboard(shareUrl);
       });
+    } else {
+      // Fallback to clipboard
+      copyToClipboard(shareUrl);
+    }
+  }, []);
+
+  // ✅ NEW: Helper function untuk clipboard dengan better UX
+  const copyToClipboard = useCallback((text) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        // ✅ Optional: Show success feedback
+        console.log('Link copied to clipboard');
+        // alert('Review link copied to clipboard!');
+      }).catch(() => {
+        // Fallback untuk browser lama
+        fallbackCopyToClipboard(text);
+      });
+    } else {
+      fallbackCopyToClipboard(text);
+    }
+  }, []);
+
+  const fallbackCopyToClipboard = useCallback((text) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      console.log('Link copied to clipboard (fallback)');
+      // ✅ Optional: Show success feedback
+      // alert('Review link copied to clipboard!');
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      // Final fallback - prompt user
+      prompt('Copy this link to share the review:', text);
+    } finally {
+      document.body.removeChild(textArea);
     }
   }, []);
 
@@ -226,7 +304,7 @@ const UserProfile = () => {
       if (response.data && response.data.purchaseHistory) {
         const { purchaseHistory, pagination } = response.data;
 
-        // Process each item with simplified validation
+        // ✅ IMPROVED: Process each item with better validation
         const processedHistory = purchaseHistory.map(item => ({
           ...item,
           image: processImageUrl(item.image, item.title),
@@ -267,7 +345,7 @@ const UserProfile = () => {
       if (response.data && response.data.reviews) {
         const { reviews, pagination } = response.data;
 
-        // Process each review with simplified validation
+        // ✅ IMPROVED: Process each review with better validation
         const processedReviews = reviews.map(review => ({
           ...review,
           image: processImageUrl(review.image, review.title),

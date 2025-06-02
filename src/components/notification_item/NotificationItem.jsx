@@ -45,7 +45,7 @@ const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {
   return (
     <motion.div
       whileHover="hover"
-      className={`border-b border-gray-400 cursor-pointer bg-white px-4 py-2`}
+      className={`border-b border-gray-400 cursor-pointer bg-white pl-2 pr-4 py-2`}
       onClick={() => {
         socket.emit("view_notification", notification);
         setRead(true);
@@ -56,9 +56,9 @@ const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {
         setUnreadCount(unreadCount - 1);
       }}
     >
-      <div className="flex text-black min-h-20">
+      <div className="flex text-black min-h-20 gap-2">
         {!read && !localRead && (
-          <div className="w-1 bg-black"></div>
+          <div className="w-1 rounded-full bg-green-600 h-15 self-center"></div>
         )}
 
         <div className="flex flex-row gap-4 w-full">

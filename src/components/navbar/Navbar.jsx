@@ -308,49 +308,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                             )
                           }
                         </div>
-
-                        {/* <div className="max-h-96 overflow-y-auto">
-                          {notificationList && notificationList.length > 0 ? (
-                            <motion.div initial="hidden" animate="visible">
-                              {notificationList.map((notification, index) => {
-                                if (!notification) return null;
-
-                                const messageDate = new Date(notification.message.time);
-                                const messageMidnight = new Date(messageDate);
-                                messageMidnight.setHours(0, 0, 0, 0);
-
-                                let showDateLabel = false;
-
-                                if (!lastRenderedDate || messageMidnight.getTime() !== lastRenderedDate.getTime()) {
-                                  showDateLabel = true;
-                                  lastRenderedDate = messageMidnight;
-                                }
-
-                                const label = showDateLabel ? getRelativeDateLabel(notification.message.time) : null;
-
-                                return (
-                                  <React.Fragment key={notification._id}>
-                                    {label && (
-                                      <div className="text-black font-Archivo p-3 text-lg font-semibold">
-                                        {label}
-                                      </div>
-                                    )}
-                                    <NotificationItem notification={notification} unreadCount={unreadCount} setUnreadCount={setUnreadCount} />
-                                  </React.Fragment>
-                                );
-                              })}
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              className="p-8 text-center text-gray-500"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.2 }}
-                            >
-                              No notifications yet
-                            </motion.div>
-                          )}
-                        </div> */}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -628,7 +585,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               className="flex flex-row items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-300"
               whileHover={{ scale: 1.05 }}
             >
-              Explore <span><img className="self-center" src={dropdown_tri} alt="" /></span>
+              <Link to="/privacy-policy" className="hover:text-blue-300 transition-colors duration-300">Privacy Policy</Link>
             </motion.p>
             <motion.div whileHover={{ scale: 1.05 }}>
               <Link to="/about-us" className="hover:text-blue-300 transition-colors duration-300">About Us</Link>

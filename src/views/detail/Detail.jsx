@@ -30,8 +30,6 @@ const Detail = () => {
   const [isAutoplay, setIsAutoplay] = useState(true);
   const [imageMode, setImageMode] = useState("cover"); // cover or contain
   const [activePackage, setActivePackage] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showZoomOverlay, setShowZoomOverlay] = useState(false);
   const [gigDetail, setGigDetail] = useState(null);
   const [freelancer, setFreelancer] = useState(null);
   const [images, setImages] = useState([]);
@@ -51,6 +49,7 @@ const Detail = () => {
   useEffect(() => {
     setRandomDummy(dummyImages[Math.floor(Math.random() * dummyImages.length)]);
   }, [])
+  
   useEffect(() => {
     const reasons = disabledGigs[gigId];
     if (reasons && reasons.length > 0) {
@@ -126,19 +125,17 @@ const Detail = () => {
     }
   }, [gigDetail]);
 
-  // Autoplay functionality
   useEffect(() => {
     let interval;
-    if (isAutoplay && !isFullscreen) {
+    if (isAutoplay) {
       interval = setInterval(() => {
         setDirection(1);
         setCurrentImage((prev) => (prev + 1) % images?.length);
-      }, 5000); // Change image every 5 seconds
+      }, 5000);
     }
     return () => clearInterval(interval);
-  }, [isAutoplay, images?.length, isFullscreen]);
+  }, [isAutoplay, images?.length]);
 
-  // Pause autoplay on hover
   const handleMouseEnter = () => setIsAutoplay(false);
   const handleMouseLeave = () => setIsAutoplay(true);
 
@@ -152,18 +149,6 @@ const Detail = () => {
     setCurrentImage((prev) => (prev === 0 ? images?.length - 1 : prev - 1));
   };
 
-  // Toggle between cover and contain modes for images
-  const toggleImageMode = () => {
-    setImageMode(prev => prev === "cover" ? "contain" : "cover");
-  };
-
-  // Toggle fullscreen mode for the carousel
-  const toggleFullscreen = () => {
-    setIsFullscreen(prev => !prev);
-    setIsAutoplay(false);
-  };
-
-  // Animation variants for the carousel
   const slideVariants = {
     enter: (direction) => ({
       x: direction > 0 ? 1000 : -1000,
@@ -179,22 +164,6 @@ const Detail = () => {
     })
   };
 
-  // Zoom animation for fullscreen mode
-  const fullscreenVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.3 }
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      transition: { duration: 0.2 }
-    }
-  };
-
-  // Transition settings for smooth animation
   const transition = {
     x: { type: "spring", stiffness: 300, damping: 30 },
     opacity: { duration: 0.5 }
@@ -207,17 +176,6 @@ const Detail = () => {
     });
   };
 
-  const getDaysAgo = (date) => {
-    const today = new Date();
-    const inputDate = new Date(date);
-    today.setHours(0, 0, 0, 0);
-    inputDate.setHours(0, 0, 0, 0);
-    const diffTime = today - inputDate;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  }
-
-  // Progress indicator for carousel
   const ProgressIndicator = ({ current, total }) => {
     return (
       <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-10">
@@ -236,78 +194,6 @@ const Detail = () => {
           />
         ))}
       </div>
-    );
-  };
-
-  // Fullscreen image view component
-  const FullscreenView = () => {
-    if (!isFullscreen) return null;
-
-    return (
-      <motion.div
-        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        variants={fullscreenVariants}
-        onClick={toggleFullscreen}
-      >
-        <div className="relative w-full h-full max-w-6xl max-h-screen p-8" onClick={e => e.stopPropagation()}>
-          <button
-            className="absolute top-4 right-4 bg-white rounded-full p-2 z-10"
-            onClick={toggleFullscreen}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-
-          <div className="relative h-full flex items-center justify-center">
-            <AnimatePresence initial={false} custom={direction}>
-              <motion.img
-                key={currentImage}
-                src={`${imageShow}${images[currentImage]}`}
-                alt={`Logo Design Preview ${currentImage + 1}`}
-                className="max-w-full max-h-full object-contain"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={transition}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = randomDummy;
-                }}
-              />
-            </AnimatePresence>
-
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 opacity-80 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                prevImage();
-              }}
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 opacity-80 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                nextImage();
-              }}
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            <div className="absolute bottom-4 left-0 right-0">
-              <ProgressIndicator current={currentImage} total={images?.length} />
-            </div>
-          </div>
-        </div>
-      </motion.div>
     );
   };
 
@@ -341,17 +227,13 @@ const Detail = () => {
                 ({gigDetail?.reviewCount})
               </span>
             </div>
-
-            {/* Enhanced Animated Carousel */}
             <div
               className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-150 shadow-lg"
               onMouseEnter={() => {
                 handleMouseEnter();
-                setShowZoomOverlay(true);
               }}
               onMouseLeave={() => {
                 handleMouseLeave();
-                setShowZoomOverlay(false);
               }}
             >
               <AnimatePresence initial={false} custom={direction}>
@@ -398,46 +280,6 @@ const Detail = () => {
               >
                 <ChevronRight size={24} />
               </motion.button>
-
-              {/* Control buttons */}
-              <div className="absolute top-4 right-4 flex space-x-2">
-                <motion.button
-                  className="bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 transition-all"
-                  onClick={toggleImageMode}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  title={imageMode === "cover" ? "View full image" : "Fill frame"}
-                >
-                  {imageMode === "cover" ? (
-                    <ZoomIn size={18} />
-                  ) : (
-                    <Maximize2 size={18} />
-                  )}
-                </motion.button>
-                <motion.button
-                  className="bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 transition-all"
-                  onClick={toggleFullscreen}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  title="View fullscreen"
-                >
-                  <Maximize2 size={18} />
-                </motion.button>
-              </div>
-
-              {/* Zoom overlay */}
-              {showZoomOverlay && (
-                <div
-                  className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                  onClick={toggleFullscreen}
-                >
-                  <div className="bg-white bg-opacity-80 rounded-full p-3 shadow-lg">
-                    <ZoomIn size={24} className="text-gray-800" />
-                  </div>
-                </div>
-              )}
-
-              {/* Progress indicator dots */}
               <ProgressIndicator current={currentImage} total={images?.length} />
             </div>
 
@@ -462,7 +304,7 @@ const Detail = () => {
                     alt={`Thumbnail ${index + 1}`}
                     className={`w-24 h-16 object-cover ${index !== currentImage ? 'opacity-70 hover:opacity-100' : ''
                       } transition-opacity`}
-                    onError={(e) => { 
+                    onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = randomDummy;
                     }}
@@ -488,7 +330,9 @@ const Detail = () => {
             </div>
             <div className="border-t my-6 h-40">
               <h2 className="text-xl font-bold my-2">Freelancer Profile</h2>
-              <div className="flex gap-3 h-26">
+              <div className="flex gap-3 h-26"
+                onClick={() => { navigate(`/freelancer-profile/${freelancer?._id}`) }}
+              >
                 <div className="w-20 h-full flex items-center justify-center">
                   <img
                     className="w-20 h-20 rounded-full object-cover"
@@ -689,10 +533,6 @@ const Detail = () => {
       </div>
 
       <Footer refScrollUp={detailScrollUp} />
-
-      <AnimatePresence>
-        {isFullscreen && <FullscreenView />}
-      </AnimatePresence>
 
       <Contract
         isOpen={showContractModal}
