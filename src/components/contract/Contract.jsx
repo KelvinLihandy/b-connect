@@ -148,21 +148,22 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       setIsUploadingProof(false);
     }
   };
-  useEffect(() => {
-    const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';
+  
+  // useEffect(() => {
+  //   const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';
 
-    let scriptTag = document.createElement('script');
-    scriptTag.src = midtransScriptUrl;
-    // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
-    const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
-    scriptTag.setAttribute('data-client-key', myMidtransClientKey);
+  //   let scriptTag = document.createElement('script');
+  //   scriptTag.src = midtransScriptUrl;
+  //   // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
+  //   const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
+  //   scriptTag.setAttribute('data-client-key', myMidtransClientKey);
 
-    document.body.appendChild(scriptTag);
+  //   document.body.appendChild(scriptTag);
 
-    return () => {
-      document.body.removeChild(scriptTag);
-    }
-  }, []);
+  //   return () => {
+  //     document.body.removeChild(scriptTag);
+  //   }
+  // }, []);
 
   // Cleanup effect for payment proof preview
   useEffect(() => {
@@ -173,44 +174,44 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     };
   }, [paymentProofPreview]);
 
-  const initiateTransaction = async () => {
-    if (!selectedPackage && finishPay) return;
-    try {
-      const res = await axios.post(`${contractAPI}/create-transaction`,
-        {
-          gigId: gigId,
-          selectedPackage: selectedPackage
-        },
-        { withCredentials: true }
-      )
-      if (res && res.data.status === "success transaction create") {
-        console.log(res);
-        window.snap.pay(res.data.transaction.snap_token, {
-          onSuccess: function (result) {
-            console.log("success", result);
-            setFinishPay(true);
-            setShowProgress(false)
-          },
-          onPending: function (result) {
-            console.log("pending", result);
-            setPendingPay(true);
-            setShowProgress(false)
-          },
-          onClose: function (result) {
-            console.log("close", result);
-            setFailPay(true);
-            setShowProgress(false)
-          }
-        })
-      }
-      else {
-        console.log("error api midtrans", res);
-      }
-    } catch (error) {
-      console.log("error initiate transaction", error);
-    }
-    getDisabledGigs();
-  };
+  // const initiateTransaction = async () => {
+  //   if (!selectedPackage && finishPay) return;
+  //   try {
+  //     const res = await axios.post(`${contractAPI}/create-transaction`,
+  //       {
+  //         gigId: gigId,
+  //         selectedPackage: selectedPackage
+  //       },
+  //       { withCredentials: true }
+  //     )
+  //     if (res && res.data.status === "success transaction create") {
+  //       console.log(res);
+  //       window.snap.pay(res.data.transaction.snap_token, {
+  //         onSuccess: function (result) {
+  //           console.log("success", result);
+  //           setFinishPay(true);
+  //           setShowProgress(false)
+  //         },
+  //         onPending: function (result) {
+  //           console.log("pending", result);
+  //           setPendingPay(true);
+  //           setShowProgress(false)
+  //         },
+  //         onClose: function (result) {
+  //           console.log("close", result);
+  //           setFailPay(true);
+  //           setShowProgress(false)
+  //         }
+  //       })
+  //     }
+  //     else {
+  //       console.log("error api midtrans", res);
+  //     }
+  //   } catch (error) {
+  //     console.log("error initiate transaction", error);
+  //   }
+  //   getDisabledGigs();
+  // };
 
   return (
     <AnimatePresence mode="wait">
@@ -454,29 +455,12 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                         Rp. {formattedPrice(selectedPackage?.price)}
                                       </p>
                                     </div>
-                                    {/* <div className="flex flex-row justify-between">
-                                      <p>Pajak</p>
-                                      <p className="font-bold">
-                                        Rp.{" "}
-                                        {formattedPrice(
-                                          (0.7 / 100) * selectedPackage?.price <= 1
-                                            ? "0"
-                                            : (0.7 / 100) * selectedPackage?.price
-                                        )}
-                                      </p>
-                                    </div> */}
                                   </div>
                                   <div className="border-t" />
                                   <div className="flex flex-row font-bold justify-between text-3xl">
                                     <p>Total</p>
                                     <p className="text-wrap">
                                       Rp. {selectedPackage?.price}
-                                      {/* {formattedPrice(
-                                        selectedPackage?.price +
-                                        ((0.7 / 100) * selectedPackage?.price <= 1
-                                          ? 0
-                                          : (0.7 / 100) * selectedPackage?.price)
-                                      )} */}
                                     </p>
                                   </div>
                                   <div className="flex flex-col justify-center mx-5">
