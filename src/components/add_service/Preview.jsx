@@ -249,24 +249,6 @@ const Preview = ({ serviceData, onClose }) => {
                         </motion.button>
                       </>
                     )}
-                    <div className="absolute top-4 right-4 flex space-x-2">
-                      <motion.button
-                        className="bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 transition-all"
-                        onClick={toggleImageMode}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        title={imageMode === "cover" ? "View full image" : "Fill frame"}
-                      >
-                        {imageMode === "cover" ? (
-                          <ZoomIn size={18} />
-                        ) : (
-                          <Maximize2 size={18} />
-                        )}
-                      </motion.button>
-                    </div>
-                    {images && images.length > 1 && (
-                      <ProgressIndicator current={currentImage} total={images.length} />
-                    )}
                   </div>
                   {images && images.length > 0 && (
                     <div className="flex space-x-2 mb-8 overflow-x-auto pb-2">
@@ -428,10 +410,6 @@ const Preview = ({ serviceData, onClose }) => {
           </div>
         </div>
       </motion.div>
-
-      <AnimatePresence>
-        {isFullscreen && <FullscreenView />}
-      </AnimatePresence>
     </motion.div>
   );
 };
