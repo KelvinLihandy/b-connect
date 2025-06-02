@@ -56,12 +56,145 @@ const UserProfile = () => {
     return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIyNCIgdmlld0JveD0iMCAwIDMyMCAyMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMzMuNSA5OEMxMzMuNSA5NC4xMzQgMTM2LjYzNCA5MSAxNDAuNSA5MUgxNzkuNUMxODMuMzY2IDkxIDE4Ni41IDk0LjEzNCAxODYuNSA5OFYxMjZDMTg2LjUgMTI5Ljg2NiAxODMuMzY2IDEzMyAxNzkuNSAxMzNIMTQwLjVDMTM2LjYzNCAxMzMgMTMzLjUgMTI5Ljg2NiAxMzMuNSAxMjZWOThaIiBmaWxsPSIjOUNBM0FGIi8+Cjxzdmcgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiB2aWV3Qm94PSIwIDAgMTYgMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDNDMSAyLjQ0NzcyIDEuNDQ3NzIgMiAyIDJIMTRDMTQuNTUyMyAyIDE1IDIuNDQ3NzIgMTUgM1Y5QzE1IDkuNTUyMjggMTQuNTUyMyAxMCAxNCAxMEgyQzEuNDQ3NzIgMTAgMSA5LjU1MjI4IDEgOVYzWiIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjEiIGZpbGw9IiM5Q0EzQUYiLz4KPHN0aCBkPSJNOSA3TDEyIDQiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE2MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
   }, []);
 
-  // Memoize image error handler to prevent recreation on every render
+  // Enhanced image error handler with debugging
   const handleImageError = useCallback((e) => {
+    console.log('🖼️ Image failed to load:', e.target.src);
+    console.log('🖼️ Image alt text:', e.target.alt);
+    
     if (e.target.src !== fallbackImage) {
+      console.log('🖼️ Switching to fallback image');
       e.target.src = fallbackImage;
+    } else {
+      console.error('❌ Even fallback image failed to load');
     }
   }, [fallbackImage]);
+
+  // Function to process and validate image URLs
+  const processImageUrl = useCallback((imageUrl, itemTitle = '') => {
+    console.log('🔍 Processing image URL:', imageUrl, 'for item:', itemTitle);
+    
+    if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '') {
+      console.log('⚠️ No valid image URL provided, using fallback');
+      return fallbackImage;
+    }
+    
+    // If it's already a data URL, return as is
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    
+    try {
+      // Try to create URL object to validate
+      const url = new URL(imageUrl);
+      console.log('✅ Valid URL format:', url.href);
+      return imageUrl;
+    } catch (error) {
+      console.error('❌ Invalid URL format:', error);
+      return fallbackImage;
+    }
+  }, [fallbackImage]);
+
+  // Enhanced status detection function
+  const getStatusInfo = useCallback((item) => {
+    const status = (item.status || '').toLowerCase();
+    const statusType = (item.statusType || '').toLowerCase();
+    
+    console.log('🔍 Analyzing status for:', item.title || 'Unknown item');
+    console.log('   - status:', item.status);
+    console.log('   - statusType:', item.statusType);
+    
+    // More comprehensive status detection
+    if (status.includes('delivered') || status.includes('completed') || 
+        status.includes('done') || statusType === 'delivered' || 
+        statusType === 'completed') {
+      console.log('   ✅ Detected as: DELIVERED');
+      return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
+    } else if (status.includes('progress') || status.includes('processing') || 
+               status.includes('ongoing') || status.includes('active') || 
+               statusType === 'progress' || statusType === 'processing') {
+      console.log('   🟡 Detected as: IN PROGRESS');
+      return { type: 'progress', color: 'orange', display: item.status || 'In Progress' };
+    } else if (status.includes('cancelled') || status.includes('canceled') || 
+               status.includes('failed') || status.includes('rejected') || 
+               statusType === 'cancelled' || statusType === 'canceled') {
+      console.log('   ❌ Detected as: CANCELLED');
+      return { type: 'cancelled', color: 'red', display: item.status || 'Cancelled' };
+    } else {
+      console.log('   ❓ Status unclear, defaulting to unknown');
+      return { type: 'unknown', color: 'gray', display: item.status || 'Status Unknown' };
+    }
+  }, []);
+
+  // Button action handlers
+  const handleViewDetails = useCallback((orderNumber) => {
+    console.log('🔍 Viewing order details for:', orderNumber);
+    navigate(`/manage-order/${orderNumber}`);
+  }, [navigate]);
+
+  const handleBuyAgain = useCallback((item) => {
+    console.log('🛒 Buy again for service:', item.title);
+    // You can navigate to the service page or open a buy again modal
+    navigate(`/service/${item.serviceId || item.id}`);
+  }, [navigate]);
+
+  const handleContactSeller = useCallback((item) => {
+    console.log('💬 Contacting seller:', item.seller);
+    // Navigate to chat or contact page
+    navigate(`/chat/${item.sellerId || item.seller}`);
+  }, [navigate]);
+
+  // Review interaction handlers
+  const handleHelpfulReview = useCallback(async (reviewId) => {
+    try {
+      console.log('👍 Marking review as helpful:', reviewId);
+      const response = await axios.post(
+        `${userAPI}/review-helpful/${reviewId}`,
+        {},
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Update the helpful count in the reviews state
+        setReviews(prevReviews => 
+          prevReviews.map(review => 
+            review.id === reviewId 
+              ? { ...review, helpful: (review.helpful || 0) + 1 }
+              : review
+          )
+        );
+        console.log('✅ Review marked as helpful successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error marking review as helpful:', error);
+    }
+  }, []);
+
+  const handleShareReview = useCallback((reviewId, reviewTitle) => {
+    console.log('📤 Sharing review:', reviewId, reviewTitle);
+    
+    if (navigator.share) {
+      // Use native Web Share API if available
+      navigator.share({
+        title: `Review: ${reviewTitle}`,
+        text: `Check out this review for ${reviewTitle}`,
+        url: `${window.location.origin}/review/${reviewId}`
+      }).then(() => {
+        console.log('✅ Review shared successfully');
+      }).catch((error) => {
+        console.error('❌ Error sharing review:', error);
+      });
+    } else {
+      // Fallback to clipboard
+      const shareUrl = `${window.location.origin}/review/${reviewId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Review link copied to clipboard!');
+        console.log('✅ Review link copied to clipboard');
+      }).catch(() => {
+        // Further fallback
+        prompt('Copy this link to share the review:', shareUrl);
+      });
+    }
+  }, []);
 
   const fetchUserProfile = useCallback(async () => {
     const targetUserId = getCurrentUserId();
@@ -123,6 +256,7 @@ const UserProfile = () => {
 
     try {
       setLoading(true);
+      setError(null);
       const response = await axios.post(
         `${userAPI}/purchase-history/${targetUserId}?page=${page}&limit=10`,
         {},
@@ -134,7 +268,25 @@ const UserProfile = () => {
       if (response.data && response.data.purchaseHistory) {
         const { purchaseHistory, pagination } = response.data;
 
-        setPurchaseHistory(purchaseHistory);
+        console.log('📊 Raw purchase history data:', purchaseHistory);
+
+        // Process each item with enhanced validation
+        const processedHistory = purchaseHistory.map(item => {
+          const processedItem = {
+            ...item,
+            image: processImageUrl(item.image, item.title),
+            id: item.id || Date.now() + Math.random() // Ensure unique ID
+          };
+          
+          // Log status info for debugging
+          const statusInfo = getStatusInfo(processedItem);
+          console.log(`📋 Item "${item.title}" status info:`, statusInfo);
+          
+          return processedItem;
+        });
+
+        console.log('✅ Processed purchase history:', processedHistory);
+        setPurchaseHistory(processedHistory);
         setPurchasePagination({
           currentPage: pagination.currentPage,
           totalPages: pagination.totalPages,
@@ -143,12 +295,12 @@ const UserProfile = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching purchase history:", error);
+      console.error("❌ Error fetching purchase history:", error);
       setError("Failed to load purchase history");
     } finally {
       setLoading(false);
     }
-  }, [getCurrentUserId]);
+  }, [getCurrentUserId, processImageUrl, getStatusInfo]);
 
   const fetchReviews = useCallback(async (page = 1) => {
     const targetUserId = getCurrentUserId();
@@ -156,6 +308,7 @@ const UserProfile = () => {
 
     try {
       setLoading(true);
+      setError(null);
       const response = await axios.post(
         `${userAPI}/user-reviews/${targetUserId}?page=${page}&limit=10`,
         {},
@@ -167,7 +320,17 @@ const UserProfile = () => {
       if (response.data && response.data.reviews) {
         const { reviews, pagination } = response.data;
 
-        setReviews(reviews);
+        console.log('📊 Raw reviews data:', reviews);
+
+        // Process each review with enhanced validation
+        const processedReviews = reviews.map(review => ({
+          ...review,
+          image: processImageUrl(review.image, review.title),
+          id: review.id || Date.now() + Math.random() // Ensure unique ID
+        }));
+
+        console.log('✅ Processed reviews:', processedReviews);
+        setReviews(processedReviews);
         setReviewsPagination({
           currentPage: pagination.currentPage,
           totalPages: pagination.totalPages,
@@ -176,12 +339,37 @@ const UserProfile = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching reviews:", error);
+      console.error("❌ Error fetching reviews:", error);
       setError("Failed to load reviews");
     } finally {
       setLoading(false);
     }
-  }, [getCurrentUserId]);
+  }, [getCurrentUserId, processImageUrl]);
+
+  // Debug function for troubleshooting
+  const debugOrderStatus = useCallback(() => {
+    console.log('🔍 === DEBUG ORDER STATUS ===');
+    console.log('Purchase History:', purchaseHistory);
+    console.log('Current User ID:', getCurrentUserId());
+    console.log('Auth Data:', auth?.data?.auth);
+    
+    // Check for stuck orders
+    const progressOrders = purchaseHistory.filter(item => {
+      const statusInfo = getStatusInfo(item);
+      return statusInfo.type === 'progress';
+    });
+    
+    console.log('🟡 Orders in progress:', progressOrders);
+    
+    if (progressOrders.length > 0) {
+      console.log('⚠️ Found orders stuck in progress. Check backend status update logic.');
+      progressOrders.forEach(order => {
+        console.log(`   - Order ${order.orderNumber}: Status="${order.status}", Type="${order.statusType}"`);
+      });
+    }
+    
+    console.log('🔍 === END DEBUG ===');
+  }, [purchaseHistory, getCurrentUserId, auth?.data?.auth, getStatusInfo]);
 
   // Initial data loading effect - only run once when component mounts or auth changes
   useEffect(() => {
@@ -247,119 +435,153 @@ const UserProfile = () => {
   const handleSettingsClick = useCallback(() => {
     navigate('/profile');
   }, [navigate]);
-  console.log("history", purchaseHistory)
-  const PurchaseCard = React.memo(({ item }) => (
-    <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
-      <div className="flex flex-col lg:flex-row">
-        <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
-          <img
-            src={item.image || fallbackImage}
-            alt={item.title}
-            className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
-            onError={handleImageError}
-            loading="lazy"
-          />
-        </div>
 
-        <div className="flex-1 p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                {item.category.map((cat, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
-                  >
-                    {cat}
-                  </span>
-                ))}
-              </div>
+  console.log("📊 Purchase history debug:", purchaseHistory);
 
-              <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                {item.title}
-              </h3>
+  const PurchaseCard = React.memo(({ item }) => {
+    const statusInfo = getStatusInfo(item);
+    
+    return (
+      <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
+        {/* Debug info overlay (only in development) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs p-1 rounded z-10">
+            Type: {statusInfo.type}
+          </div>
+        )}
+        
+        <div className="flex flex-col lg:flex-row">
+          <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
+            <img
+              src={item.image || fallbackImage}
+              alt={item.title || 'Product image'}
+              className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
+              onError={handleImageError}
+              loading="lazy"
+              onLoad={() => console.log('✅ Image loaded successfully for:', item.title)}
+            />
+          </div>
 
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                {item.description}
-              </p>
-
-              <div className="flex items-center gap-4 mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      {item.seller.charAt(0)}
+          <div className="flex-1 p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  {Array.isArray(item.category) ? (
+                    item.category.map((cat, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      {item.category || 'General'}
                     </span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">{item.seller}</span>
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-sm font-medium text-gray-700">{item.sellerRating}</span>
-                  </div>
+                  )}
                 </div>
-              </div>
 
-              <div className="flex items-center gap-4 mb-4">
-                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${item.statusType === "progress"
-                  ? "bg-orange-100 text-orange-800 border border-orange-200"
-                  : item.statusType === "delivered"
-                    ? "bg-green-100 text-green-800 border border-green-200"
-                    : "bg-red-100 text-red-800 border border-red-200"
-                  }`}>
-                  {item.status}
-                </span>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                  {item.title || 'Untitled Service'}
+                </h3>
 
-                {item.statusType === "delivered" && item.rating > 0 && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-gray-600">Your rating:</span>
-                    <div className="flex">
-                      {[...Array(5)].map((_, index) => (
-                        <svg key={index} className={`w-4 h-4 ${index < Math.floor(item.rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  {item.description || 'No description available'}
+                </p>
+
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {(item.seller || 'U').charAt(0)}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{item.seller || 'Unknown Seller'}</span>
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-700">{item.sellerRating || '0.0'}</span>
                     </div>
                   </div>
-                )}
-              </div>
-
-              <div className="text-sm text-gray-500 mb-2">
-                {item.orderNumber} • {item.date}
-              </div>
-              <div className="text-sm text-gray-600 font-medium">
-                {item.deliveryTime}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-3 ml-6">
-              <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">
-                  {item.price}
                 </div>
-              </div>              
-              <div className="flex flex-col gap-2">
-                <button 
-                  onClick={item.statusType === "progress" ? () => navigate(`/manage-order/${item.orderNumber}`) : undefined}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 ${item.statusType === "progress"
-                  ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
-                  : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
-                  }`}>
-                  {item.statusType === "progress" ? "View Details" : "Buy Again"}
-                </button>
 
-                {item.statusType === "delivered" && (
-                  <button className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300">
-                    Contact Seller
+                <div className="flex items-center gap-4 mb-4">
+                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                    statusInfo.type === "progress"
+                      ? "bg-orange-100 text-orange-800 border border-orange-200"
+                      : statusInfo.type === "delivered"
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : statusInfo.type === "cancelled"
+                      ? "bg-red-100 text-red-800 border border-red-200"
+                      : "bg-gray-100 text-gray-800 border border-gray-200"
+                  }`}>
+                    {statusInfo.display}
+                  </span>
+
+                  {statusInfo.type === "delivered" && item.rating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-gray-600">Your rating:</span>
+                      <div className="flex">
+                        {[...Array(5)].map((_, index) => (
+                          <svg key={index} className={`w-4 h-4 ${index < Math.floor(item.rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-sm text-gray-500 mb-2">
+                  {item.orderNumber || 'N/A'} • {item.date || 'N/A'}
+                </div>
+                <div className="text-sm text-gray-600 font-medium">
+                  {item.deliveryTime || 'N/A'}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-3 ml-6">
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {item.price || 'Rp 0'}
+                  </div>
+                </div>              
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => {
+                      if (statusInfo.type === "progress") {
+                        handleViewDetails(item.orderNumber);
+                      } else {
+                        handleBuyAgain(item);
+                      }
+                    }}
+                    className={`px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 ${
+                      statusInfo.type === "progress"
+                        ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
+                        : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                    }`}
+                  >
+                    {statusInfo.type === "progress" ? "View Details" : "Buy Again"}
                   </button>
-                )}
+
+                  {statusInfo.type === "delivered" && (
+                    <button 
+                      onClick={() => handleContactSeller(item)}
+                      className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
+                    >
+                      Contact Seller
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  ));
+    );
+  });
 
   const ReviewCard = React.memo(({ review }) => (
     <div className="group relative bg-white rounded-xl p-8 border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl">
@@ -367,10 +589,11 @@ const UserProfile = () => {
         <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
           <img
             src={review.image || fallbackImage}
-            alt={review.title}
+            alt={review.title || 'Service image'}
             className="w-full h-full object-cover rounded-lg border border-gray-200"
             onError={handleImageError}
             loading="lazy"
+            onLoad={() => console.log('✅ Review image loaded for:', review.title)}
           />
         </div>
 
@@ -379,7 +602,7 @@ const UserProfile = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  {review.category}
+                  {review.category || 'General'}
                 </span>
                 <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
                   COMPLETED
@@ -395,57 +618,63 @@ const UserProfile = () => {
               </div>
 
               <h3 className="text-xl font-bold text-gray-900 mb-2 leading-tight">
-                {review.title}
+                {review.title || 'Untitled Service'}
               </h3>
 
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">
-                      {review.seller.charAt(0)}
+                      {(review.seller || 'U').charAt(0)}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">{review.seller}</span>
+                  <span className="text-sm font-medium text-gray-700">{review.seller || 'Unknown Seller'}</span>
                   <div className="flex items-center gap-1">
                     <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
-                    <span className="text-sm font-medium text-gray-700">{review.sellerRating}</span>
+                    <span className="text-sm font-medium text-gray-700">{review.sellerRating || '0.0'}</span>
                   </div>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-500 mb-4">{review.orderId}</p>
+              <p className="text-sm text-gray-500 mb-4">{review.orderId || 'N/A'}</p>
 
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600 font-medium">My Rating:</span>
                   <div className="flex">
                     {[...Array(5)].map((_, starIndex) => (
-                      <svg key={starIndex} className={`w-5 h-5 ${starIndex < Math.floor(review.rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <svg key={starIndex} className={`w-5 h-5 ${starIndex < Math.floor(review.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     ))}
                   </div>
-                  <span className="text-sm text-gray-900 font-semibold ml-1">{review.rating}.0</span>
+                  <span className="text-sm text-gray-900 font-semibold ml-1">{review.rating || 0}.0</span>
                 </div>
 
-                <span className="text-sm text-gray-600">• {review.deliveryTime}</span>
+                <span className="text-sm text-gray-600">• {review.deliveryTime || 'N/A'}</span>
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
-                  {review.price}
+                  {review.price || 'Rp 0'}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20">
+                <button 
+                  onClick={() => handleBuyAgain(review)}
+                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20"
+                >
                   Buy Again
                 </button>
-                <button className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300">
+                <button 
+                  onClick={() => handleContactSeller(review)}
+                  className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
+                >
                   Contact Seller
                 </button>
               </div>
@@ -454,19 +683,27 @@ const UserProfile = () => {
 
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <p className="text-gray-700 leading-relaxed text-sm">
-              {review.reviewText}
+              {review.reviewText || 'No review text available.'}
             </p>
           </div>
 
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-1 hover:text-[#2E5077] transition-colors">
+              <button 
+                onClick={() => handleHelpfulReview(review.id)}
+                className="flex items-center gap-1 hover:text-[#2E5077] transition-colors cursor-pointer"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V9a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 12m5-2v10m-5-2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-7.5" />
                 </svg>
-                Helpful ({review.helpful})
+                Helpful ({review.helpful || 0})
               </button>
-              <button className="hover:text-[#2E5077] transition-colors">Share</button>
+              <button 
+                onClick={() => handleShareReview(review.id, review.title)}
+                className="hover:text-[#2E5077] transition-colors cursor-pointer"
+              >
+                Share
+              </button>
             </div>
           </div>
         </div>
@@ -522,13 +759,23 @@ const UserProfile = () => {
     <div className="text-center py-16">
       <div className="text-red-500 text-xl mb-4">⚠️</div>
       <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
-      <p className="text-gray-500">{message}</p>
-      <button
-        onClick={() => window.location.reload()}
-        className="mt-4 bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
-      >
-        Retry
-      </button>
+      <p className="text-gray-500 mb-4">{message}</p>
+      <div className="flex gap-3 justify-center">
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
+        >
+          Retry
+        </button>
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={debugOrderStatus}
+            className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+          >
+            Debug Status
+          </button>
+        )}
+      </div>
     </div>
   ));
 
@@ -639,7 +886,7 @@ const UserProfile = () => {
           </div>
 
           <div className="px-8 pt-6">
-            <div className="flex justify-start">
+            <div className="flex justify-between items-center">
               <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
                 <button
                   className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 ${activeTab === "purchase"
@@ -660,6 +907,16 @@ const UserProfile = () => {
                   My Reviews
                 </button>
               </div>
+              
+              {/* Debug button for development */}
+              {process.env.NODE_ENV === 'development' && (
+                <button
+                  onClick={debugOrderStatus}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors"
+                >
+                  🐛 Debug Status
+                </button>
+              )}
             </div>
           </div>
 
@@ -689,8 +946,9 @@ const UserProfile = () => {
                         <div className="text-gray-400 text-8xl mb-6">📦</div>
                         <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Purchase History</h3>
                         <p className="text-gray-500 text-lg">You haven't made any purchases yet.</p>
-                        <button className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors"
-                        onClick={() => navigate("/catalog")}
+                        <button 
+                          className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors cursor-pointer"
+                          onClick={() => navigate("/catalog")}
                         >
                           Browse Services
                         </button>
