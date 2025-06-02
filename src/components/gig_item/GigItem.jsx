@@ -135,16 +135,30 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
                         Rp. {formattedPrice(gig.packages[0].price)}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-base w-full justify-between">
-                        <div className="flex flex-row items-center gap-3 flex-wrap">
-                          <div className="flex flex-row">
-                            <DynamicStars number={gig.rating} />
-                          </div>
-                          <div>{gig.rating}</div>
+                    <div className="flex items-center text-base w-full justify-between mb-4">
+                      <div className="flex flex-row items-center gap-3 flex-wrap">
+                        <div className="flex flex-row">
+                          <DynamicStars number={gig.rating} />
                         </div>
-                        <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
+                        <div>{gig.rating}</div>
                       </div>
+                      <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      {Array.isArray(gig.categories) ? (
+                        gig.categories.map((cat, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                          >
+                            {cat}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                          {'No Registered Category'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </motion.div>
