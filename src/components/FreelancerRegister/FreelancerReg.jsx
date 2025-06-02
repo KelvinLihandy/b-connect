@@ -7,12 +7,13 @@ import { userAPI } from "../../constants/APIRoutes";
 import axios from "axios";
 
 const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
-  const { requested } = useContext(RequestedContext);
+  const { requested } = useContext(RequestedContext);  
   const [step, setStep] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedDescription, setSelectedDescription] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStudentFile, setSelectedStudentFile] = useState(null);
+  const [selectedPaymentNumber, setSelectedPaymentNumber] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchCategory, setSearchCategory] = useState("");
@@ -22,6 +23,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     category: "",
     description: "",
     studentIdFile: "",
+    paymentNumber: "",
   });
   const dropdownRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -92,13 +94,13 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
       return;
     }
   };
-
   const validateForm = () => {
     const errors = {
       location: "",
       category: "",
       description: "",
       studentIdFile: "",
+      paymentNumber: "",
     };
     let isValid = true;
     if (!selectedLocation.trim()) {
@@ -118,6 +120,16 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
     }
     if (!selectedStudentFile) {
       errors.studentIdFile = "Student ID file is required";
+      isValid = false;
+    }
+    if (!selectedPaymentNumber.trim()) {
+      errors.paymentNumber = "Payment number is required";
+      isValid = false;
+    } else if (!/^[0-9]+$/.test(selectedPaymentNumber.trim())) {
+      errors.paymentNumber = "Payment number must contain only numbers";
+      isValid = false;
+    } else if (selectedPaymentNumber.trim().length < 8) {
+      errors.paymentNumber = "Payment number must be at least 8 digits";
       isValid = false;
     }
     setFormErrors(errors);
@@ -215,23 +227,26 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
       }
     };
   }, [selectedStudentFile]);
-
   const isFormValid = () => {
     return (
       selectedCategories.length > 0 &&
       selectedDescription.trim().length >= 20 &&
-      selectedStudentFile !== null
+      selectedStudentFile !== null &&
+      selectedPaymentNumber.trim() !== "" &&
+      /^[0-9]+$/.test(selectedPaymentNumber.trim()) &&
+      selectedPaymentNumber.trim().length >= 8
     );
   };
 
   const handleCreateRequest = async () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     try {
-      const formData = new FormData();
+      const formData = new FormData();      
       formData.append("studentPicture", selectedStudentFile.file);
       formData.append("location", selectedLocation);
       formData.append("description", selectedDescription);
       formData.append("categories", JSON.stringify(selectedCategories));
+      formData.append("paymentNumber", selectedPaymentNumber);
       const response = await axios.post(`${userAPI}/request-freelancer`,
         formData,
         {
@@ -440,6 +455,38 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                     </p>
                                   )}
                                 </div>
+                                
+                                <div className="mb-4">
+                                  <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                                    Payment Number <span className="text-red-500">*</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={selectedPaymentNumber}
+                                    onChange={(e) => {
+                                      setSelectedPaymentNumber(e.target.value);
+                                      if (formSubmitted) {
+                                        setFormErrors({
+                                          ...formErrors,
+                                          paymentNumber: "",
+                                        })
+                                      }
+                                    }}
+                                    placeholder="+628XXXXXXXXXX"
+                                    className={`w-full p-2 border rounded
+                                      ${formErrors.paymentNumber ? "border-red-500" : "border-gray-300"}`
+                                    }
+                                  />
+                                  {formErrors.paymentNumber && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                      {formErrors.paymentNumber}
+                                    </p>
+                                  )}
+                                  <p className="text-sm mt-1 text-gray-500">
+                                    Nomor rekening atau e-wallet untuk menerima pembayaran
+                                  </p>
+                                </div>
+
                                 <div className="flex-1 mb-6">
                                   <label className="block font-inter text-[16px] text-[#424956] mb-1">
                                     Category (Maksimal 2) <span className="text-red-500">*</span>
@@ -521,8 +568,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                     <p className="mt-1 text-sm text-red-500">
                                       {formErrors.description}
                                     </p>
-                                  )}
-                                  <p className={`text-sm mt-1 ${selectedDescription.length >= 300 ? "text-red-500" : "text-gray-500"}`}>
+                                  )}                                  <p className={`text-sm mt-1 ${selectedDescription.length >= 300 ? "text-red-500" : "text-gray-500"}`}>
                                     {selectedDescription.length}/300 karakter
                                     <span className="text-xs ml-1">(minimum 20)</span>
                                   </p>
@@ -658,7 +704,7 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                   <div className="flex flex-wrap gap-2">
                                     <dt className="font-medium whitespace-nowrap">Description:</dt>
                                     <dd className="whitespace-pre-line break-words">{selectedDescription || "Not provided"}</dd>
-                                  </div>
+                                  </div>                                  
                                   <div>
                                     <dt className="font-medium">Student ID:</dt>
                                     <dd>
@@ -666,6 +712,10 @@ const FreelancerReg = ({ isOpen, onClose, onCloseAfterSave }) => {
                                         ? selectedStudentFile.name
                                         : "No file uploaded"}
                                     </dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-medium">Payment Number:</dt>
+                                    <dd>{selectedPaymentNumber || "Not provided"}</dd>
                                   </div>
                                 </dl>
                               </div>
