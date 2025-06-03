@@ -14,17 +14,19 @@ import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
 const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
   const steps = ["Select", "Payment", "Confirm"];
   const { auth } = useContext(AuthContext);
-  const { getDisabledGigs } = useContext(DisabledGigsContext);
+  const { getDisabledGigs } = useContext(DisabledGigsContext);  
   const [step, setStep] = useState(1);
   const [selectedPackage, setSelectedPackage] = useState();
+  const [currentTransactionId, setCurrentTransactionId] = useState(null);
   const [finishPay, setFinishPay] = useState(false);
-  const [pendingPay, setPendingPay] = useState(false);  const [failPay, setFailPay] = useState(false);
+  const [pendingPay, setPendingPay] = useState(false);  
+  const [failPay, setFailPay] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [showProgress, setShowProgress] = useState(true);
   const [paymentProofFile, setPaymentProofFile] = useState(null);
-  const [paymentProofPreview, setPaymentProofPreview] = useState(null);
-  const [paymentProofError, setPaymentProofError] = useState("");
+  const [paymentProofPreview, setPaymentProofPreview] = useState(null);  const [paymentProofError, setPaymentProofError] = useState("");
   const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const [isCreatingTransaction, setIsCreatingTransaction] = useState(false);
   const navigate = useNavigate();
 
   const contractModalVariants = {
@@ -106,11 +108,14 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     setPaymentProofFile(null);
     setPaymentProofPreview(null);
     setPaymentProofError("");
-  };
-
-  const handleSubmitPaymentProof = async () => {
+  };  const handleSubmitPaymentProof = async () => {
     if (!paymentProofFile) {
       setPaymentProofError("Please select a payment proof image");
+      return;
+    }
+
+    if (!currentTransactionId) {
+      setPaymentProofError("No transaction ID available. Please try creating the order again.");
       return;
     }
 
@@ -118,34 +123,73 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     try {
       const formData = new FormData();
       formData.append("paymentProof", paymentProofFile);
-      formData.append("orderId", selectedPackage?.orderId || `manual-order-${Date.now()}`);
+      formData.append("orderId", currentTransactionId);
       formData.append("gigId", gigId);
       formData.append("packageType", selectedPackage?.type);
       formData.append("amount", selectedPackage?.price);
 
-      // TODO: Implement API call - prepared for backend team
-      // const response = await axios.post(`${contractAPI}/upload-payment-proof`, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      //   withCredentials: true
-      // });
+      const response = await axios.post(`${contractAPI}/upload-payment-proof`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true
+      });
 
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log("Payment proof uploaded successfully");
-      alert("Payment proof uploaded successfully! Your order is now being processed.");
-      
-      // Navigate to user profile or order history
-      navigate(`/user-profile/${auth?.data?.auth?.id}`);
-      onClose();
+      if (response.data.status === "success") {
+        console.log("Payment proof uploaded successfully:", response.data);
+        alert("Payment proof uploaded successfully! Your order is now being processed.");
+        
+        // Navigate to user profile or order history
+        navigate(`/user-profile/${auth?.data?.auth?.id}`);
+        onClose();
+      } else {
+        throw new Error(response.data.message || "Upload failed");
+      }
       
     } catch (error) {
       console.error("Error uploading payment proof:", error);
-      setPaymentProofError("Failed to upload payment proof. Please try again.");
+      const errorMessage = error.response?.data?.message || "Failed to upload payment proof. Please try again.";
+      setPaymentProofError(errorMessage);
     } finally {
       setIsUploadingProof(false);
+    }
+  };
+  // Function to create transaction when user clicks "Place Order"
+  const handleCreateTransaction = async () => {
+    if (!selectedPackage) {
+      handleStepClick(step - 1);
+      return;
+    }
+    
+    if (auth?.data?.auth.phoneNumber === "") {
+      setPhoneError("Phone Number is required. Please set first in settings");
+      return;
+    }
+
+    setIsCreatingTransaction(true);
+    setPhoneError(""); // Clear any previous errors
+
+    try {
+      const response = await axios.post(`${contractAPI}/create-transaction`, {
+        gigId: gigId,
+        selectedPackage: selectedPackage
+      }, { 
+        withCredentials: true 
+      });
+
+      if (response.data.status === "success transaction create") {
+        console.log("Transaction created:", response.data);
+        setCurrentTransactionId(response.data.transaction.orderId);
+        handleStepClick(step + 1);
+        getDisabledGigs();
+      } else {
+        throw new Error(response.data.message || "Failed to create transaction");
+      }
+    } catch (error) {
+      console.error("Error creating transaction:", error);
+      setPhoneError("Failed to create transaction. Please try again.");
+    } finally {
+      setIsCreatingTransaction(false);
     }
   };
   
@@ -462,28 +506,30 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                     <p className="text-wrap">
                                       Rp. {selectedPackage?.price}
                                     </p>
-                                  </div>
-                                  <div className="flex flex-col justify-center mx-5">
+                                  </div>                                  <div className="flex flex-col justify-center mx-5">
                                     <motion.button
-                                      className="bg-[#1E617A] rounded-2xl text-white text-2xl h-15 font-bold"
-                                      whileTap={{ scale: 0.95 }}
-                                      whileHover={{ scale: 1.025 }}
+                                      className={`rounded-2xl text-2xl h-15 font-bold transition-colors ${
+                                        isCreatingTransaction 
+                                          ? "bg-gray-400 cursor-not-allowed" 
+                                          : "bg-[#1E617A] hover:bg-[#2a5d7a]"
+                                      } text-white`}
+                                      whileTap={!isCreatingTransaction ? { scale: 0.95 } : {}}
+                                      whileHover={!isCreatingTransaction ? { scale: 1.025 } : {}}
                                       onClick={() => {
-                                        if (!selectedPackage) {
-                                          handleStepClick(step - 1);
-                                          return;
+                                        if (!isCreatingTransaction) {
+                                          handleCreateTransaction();
                                         }
-                                        if (auth?.data?.auth.phoneNumber === "") {
-                                          setPhoneError(
-                                            "Phone Number is required. Please set first in settings"
-                                          );
-                                          return;
-                                        }
-                                        handleStepClick(step + 1);
-                                        initiateTransaction();
                                       }}
+                                      disabled={isCreatingTransaction}
                                     >
-                                      Place Order
+                                      {isCreatingTransaction ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                          Creating Order...
+                                        </div>
+                                      ) : (
+                                        "Place Order"
+                                      )}
                                     </motion.button>
                                   </div>
                                   <p className="text-red-400 text-base text-wrap text-center">
@@ -562,7 +608,8 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                 onClick={() => { navigate("/catalog") }}
                               />
                             </div>
-                          </>                        } */}
+                          </>                        
+                          } */}
                         {step === 3 && (
                           <>
                             <div className="flex flex-col text-center font-Archivo mt-5">
