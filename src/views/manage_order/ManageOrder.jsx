@@ -62,7 +62,6 @@ const ManageOrder = () => {
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isGigCreator, setIsGigCreator] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [randomDummy, setRandomDummy] = useState(null);
   const dummyImages = [
@@ -252,6 +251,7 @@ const ManageOrder = () => {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days); return date;
   };
+
   // Fetch order data from API
   useEffect(() => {
     const fetchOrderData = async () => {
@@ -265,14 +265,12 @@ const ManageOrder = () => {
 
           setOrderData(response.data);
           setCurrentStep(response.data.progress);
-
+          console.log("order data", response.data);
           let gigDetails = null;
           try {
             const gigResponse = await axios.post(`${gigAPI}/get-gig/${response.data.gigId}`);
             gigDetails = gigResponse.data.detail;
-            setIsGigCreator(isFreelancer && auth?.data.auth.id === response.data.gigInfo.creator.id.toString());
           } catch (gigError) {
-            setIsGigCreator(false);
             console.error("Error fetching gig details:", gigError);
           }
 
@@ -348,6 +346,7 @@ const ManageOrder = () => {
       socket.off("switch_room");
     };
   }, [orderId]);
+  
   const totalPrice = orderDetails.SERVICE_PRICE + orderDetails.PROCESSING_FEE - orderDetails.DISCOUNT;
 
   const steps = [
@@ -544,7 +543,7 @@ const ManageOrder = () => {
               <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
             </div>
             <div className="ml-auto">
-              {isGigCreator ?
+              {isFreelancer && auth?.data.auth.id === orderData.gigInfo?.creator?.id.toString() ?
                 (
                   <div className='flex'>
                     {currentStep === 0 && (
@@ -569,7 +568,7 @@ const ManageOrder = () => {
                 :
                 (
                   <>
-                    {currentStep === 2 && !isFreelancer && (
+                    {currentStep === 2 && !(isFreelancer && auth?.data.auth.id === response.data.gigInfo?.creator?.id.toString()) && (
                       <button
                         onClick={handleFinishOrder}
                         className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
