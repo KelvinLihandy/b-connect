@@ -7,26 +7,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { contractAPI } from "../../constants/APIRoutes";
+import { contractAPI, gigAPI } from "../../constants/APIRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
 import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
 
 const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
   const steps = ["Select", "Payment", "Confirm"];
   const { auth } = useContext(AuthContext);
-  const { getDisabledGigs } = useContext(DisabledGigsContext);  
+  const { getDisabledGigs } = useContext(DisabledGigsContext);
   const [step, setStep] = useState(1);
   const [selectedPackage, setSelectedPackage] = useState();
   const [currentTransactionId, setCurrentTransactionId] = useState(null);
   const [finishPay, setFinishPay] = useState(false);
-  const [pendingPay, setPendingPay] = useState(false);  
+  const [pendingPay, setPendingPay] = useState(false);
   const [failPay, setFailPay] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [showProgress, setShowProgress] = useState(true);
   const [paymentProofFile, setPaymentProofFile] = useState(null);
-  const [paymentProofPreview, setPaymentProofPreview] = useState(null);  const [paymentProofError, setPaymentProofError] = useState("");
+  const [paymentProofPreview, setPaymentProofPreview] = useState(null); const [paymentProofError, setPaymentProofError] = useState("");
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [isCreatingTransaction, setIsCreatingTransaction] = useState(false);
+  const [creator, setCreator] = useState(null);
   const navigate = useNavigate();
 
   const contractModalVariants = {
@@ -42,6 +43,21 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       transition: { duration: 0.2 },
     },
   };
+
+  useEffect(() => {
+    const getCreator = async () => {
+      try {
+        const response = await axios.get(`${gigAPI}/get-gig-creator/${gigId}`);
+        const res = response.data;
+        setCreator(res);
+        console.log("creator", response);
+      } catch (err) {
+        console.error("Error fetching creator data:", err);
+      }
+    }
+
+    getCreator();
+  }, [])
 
   const backdropVariants = {
     hidden: { opacity: 0 },
@@ -108,8 +124,8 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     setPaymentProofFile(null);
     setPaymentProofPreview(null);
     setPaymentProofError("");
-  };  
-  
+  };
+
   const handleSubmitPaymentProof = async () => {
     if (!paymentProofFile) {
       setPaymentProofError("Please select a payment proof image");
@@ -131,7 +147,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       console.log("response", response);
       if (response.status === 201) {
         alert("Your order has successfully sent to out freelancer. Stay tuned for updates.");
-        
+
         navigate(`/user-profile/${auth?.data?.auth?.id}`);
         onClose();
       } else {
@@ -151,7 +167,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       handleStepClick(step - 1);
       return;
     }
-    
+
     if (auth?.data?.auth.phoneNumber === "") {
       setPhoneError("Phone Number is required. Please set first in settings");
       return;
@@ -159,7 +175,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     setPhoneError("");
     handleStepClick(step + 1);
   };
-  
+
   // useEffect(() => {
   //   const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';
 
@@ -461,6 +477,10 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                       <p className="font-bold">Bank Transfer</p>
                                     </div>
                                     <div className="flex flex-row justify-between">
+                                      <p>Rekening</p>
+                                      <p className="font-bold">{creator?.paymentNumber}</p>
+                                    </div>
+                                    <div className="flex flex-row justify-between">
                                       <p>Harga</p>
                                       <p className="font-bold">
                                         Rp. {formattedPrice(selectedPackage?.price)}
@@ -475,11 +495,10 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                     </p>
                                   </div>                                  <div className="flex flex-col justify-center mx-5">
                                     <motion.button
-                                      className={`rounded-2xl text-2xl h-15 font-bold transition-colors ${
-                                        isCreatingTransaction 
-                                          ? "bg-gray-400 cursor-not-allowed" 
+                                      className={`rounded-2xl text-2xl h-15 font-bold transition-colors ${isCreatingTransaction
+                                          ? "bg-gray-400 cursor-not-allowed"
                                           : "bg-[#1E617A] hover:bg-[#2a5d7a]"
-                                      } text-white`}
+                                        } text-white`}
                                       whileTap={!isCreatingTransaction ? { scale: 0.95 } : {}}
                                       whileHover={!isCreatingTransaction ? { scale: 1.025 } : {}}
                                       onClick={() => {
@@ -582,13 +601,12 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                             <div className="flex flex-col text-center font-Archivo mt-5">
                               <p className="text-3xl font-bold">Confirm your payment</p>
                               <p className="">Add your payment proof to continue processing your order</p>
-                            </div>                            
+                            </div>
                             <div className="flex flex-col justify-center gap-6 px-8 h-130">
                               {/* File Upload Section with Drag & Drop */}
-                              <div 
-                                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-                                  paymentProofError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
-                                }`}
+                              <div
+                                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${paymentProofError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+                                  }`}
                                 onDragOver={(e) => {
                                   e.preventDefault();
                                   e.currentTarget.classList.add('border-blue-400', 'bg-blue-50');
@@ -609,11 +627,11 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                   }
                                 }}
                               >
-                                <div className="text-center">   
+                                <div className="text-center">
                                   {!paymentProofPreview ? (
                                     <div className="space-y-4">
                                       <div className="border border-gray-300 rounded-lg p-8 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
-                                           onClick={() => document.getElementById('paymentProofInput').click()}>
+                                        onClick={() => document.getElementById('paymentProofInput').click()}>
                                         <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                           <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
@@ -683,11 +701,10 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                   Back to Payment
                                 </motion.button>
                                 <motion.button
-                                  className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                                    paymentProofFile && !isUploadingProof
+                                  className={`px-8 py-3 rounded-lg font-medium transition-colors ${paymentProofFile && !isUploadingProof
                                       ? "bg-green-600 text-white hover:bg-green-700"
                                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                  }`}
+                                    }`}
                                   whileHover={paymentProofFile && !isUploadingProof ? { scale: 1.02 } : {}}
                                   whileTap={paymentProofFile && !isUploadingProof ? { scale: 0.98 } : {}}
                                   onClick={handleSubmitPaymentProof}

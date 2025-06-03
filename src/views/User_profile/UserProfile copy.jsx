@@ -1,41 +1,18 @@
-import React, { useState, useEffect, useContext, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useContext, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import { AuthContext } from "../../contexts/AuthContext";
 import { userAPI } from "../../constants/APIRoutes";
-import { imageShow } from "../../constants/DriveLinkPrefixes";
-import default_avatar from "../../assets/default-avatar.png";
-import { socket } from "../../App";
 
 const UserProfile = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [activeTab, setActiveTab] = useState("purchase");
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const { auth } = useContext(AuthContext);
-  const abortControllerRef = useRef(null);
-
-  // Improved caching system
-  const dataCache = useRef({
-    purchase: {
-      data: [],
-      pagination: { currentPage: 1, totalPages: 1, hasNextPage: false, hasPrevPage: false },
-      loaded: false,
-      loading: false
-    },
-    reviews: {
-      data: [],
-      pagination: { currentPage: 1, totalPages: 1, hasNextPage: false, hasPrevPage: false },
-      loaded: false,
-      loading: false
-    },
-    userProfile: null,
-    userStats: null
-  });
 
   const [userStats, setUserStats] = useState({
     memberSince: "",
@@ -53,7 +30,7 @@ const UserProfile = () => {
 
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [reviews, setReviews] = useState([]);
-
+  console.log("review", reviews);
   const [purchasePagination, setPurchasePagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -68,106 +45,85 @@ const UserProfile = () => {
     hasPrevPage: false
   });
 
-  // Utility function to normalize delivery status
-  const normalizeDeliveryStatus = useCallback((deliveryInfo, status) => {
-    if (!deliveryInfo || deliveryInfo === 'N/A' || deliveryInfo === 'null' || deliveryInfo === 'undefined') {
-      // Default based on order status
-      if (status && (status.includes('completed') || status.includes('delivered'))) {
-        return 'Delivered on time';
-      }
-      return 'Standard delivery';
-    }
-
-    // Clean up common variations
-    const cleaned = deliveryInfo.toLowerCase().trim();
-    if (cleaned.includes('on time') || cleaned.includes('ontime')) {
-      return 'Delivered on time';
-    }
-    if (cleaned.includes('late') || cleaned.includes('delayed')) {
-      return 'Delivered late';
-    }
-    if (cleaned.includes('fast') || cleaned.includes('quick') || cleaned.includes('rapid')) {
-      return 'Fast delivery';
-    }
-    if (cleaned.includes('standard') || cleaned.includes('normal')) {
-      return 'Standard delivery';
-    }
-
-    return deliveryInfo;
-  }, []);
-
-  const getCurrentUserId = useMemo(() => {
+  // Memoize getCurrentUserId to prevent unnecessary re-renders
+  const getCurrentUserId = useCallback(() => {
     return auth?.data?.auth?.id || userId;
   }, [auth?.data?.auth?.id, userId]);
 
-  // Optimized fallback image (memoized)
+  // Memoize fallback image URL
   const fallbackImage = useMemo(() => {
-    return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='224' viewBox='0 0 320 224'%3E%3Crect width='320' height='224' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3ENo Image Available%3C/text%3E%3C/svg%3E";
+    // Use a data URL instead of external placeholder to avoid network requests
+    return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIyNCIgdmlld0JveD0iMCAwIDMyMCAyMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMzMuNSA5OEMxMzMuNSA5NC4xMzQgMTM2LjYzNCA5MSAxNDAuNSA5MUgxNzkuNUMxODMuMzY2IDkxIDE4Ni41IDk0LjEzNCAxODYuNSA5OFYxMjZDMTg2LjUgMTI5Ljg2NiAxODMuMzY2IDEzMyAxNzkuNSAxMzNIMTQwLjVDMTM2LjYzNCAxMzMgMTMzLjUgMTI5Ljg2NiAxMzMuNSAxMjZWOThaIiBmaWxsPSIjOUNBM0FGIi8+Cjxzdmcgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiB2aWV3Qm94PSIwIDAgMTYgMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDNDMSAyLjQ0NzcyIDEuNDQ3NzIgMiAyIDJIMTRDMTQuNTUyMyAyIDE1IDIuNDQ3NzIgMTUgM1Y5QzE1IDkuNTUyMjggMTQuNTUyMyAxMCAxNCAxMEgyQzEuNDQ3NzIgMTAgMSA5LjU1MjI4IDEgOVYzWiIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjEiIGZpbGw9IiM5Q0EzQUYiLz4KPHN0aCBkPSJNOSA3TDEyIDQiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE2MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
   }, []);
 
-  // FIXED: Optimized image processing
-  const processImageUrl = useCallback((imageUrl, imageUrls, itemTitle = '') => {
-    if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '' || imageUrl === 'temp') {
+  // Enhanced image error handler with debugging
+  const handleImageError = useCallback((e) => {
+    console.log('🖼️ Image failed to load:', e.target.src);
+    console.log('🖼️ Image alt text:', e.target.alt);
+    
+    if (e.target.src !== fallbackImage) {
+      console.log('🖼️ Switching to fallback image');
+      e.target.src = fallbackImage;
+    } else {
+      console.error('❌ Even fallback image failed to load');
+    }
+  }, [fallbackImage]);
+
+  // Function to process and validate image URLs
+  const processImageUrl = useCallback((imageUrl, itemTitle = '') => {
+    console.log('🔍 Processing image URL:', imageUrl, 'for item:', itemTitle);
+    
+    if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '') {
+      console.log('⚠️ No valid image URL provided, using fallback');
       return fallbackImage;
     }
-
-    if (imageUrl.startsWith('data:')) return imageUrl;
-    if (imageUrls?.primary) return imageUrls.primary;
-    if (imageUrl.includes('drive.google.com/thumbnail') || imageUrl.includes('googleusercontent.com')) return imageUrl;
-
-    if (imageUrl.length > 10 && !imageUrl.includes('http')) {
-      return `https://drive.google.com/thumbnail?id=${imageUrl}&sz=w400-h300`;
+    
+    // If it's already a data URL, return as is
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
     }
-
-    const idMatch = imageUrl.match(/\/d\/([^\/]+)/) || imageUrl.match(/id=([^&]+)/);
-    if (idMatch?.[1]) {
-      return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w400-h300`;
-    }
-
-    return imageUrl;
-  }, [fallbackImage]);
-
-  // Simplified image error handler
-  const handleImageError = useCallback((e) => {
-    const img = e.target;
-    if (img.src !== fallbackImage) {
-      img.src = fallbackImage;
+    
+    try {
+      // Try to create URL object to validate
+      const url = new URL(imageUrl);
+      console.log('✅ Valid URL format:', url.href);
+      return imageUrl;
+    } catch (error) {
+      console.error('❌ Invalid URL format:', error);
+      return fallbackImage;
     }
   }, [fallbackImage]);
-
-  // FIXED: Enhanced status detection function
+  // Enhanced status detection function
   const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
     const statusType = (item.statusType || '').toLowerCase();
-    const orderStatus = (item.orderStatus || '').toLowerCase();
-    const paymentStatus = (item.paymentStatus || '').toLowerCase();
-
+    
     console.log('🔍 Analyzing status for:', item.title || 'Unknown item');
     console.log('   - status:', item.status);
     console.log('   - statusType:', item.statusType);
-
+    
     // ✅ NEW: Handle "completed" status (progress == 3)
     if (statusType === 'completed') {
       console.log('   🎉 Detected as: COMPLETED (progress == 3)');
       return { type: 'completed', color: 'green', display: item.status || 'Completed' };
     }
     // Handle "progress" status (contract exists, progress < 3)
-    else if (status.includes('progress') || status.includes('processing') ||
-      status.includes('ongoing') || status.includes('active') ||
-      statusType === 'progress' || statusType === 'processing') {
+    else if (status.includes('progress') || status.includes('processing') || 
+               status.includes('ongoing') || status.includes('active') || 
+               statusType === 'progress' || statusType === 'processing') {
       console.log('   🟡 Detected as: IN PROGRESS (contract exists, progress < 3)');
       return { type: 'progress', color: 'orange', display: item.status || 'In Progress' };
     }
     // Handle "delivered" status (old logic for backward compatibility)
-    else if (status.includes('delivered') || status.includes('completed') ||
-      status.includes('done') || statusType === 'delivered') {
+    else if (status.includes('delivered') || status.includes('completed') || 
+        status.includes('done') || statusType === 'delivered') {
       console.log('   ✅ Detected as: DELIVERED (old logic)');
       return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
-    }
+    } 
     // Handle cancelled status
-    else if (status.includes('cancelled') || status.includes('canceled') ||
-      status.includes('failed') || status.includes('rejected') ||
-      statusType === 'cancelled' || statusType === 'canceled') {
+    else if (status.includes('cancelled') || status.includes('canceled') || 
+               status.includes('failed') || status.includes('rejected') || 
+               statusType === 'cancelled' || statusType === 'canceled') {
       console.log('   ❌ Detected as: CANCELLED');
       return { type: 'cancelled', color: 'red', display: item.status || 'Cancelled' };
     } else {
@@ -176,273 +132,185 @@ const UserProfile = () => {
     }
   }, []);
 
-  // FIXED: Added missing makeAPICall function
-  const makeAPICall = useCallback(async (endpoint, options = {}) => {
+  const fetchUserProfile = useCallback(async () => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
+
     try {
       const response = await axios.post(
-        endpoint,
+        `${userAPI}/get-user/${targetUserId}`,
         {},
         {
-          withCredentials: true,
-          timeout: 10000,
-          ...options
+          withCredentials: true
         }
       );
-      return response.data;
-    } catch (error) {
-      console.error("API call error:", error);
-      throw error;
-    }
-  }, []);
 
-  // FIXED: Added missing handler functions
-  const handleViewDetails = useCallback((orderNumber) => {
-    if (orderNumber) {
-      navigate(`/manage-order/${orderNumber}`);
-    }
-  }, [navigate]);
-
-  const handleBuyAgain = useCallback((item) => {
-    const serviceId = item.serviceId || item.id;
-    if (serviceId) {
-      navigate(`/detail/${serviceId}`);
-    }
-  }, [navigate]);
-
-  const handleContactSeller = useCallback((item) => {
-    const sellerId = item.sellerId || item.seller;
-    socket.emit("create_room", [sellerId, getCurrentUserId])
-    const handleSwitchRoom = (url) => {
-      console.log("Navigating to chat:", url);
-      navigate(url);
-      socket.off("switch_room", handleSwitchRoom);
-    };
-
-    socket.on("switch_room", handleSwitchRoom);
-  }, [navigate]);
-
-
-  const fetchUserStats = useCallback(async () => {
-    if (!getCurrentUserId) return;
-
-    try {
-      const data = await makeAPICall(`${userAPI}/user-stats/${getCurrentUserId}`);
-
-      if (data && data.stats) {
-        setUserStats(data.stats);
-      } else {
-        setUserStats({
-          memberSince: new Date().getFullYear().toString(),
-          profileCompletion: "0%",
-          activeVouchers: "0",
-          totalOrders: "0",
-          totalSpent: "Rp 0"
+      if (response.data && response.data.user) {
+        const user = response.data.user;
+        setCurrentUser({
+          name: user.name || auth?.data?.auth?.name || "",
+          email: user.email || auth?.data?.auth?.email || "",
+          memberSince: user.joinedDate ? new Date(user.joinedDate).getFullYear().toString() : ""
         });
       }
     } catch (error) {
-      console.error("Error fetching user stats:", error);
-      setUserStats({
-        memberSince: new Date().getFullYear().toString(),
-        profileCompletion: "0%",
-        activeVouchers: "0",
-        totalOrders: "0",
-        totalSpent: "Rp 0"
-      });
+      console.error("Error fetching user data:", error);
+      if (auth?.data?.auth) {
+        setCurrentUser({
+          name: auth.data.auth.name || "",
+          email: auth.data.auth.email || "",
+          memberSince: auth.data.auth.joinedDate ? new Date(auth.data.auth.joinedDate).getFullYear().toString() : ""
+        });
+      }
     }
-  }, [getCurrentUserId, makeAPICall]);
+  }, [getCurrentUserId, auth?.data?.auth]);
 
-  const fetchPurchaseHistory = useCallback(async (page = 1, force = false) => {
-    if (!getCurrentUserId) return;
-
-    // Check cache first
-    const cache = dataCache.current.purchase;
-    if (!force && cache.loaded && page === 1) {
-      setPurchaseHistory(cache.data);
-      setPurchasePagination(cache.pagination);
-      return;
-    }
-
-    // Prevent duplicate requests
-    if (cache.loading) return;
+  const fetchUserStats = useCallback(async () => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
 
     try {
-      cache.loading = true;
-      setLoading(true);
-      setError(null);
-
-      const data = await makeAPICall(
-        `${userAPI}/purchase-history/${getCurrentUserId}?page=${page}&limit=10`
+      const response = await axios.post(
+        `${userAPI}/user-stats/${targetUserId}`,
+        {},
+        {
+          withCredentials: true
+        }
       );
 
-      if (data && data.purchaseHistory) {
-        const { purchaseHistory, pagination } = data;
+      if (response.data && response.data.stats) {
+        setUserStats(response.data.stats);
+      }
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+    }
+  }, [getCurrentUserId]);
 
-        const processedHistory = purchaseHistory.map(item => ({
-          ...item,
-          image: processImageUrl(item.image, item.imageUrls, item.title),
-          id: item.id || `purchase-${Date.now()}-${Math.random()}`,
-          // Ensure consistent delivery status format
-          deliveryTime: normalizeDeliveryStatus(
-            item.deliveryTime || item.delivery,
-            item.status || item.orderStatus
-          ),
-          // Clean up payment status - no "processing payment" for visible orders
-          paymentStatus: item.paymentStatus === 'processing' ? 'paid' : item.paymentStatus
-        }));
+  const fetchPurchaseHistory = useCallback(async (page = 1) => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
 
-        // Update cache
-        cache.data = processedHistory;
-        cache.pagination = {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post(
+        `${userAPI}/purchase-history/${targetUserId}?page=${page}&limit=10`,
+        {},
+        {
+          withCredentials: true
+        }
+      );
+
+      if (response.data && response.data.purchaseHistory) {
+        const { purchaseHistory, pagination } = response.data;
+
+        console.log('📊 Raw purchase history data:', purchaseHistory);
+
+        // Process each item with enhanced validation
+        const processedHistory = purchaseHistory.map(item => {
+          const processedItem = {
+            ...item,
+            image: processImageUrl(item.image, item.title),
+            id: item.id || Date.now() + Math.random() // Ensure unique ID
+          };
+          
+          // Log status info for debugging
+          const statusInfo = getStatusInfo(processedItem);
+          console.log(`📋 Item "${item.title}" status info:`, statusInfo);
+          
+          return processedItem;
+        });
+
+        console.log('✅ Processed purchase history:', processedHistory);
+        setPurchaseHistory(processedHistory);
+        setPurchasePagination({
           currentPage: pagination.currentPage,
           totalPages: pagination.totalPages,
           hasNextPage: pagination.hasNextPage,
           hasPrevPage: pagination.hasPrevPage
-        };
-        cache.loaded = true;
-
-        setPurchaseHistory(processedHistory);
-        setPurchasePagination(cache.pagination);
-      } else {
-        const emptyState = {
-          data: [],
-          pagination: {
-            currentPage: page,
-            totalPages: 0,
-            hasNextPage: false,
-            hasPrevPage: false
-          },
-          loaded: true
-        };
-
-        cache.data = emptyState.data;
-        cache.pagination = emptyState.pagination;
-        cache.loaded = emptyState.loaded;
-
-        setPurchaseHistory(emptyState.data);
-        setPurchasePagination(emptyState.pagination);
+        });
       }
     } catch (error) {
-      console.error("Error fetching purchase history:", error);
+      console.error("❌ Error fetching purchase history:", error);
       setError("Failed to load purchase history");
-      setPurchaseHistory([]);
     } finally {
-      cache.loading = false;
       setLoading(false);
     }
-  }, [getCurrentUserId, makeAPICall, processImageUrl, normalizeDeliveryStatus]);
+  }, [getCurrentUserId, processImageUrl, getStatusInfo]);
 
-  const fetchReviews = useCallback(async (page = 1, force = false) => {
-    if (!getCurrentUserId) return;
-
-    // Check cache first
-    const cache = dataCache.current.reviews;
-    if (!force && cache.loaded && page === 1) {
-      setReviews(cache.data);
-      setReviewsPagination(cache.pagination);
-      return;
-    }
-
-    // Prevent duplicate requests
-    if (cache.loading) return;
+  const fetchReviews = useCallback(async (page = 1) => {
+    const targetUserId = getCurrentUserId();
+    if (!targetUserId) return;
 
     try {
-      cache.loading = true;
       setLoading(true);
       setError(null);
-
-      const data = await makeAPICall(
-        `${userAPI}/user-reviews/${getCurrentUserId}?page=${page}&limit=10`
+      const response = await axios.post(
+        `${userAPI}/user-reviews/${targetUserId}?page=${page}&limit=10`,
+        {},
+        {
+          withCredentials: true
+        }
       );
 
-      if (data && data.reviews) {
-        const { reviews, pagination } = data;
+      if (response.data && response.data.reviews) {
+        const { reviews, pagination } = response.data;
 
+        console.log('📊 Raw reviews data:', reviews);
+
+        // Process each review with enhanced validation
         const processedReviews = reviews.map(review => ({
           ...review,
-          image: processImageUrl(review.image, review.imageUrls, review.title),
-          id: review.id || review._id || `review-${Date.now()}-${Math.random()}`,
-          reviewText: review.reviewText || review.comment || review.review || review.description || '',
-          serviceTitle: review.title || review.serviceName || review.service || 'Unknown Service',
-          serviceSeller: review.seller || review.freelancer || review.provider || 'Unknown Seller',
-          servicePrice: review.price || 'Rp 0',
-          userRating: review.rating || review.userRating || 0,
-          reviewDate: review.date || review.createdAt || review.reviewDate || new Date().toISOString(),
-          orderId: review.orderId || review.orderNumber || review.order || 'N/A',
-          category: review.category || 'General',
-          // Consistent delivery status format
-          deliveryTime: normalizeDeliveryStatus(
-            review.deliveryTime || review.delivery,
-            'completed'
-          ),
-          verified: review.verified !== false,
-          orderStatus: 'completed', // Reviews only exist for completed orders
-          // Additional service info for consistency
-          description: review.description || review.serviceDescription || 'Professional service provided'
+          image: processImageUrl(review.image, review.title),
+          id: review.id || Date.now() + Math.random() // Ensure unique ID
         }));
 
-        // Update cache
-        cache.data = processedReviews;
-        cache.pagination = {
-          currentPage: pagination?.currentPage || 1,
-          totalPages: pagination?.totalPages || 1,
-          hasNextPage: pagination?.hasNextPage || false,
-          hasPrevPage: pagination?.hasPrevPage || false
-        };
-        cache.loaded = true;
-
+        console.log('✅ Processed reviews:', processedReviews);
         setReviews(processedReviews);
-        setReviewsPagination(cache.pagination);
-      } else {
-        const emptyState = {
-          data: [],
-          pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            hasNextPage: false,
-            hasPrevPage: false
-          },
-          loaded: true
-        };
-
-        cache.data = emptyState.data;
-        cache.pagination = emptyState.pagination;
-        cache.loaded = emptyState.loaded;
-
-        setReviews(emptyState.data);
-        setReviewsPagination(emptyState.pagination);
+        setReviewsPagination({
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          hasNextPage: pagination.hasNextPage,
+          hasPrevPage: pagination.hasPrevPage
+        });
       }
     } catch (error) {
-      console.error("Error fetching user reviews:", error);
-      const emptyState = {
-        data: [],
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          hasNextPage: false,
-          hasPrevPage: false
-        },
-        loaded: true
-      };
-
-      cache.data = emptyState.data;
-      cache.pagination = emptyState.pagination;
-      cache.loaded = emptyState.loaded;
-
-      setReviews(emptyState.data);
-      setReviewsPagination(emptyState.pagination);
-
-      if (error.response?.status && error.response.status !== 404) {
-        setError("Failed to load reviews");
-      }
+      console.error("❌ Error fetching reviews:", error);
+      setError("Failed to load reviews");
     } finally {
-      cache.loading = false;
       setLoading(false);
     }
-  }, [getCurrentUserId, makeAPICall, processImageUrl, normalizeDeliveryStatus]);
+  }, [getCurrentUserId, processImageUrl]);
 
+  // Debug function for troubleshooting
+  const debugOrderStatus = useCallback(() => {
+    console.log('🔍 === DEBUG ORDER STATUS ===');
+    console.log('Purchase History:', purchaseHistory);
+    console.log('Current User ID:', getCurrentUserId());
+    console.log('Auth Data:', auth?.data?.auth);
+    
+    // Check for stuck orders
+    const progressOrders = purchaseHistory.filter(item => {
+      const statusInfo = getStatusInfo(item);
+      return statusInfo.type === 'progress';
+    });
+    
+    console.log('🟡 Orders in progress:', progressOrders);
+    
+    if (progressOrders.length > 0) {
+      console.log('⚠️ Found orders stuck in progress. Check backend status update logic.');
+      progressOrders.forEach(order => {
+        console.log(`   - Order ${order.orderNumber}: Status="${order.status}", Type="${order.statusType}"`);
+      });
+    }
+    
+    console.log('🔍 === END DEBUG ===');
+  }, [purchaseHistory, getCurrentUserId, auth?.data?.auth, getStatusInfo]);
+
+  // Initial data loading effect - only run once when component mounts or auth changes
   useEffect(() => {
     const loadInitialData = async () => {
-      setInitialLoading(true);
+      setLoading(true);
       try {
         if (auth?.data?.auth) {
           setCurrentUser({
@@ -452,80 +320,81 @@ const UserProfile = () => {
           });
         }
 
-        await fetchUserStats();
-
-        if (activeTab === "purchase") {
-          await fetchPurchaseHistory(1);
-        }
+        await Promise.all([
+          fetchUserProfile(),
+          fetchUserStats()
+        ]);
 
       } catch (err) {
         console.error("Error loading user data:", err);
         setError("Failed to load user data");
       } finally {
-        setInitialLoading(false);
+        setLoading(false);
       }
     };
 
-    if (getCurrentUserId) {
-      loadInitialData();
-    }
-  }, [auth?.data?.auth?.id, userId, getCurrentUserId, fetchUserStats, fetchPurchaseHistory, activeTab]);
+    loadInitialData();
+  }, [auth?.data?.auth?.id, userId]); // Only depend on stable auth ID and userId
 
-  // Optimized tab change handler - instant switching
+  // Separate effect for tab-specific data loading
+  useEffect(() => {
+    const loadTabData = async () => {
+      if (activeTab === "purchase" && purchaseHistory.length === 0) {
+        await fetchPurchaseHistory(1);
+      } else if (activeTab === "reviews" && reviews.length === 0) {
+        await fetchReviews(1);
+      }
+    };
+
+    loadTabData();
+  }, [activeTab]); // Only depend on activeTab
+
   const handleTabChange = useCallback(async (tab) => {
     setActiveTab(tab);
     setError(null);
 
-    // Instant tab switch - load data in background if needed
-    if (tab === "purchase") {
-      const cache = dataCache.current.purchase;
-      if (cache.loaded) {
-        // Data already loaded, switch instantly
-        setPurchaseHistory(cache.data);
-        setPurchasePagination(cache.pagination);
-      } else if (!cache.loading) {
-        // Load data in background
-        fetchPurchaseHistory(1);
-      }
-    } else if (tab === "reviews") {
-      const cache = dataCache.current.reviews;
-      if (cache.loaded) {
-        // Data already loaded, switch instantly
-        setReviews(cache.data);
-        setReviewsPagination(cache.pagination);
-      } else if (!cache.loading) {
-        // Load data in background
-        fetchReviews(1);
-      }
+    if (tab === "purchase" && purchaseHistory.length === 0) {
+      await fetchPurchaseHistory(1);
+    } else if (tab === "reviews" && reviews.length === 0) {
+      await fetchReviews(1);
     }
-  }, [fetchPurchaseHistory, fetchReviews]);
+  }, [purchaseHistory.length, reviews.length, fetchPurchaseHistory, fetchReviews]);
 
   const handlePurchasePagination = useCallback(async (page) => {
-    await fetchPurchaseHistory(page, true);
+    await fetchPurchaseHistory(page);
   }, [fetchPurchaseHistory]);
 
   const handleReviewsPagination = useCallback(async (page) => {
-    await fetchReviews(page, true);
+    await fetchReviews(page);
   }, [fetchReviews]);
 
   const handleSettingsClick = useCallback(() => {
     navigate('/profile');
   }, [navigate]);
 
-  const PurchaseCard = React.memo(({ item }) => {
-    const statusInfo = useMemo(() => getStatusInfo(item), [item, getStatusInfo]);
+  console.log("📊 Purchase history debug:", purchaseHistory);
 
+  const PurchaseCard = React.memo(({ item }) => {
+    const statusInfo = getStatusInfo(item);
+    
     return (
       <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
+        {/* Debug info overlay (only in development) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs p-1 rounded z-10">
+            Type: {statusInfo.type}
+          </div>
+        )}
+        
         <div className="flex flex-col lg:flex-row">
           <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
             <img
-              src={item.image}
+              src={item.image || fallbackImage}
               alt={item.title || 'Product image'}
               className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
               onError={handleImageError}
               loading="lazy"
-              data-image-urls={item.imageUrls ? JSON.stringify(item.imageUrls) : null}
+              onLoad={() => console.log('✅ Image loaded successfully for:', item.title)}
             />
           </div>
 
@@ -572,23 +441,22 @@ const UserProfile = () => {
                       <span className="text-sm font-medium text-gray-700">{item.sellerRating || '0.0'}</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4 mb-4">
-                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${statusInfo.type === "progress"
-                    ? "bg-orange-100 text-orange-800 border border-orange-200"
-                    : statusInfo.type === "delivered"
+                </div>                <div className="flex items-center gap-4 mb-4">
+                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                    statusInfo.type === "progress"
+                      ? "bg-orange-100 text-orange-800 border border-orange-200"
+                      : statusInfo.type === "delivered"
                       ? "bg-green-100 text-green-800 border border-green-200"
                       : statusInfo.type === "completed"
-                        ? "bg-green-100 text-green-800 border border-green-200"
-                        : statusInfo.type === "cancelled"
-                          ? "bg-red-100 text-red-800 border border-red-200"
-                          : "bg-gray-100 text-gray-800 border border-gray-200"
-                    }`}>
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : statusInfo.type === "cancelled"
+                      ? "bg-red-100 text-red-800 border border-red-200"
+                      : "bg-gray-100 text-gray-800 border border-gray-200"
+                  }`}>
                     {statusInfo.display}
                   </span>
 
-                  {/* {(statusInfo.type === "delivered" || statusInfo.type === "completed") && item.rating > 0 && (
+                  {statusInfo.type === "delivered" && item.rating > 0 && (
                     <div className="flex items-center gap-1">
                       <span className="text-sm text-gray-600">Your rating:</span>
                       <div className="flex">
@@ -599,7 +467,7 @@ const UserProfile = () => {
                         ))}
                       </div>
                     </div>
-                  )} */}
+                  )}
                 </div>
 
                 <div className="text-sm text-gray-500 mb-2">
@@ -615,29 +483,29 @@ const UserProfile = () => {
                   <div className="text-2xl font-bold text-gray-900">
                     {item.price || 'Rp 0'}
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {/* Button logic based on status */}
+                </div>                <div className="flex flex-col gap-2">
+                  {/* ✅ NEW: Logika tombol berdasarkan status */}
                   {statusInfo.type === "progress" && (
-                    <button
-                      onClick={() => handleViewDetails(item.orderNumber)}
+                    // Contract exists, progress < 3 - show View Details
+                    <button 
+                      onClick={() => navigate(`/manage-order/${item.orderNumber}`)}
                       className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
                     >
                       View Details
                     </button>
                   )}
 
-                  {(statusInfo.type === "completed" || statusInfo.type === "delivered") && (
+                  {statusInfo.type === "completed" && (
+                    // Contract exists, progress == 3 - show Buy Again & Contact Seller
                     <>
-                      <button
-                        onClick={() => handleBuyAgain(item)}
+                      <button 
+                        onClick={() => navigate(`/detail/${item.serviceId || item.id}`)}
                         className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
                       >
                         Buy Again
                       </button>
-                      <button
-                        onClick={() => handleContactSeller(item)}
+                      <button 
+                        onClick={() => navigate(`/chat/${item.sellerId || item.seller}`)}
                         className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
                       >
                         Contact Seller
@@ -645,19 +513,21 @@ const UserProfile = () => {
                     </>
                   )}
 
-                  {statusInfo.type === "cancelled" && (
-                    <button
-                      onClick={() => handleBuyAgain(item)}
-                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gray-500 text-white hover:bg-gray-600 shadow-lg shadow-gray-500/20"
+                  {(statusInfo.type === "delivered" || statusInfo.type === "unknown") && (
+                    // Fallback for old logic or unknown status
+                    <button 
+                      onClick={() => navigate(`/detail/${item.serviceId || item.id}`)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
                     >
                       Buy Again
                     </button>
                   )}
 
-                  {statusInfo.type === "unknown" && (
-                    <button
-                      onClick={() => handleBuyAgain(item)}
-                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                  {statusInfo.type === "cancelled" && (
+                    // Cancelled orders - show Buy Again only
+                    <button 
+                      onClick={() => navigate(`/detail/${item.serviceId || item.id}`)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gray-500 text-white hover:bg-gray-600 shadow-lg shadow-gray-500/20"
                     >
                       Buy Again
                     </button>
@@ -669,61 +539,65 @@ const UserProfile = () => {
         </div>
       </div>
     );
-  }, [getStatusInfo, handleViewDetails, handleBuyAgain, handleContactSeller, handleImageError]);
+  });
 
   const ReviewCard = React.memo(({ review }) => (
-    <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
-      <div className="flex flex-col lg:flex-row">
-        <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
+    <div className="group relative bg-white rounded-xl p-8 border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex-shrink-0 w-full lg:w-72 h-48 lg:h-52">
           <img
-            src={review.image}
-            alt={review.serviceTitle || 'Service image'}
-            className="w-full h-full object-cover border-b lg:border-b-0 lg:border-r border-gray-200"
+            src={review.image || fallbackImage}
+            alt={review.title || 'Service image'}
+            className="w-full h-full object-cover rounded-lg border border-gray-200"
             onError={handleImageError}
             loading="lazy"
-            data-image-urls={review.imageUrls ? JSON.stringify(review.imageUrls) : null}
+            onLoad={() => console.log('✅ Review image loaded for:', review.title)}
           />
         </div>
 
-        <div className="flex-1 p-6">
+        <div className="flex-1">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                {Array.isArray(review.category) ? (
-                  review.category.map((cat, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
-                    >
-                      {cat}
+              <div className="flex items-center gap-2 mb-3">
+                  {Array.isArray(review.category) ? (
+                    review.category.map((cat, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      {'No Registered Category'}
                     </span>
-                  ))
-                ) : (
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                    {item.category || 'General'}
+                  )}
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                  COMPLETED
+                </span>
+                {review.verified && (
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Verified Purchase
                   </span>
                 )}
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                  REVIEWED
-                </span>
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                {review.serviceTitle || 'Untitled Service'}
+              <h3 className="text-xl font-bold text-gray-900 mb-2 leading-tight">
+                {review.title || 'Untitled Service'}
               </h3>
-
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                {review.description || 'Professional service provided'}
-              </p>
 
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-[#2E5077] to-[#2E90EB] rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">
-                      {(review.serviceSeller || 'U').charAt(0)}
+                      {(review.seller || 'U').charAt(0)}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">{review.serviceSeller || 'Unknown Seller'}</span>
+                  <span className="text-sm font-medium text-gray-700">{review.seller || 'Unknown Seller'}</span>
                   <div className="flex items-center gap-1">
                     <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -733,54 +607,41 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 mb-4">
-                <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
-                  Completed
-                </span>
+              <p className="text-sm text-gray-500 mb-4">{review.orderId || 'N/A'}</p>
 
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-600">Your rating:</span>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 font-medium">My Rating:</span>
                   <div className="flex">
-                    {[...Array(5)].map((_, index) => (
-                      <svg key={index} className={`w-4 h-4 ${index < Math.floor(review.userRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                    {[...Array(5)].map((_, starIndex) => (
+                      <svg key={starIndex} className={`w-5 h-5 ${starIndex < Math.floor(review.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     ))}
                   </div>
+                  <span className="text-sm text-gray-900 font-semibold ml-1">{review.rating || 0}.0</span>
                 </div>
-              </div>
 
-              <div className="text-sm text-gray-500 mb-2">
-                {review.orderId || 'N/A'} • {review.reviewDate ? new Date(review.reviewDate).toLocaleDateString() : 'N/A'}
-              </div>
-              <div className="text-sm text-gray-600 font-medium">
-                {review.deliveryTime || 'Delivered on time'}
+                <span className="text-sm text-gray-600">• {review.deliveryTime || 'N/A'}</span>
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
                 <div className="text-2xl font-bold text-gray-900">
-                  {review.servicePrice || 'Rp 0'}
+                  {review.price || 'Rp 0'}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => handleBuyAgain({
-                    serviceId: review.serviceId,
-                    id: review.serviceId,
-                    title: review.serviceTitle
-                  })}
+                <button 
+                  onClick={() => navigate(`/detail/${review.serviceId || review.id}`)}
                   className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20"
                 >
                   Buy Again
                 </button>
-                <button
-                  onClick={() => handleContactSeller({
-                    sellerId: review.sellerId,
-                    seller: review.serviceSeller
-                  })}
+                <button 
+                  onClick={() => {}}//revisi redirect ke roomid
                   className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
                 >
                   Contact Seller
@@ -790,15 +651,14 @@ const UserProfile = () => {
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">My Review:</h4>
             <p className="text-gray-700 leading-relaxed text-sm">
-              {review.reviewText || 'No review text provided.'}
+              {review.reviewText || 'No review text available.'}
             </p>
           </div>
         </div>
       </div>
     </div>
-  ), [handleBuyAgain, handleContactSeller, handleImageError]);
+  ));
 
   const PaginationControls = React.memo(({ pagination, onPageChange }) => (
     <div className="flex justify-center items-center gap-2.5 mt-12">
@@ -839,32 +699,8 @@ const UserProfile = () => {
   ));
 
   const LoadingSpinner = React.memo(() => (
-    <div className="space-y-6">
-      {[...Array(3)].map((_, index) => (
-        <div key={index} className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
-          <div className="flex flex-col lg:flex-row">
-            <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56 bg-gray-200"></div>
-            <div className="flex-1 p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-16 h-6 bg-gray-200 rounded-full"></div>
-                  </div>
-                  <div className="w-3/4 h-6 bg-gray-200 rounded mb-2"></div>
-                  <div className="w-full h-4 bg-gray-200 rounded mb-3"></div>
-                  <div className="w-1/2 h-4 bg-gray-200 rounded mb-3"></div>
-                  <div className="w-1/3 h-6 bg-gray-200 rounded mb-4"></div>
-                  <div className="w-1/4 h-4 bg-gray-200 rounded"></div>
-                </div>
-                <div className="flex flex-col items-end gap-3 ml-6">
-                  <div className="w-20 h-8 bg-gray-200 rounded"></div>
-                  <div className="w-24 h-10 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className="flex justify-center items-center py-16">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E5077]"></div>
     </div>
   ));
 
@@ -873,46 +709,24 @@ const UserProfile = () => {
       <div className="text-red-500 text-xl mb-4">⚠️</div>
       <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
       <p className="text-gray-500 mb-4">{message}</p>
-      <button
-        onClick={() => window.location.reload()}
-        className="bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
-      >
-        Retry
-      </button>
+      <div className="flex gap-3 justify-center">
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
+        >
+          Retry
+        </button>
+      </div>
     </div>
   ));
 
-  if (initialLoading) {
+  // Show loading spinner if essential data is still loading
+  if (loading && !currentUser.name && !userStats.memberSince) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <Navbar />
         <div className="h-32"></div>
-        <div className="w-full px-4 lg:px-8 xl:px-12 2xl:px-16">
-          <div className="max-w-none bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden">
-            <div className="bg-[#2E5077] p-8">
-              <div className="animate-pulse">
-                <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-white/20 rounded-2xl"></div>
-                  <div>
-                    <div className="w-48 h-8 bg-white/20 rounded mb-2"></div>
-                    <div className="w-64 h-6 bg-white/20 rounded mb-1"></div>
-                    <div className="w-32 h-4 bg-white/20 rounded"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="p-8">
-              <div className="grid grid-cols-5 gap-4 mb-8">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 rounded-xl h-24"></div>
-                  </div>
-                ))}
-              </div>
-              <LoadingSpinner />
-            </div>
-          </div>
-        </div>
+        <LoadingSpinner />
         <div className="h-32"></div>
         <Footer />
       </div>
@@ -934,23 +748,28 @@ const UserProfile = () => {
             <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
                 <div className="group relative">
-                  <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 transition-all duration-700 group-hover:scale-105 group-hover:bg-white/20 overflow-hidden">
-                    <img
-                      className="w-full h-full object-cover rounded-2xl"
-                      src={auth?.data?.auth?.picture === "temp"
-                        ? default_avatar
-                        : `${imageShow}${auth?.data?.auth?.picture}`}
-                      alt="profile"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = default_avatar;
-                      }}
-                    />
+                  <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 transition-all duration-700 group-hover:scale-105 group-hover:bg-white/20">
+                    <svg
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-white"
+                    >
+                      <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                        fill="currentColor"
+                      />
+                    </svg>
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold mb-2 tracking-tight">{auth?.data?.auth?.name || "User"}</h1>
-                  <p className="text-lg opacity-90 font-medium">{auth?.data?.auth?.email}</p>
+                  <h1 className="text-3xl font-bold mb-2 tracking-tight">{currentUser.name || "User"}</h1>
+                  <p className="text-lg opacity-90 font-medium mb-1">{currentUser.email}</p>
+                  <p className="text-sm opacity-75">
+                    {currentUser.memberSince && `Member since ${currentUser.memberSince}`}
+                  </p>
                 </div>
               </div>
 
@@ -999,30 +818,24 @@ const UserProfile = () => {
               <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Orders</span>
               <span className="text-lg font-bold text-purple-600">{userStats.totalOrders || "0"}</span>
             </div>
-
-            {/* <div className="group flex flex-col items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-[#2E5077]/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-500">💰</div>
-              <span className="text-xs text-gray-600 mb-1 font-medium tracking-wide uppercase text-center">Total Spent</span>
-              <span className="text-sm font-bold text-green-600">{userStats.totalSpent || "Rp 0"}</span>
-            </div> */}
           </div>
 
           <div className="px-8 pt-6">
             <div className="flex justify-between items-center">
-              <div className="inline-flex bg-gray-100 rounded-xl p-1.5 shadow-inner">
+              <div className="inline-flex bg-gray-100 rounded-xl p-1.5">
                 <button
-                  className={`px-8 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 transform ${activeTab === "purchase"
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 ${activeTab === "purchase"
                     ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200 hover:scale-102"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
                     }`}
                   onClick={() => handleTabChange("purchase")}
                 >
                   Purchase History
                 </button>
                 <button
-                  className={`px-8 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 transform ${activeTab === "reviews"
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide rounded-lg cursor-pointer transition-all duration-300 ${activeTab === "reviews"
                     ? "bg-[#2E5077] text-white shadow-lg shadow-[#2E5077]/25 scale-105"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200 hover:scale-102"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
                     }`}
                   onClick={() => handleTabChange("reviews")}
                 >
@@ -1033,7 +846,7 @@ const UserProfile = () => {
           </div>
 
           <div className="p-8">
-            {loading && (!dataCache.current[activeTab].loaded || dataCache.current[activeTab].data.length === 0) ? (
+            {loading ? (
               <LoadingSpinner />
             ) : error ? (
               <ErrorMessage message={error} />
@@ -1058,7 +871,7 @@ const UserProfile = () => {
                         <div className="text-gray-400 text-8xl mb-6">📦</div>
                         <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Purchase History</h3>
                         <p className="text-gray-500 text-lg">You haven't made any purchases yet.</p>
-                        <button
+                        <button 
                           className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#1e3a5f] transition-colors cursor-pointer"
                           onClick={() => navigate("/catalog")}
                         >
@@ -1085,10 +898,9 @@ const UserProfile = () => {
                       </>
                     ) : (
                       <div className="text-center py-16">
-                        <div className="text-gray-400 text-8xl mb-6">📝</div>
-                        <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Reviews Written Yet</h3>
-                        <p className="text-gray-500 text-lg mb-2">You haven't written any reviews for completed orders yet.</p>
-                        <p className="text-gray-400 text-sm mb-6">Reviews can only be written after your orders are completed or delivered.</p>
+                        <div className="text-gray-400 text-8xl mb-6">⭐</div>
+                        <h3 className="text-2xl font-semibold text-gray-600 mb-3">No Reviews Yet</h3>
+                        <p className="text-gray-500 text-lg">You haven't written any reviews yet.</p>
                         <button
                           className="mt-6 bg-[#2E5077] text-white px-8 py-3 rounded-lg cursor-pointer font-medium hover:bg-[#1e3a5f] transition-colors"
                           onClick={() => handleTabChange("purchase")}
@@ -1108,7 +920,6 @@ const UserProfile = () => {
       <div className="h-32"></div>
 
       <Footer />
-
     </div>
   );
 };

@@ -73,7 +73,7 @@ const ManageOrder = () => {
     dummy3,
     dummy4
   ];
-console.log("order", orderData)
+  console.log("order", orderData)
   useEffect(() => {
     setRandomDummy(dummyImages[Math.floor(Math.random() * dummyImages.length)]);
   }, [])
@@ -104,7 +104,9 @@ console.log("order", orderData)
     const invoiceUrl = `/invoice/${orderId}`;
 
     window.open(invoiceUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-  }; const initiateChat = () => {
+  };
+  
+  const initiateChat = () => {
     if (!auth) {
       navigate("/sign-in");
       return;
