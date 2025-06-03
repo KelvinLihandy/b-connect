@@ -226,7 +226,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-14 left-1/2 mt-2 w-120 transform -translate-x-1/2 bg-white rounded-lg shadow-lg z-[99998] overflow-hidden order-dropdown"
+                        className="absolute top-14 left-1/2 mt-2 w-201 transform -translate-x-1/2 bg-white rounded-tr-lg rounded-br-lg shadow-lg z-[99998] overflow-hidden order-dropdown"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-between items-center p-4 bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
@@ -240,12 +240,12 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                   return (
                                     <div
                                       key={index}
-                                      className="h-25 flex items-center px-4 py-2 gap-4 border-t"
+                                      className="h-32 flex items-center px-6 py-4 gap-6 border-t hover:bg-gray-50 cursor-pointer"
                                       onClick={() => navigate(`/manage-order/${order.orderId}`)}
                                     >
-                                      <div className="h-full flex items-center">
+                                      <div className="flex items-center justify-center">
                                         <img
-                                          className="w-15 h-15 object-cover rounded-full border"
+                                          className="w-20 h-20 object-cover rounded-full border"
                                           src={
                                             order.gig.images[0] === "temp"
                                               ? default_avatar
@@ -259,18 +259,18 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                           }}
                                         />
                                       </div>
-                                      <div className="flex flex-col justify-between h-full">
-                                        <p className="font-semibold text-xl">{order.gig.name}</p>
+                                      <div className="flex flex-col justify-center flex-1 h-full">
+                                        <p className="font-semibold text-xl mb-2">{order.gig.name}</p>
                                         <div
-                                          className={`mb-3 text-sm p-1 border text-center w-25 ${order.progress === 0
-                                              ? "bg-gray-200 text-gray-700 border-gray-400"
-                                              : order.progress === 1
-                                                ? "bg-yellow-100 text-yellow-800 border-yellow-300"
-                                                : order.progress === 2
-                                                  ? "bg-blue-100 text-blue-800 border-blue-300"
-                                                  : order.progress === 3
-                                                    ? "bg-green-100 text-green-800 border-green-300"
-                                                    : "bg-red-100 text-red-800 border-red-300"
+                                          className={`text-sm p-2 border text-center w-28 rounded ${order.progress === 0
+                                            ? "bg-gray-200 text-gray-700 border-gray-400"
+                                            : order.progress === 1
+                                              ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                                              : order.progress === 2
+                                                ? "bg-blue-100 text-blue-800 border-blue-300"
+                                                : order.progress === 3
+                                                  ? "bg-green-100 text-green-800 border-green-300"
+                                                  : "bg-red-100 text-red-800 border-red-300"
                                             }`}
                                         >
                                           {order.progress === 0
@@ -283,12 +283,10 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                                   ? "Finished"
                                                   : "Unknown"}
                                         </div>
-
-
                                       </div>
-                                      <div className="flex flex-col justify-between h-full py-2 ml-auto">
-                                        <p className="text-gray-600 text-sm">{getRelativeDate(order.startTime)}</p>
-                                        <p className="font-semibold text-lg mb-3">Rp. {formattedPrice(order.package.price) || 0}</p>
+                                      <div className="flex flex-col justify-center items-end h-full text-right">
+                                        <p className="text-gray-600 text-sm mb-2">{getRelativeDate(order.startTime)}</p>
+                                        <p className="font-semibold text-lg">Rp. {formattedPrice(order.package.price) || 0}</p>
                                       </div>
                                     </div>
                                   )
