@@ -102,7 +102,7 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
               return (
                 <motion.div
                   key={gig._id}
-                  className="bg-white h-100 rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
+                  className="bg-white h-110 rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
                   variants={cardVariants}
                   custom={i}
                   whileHover={{ y: -5 }}

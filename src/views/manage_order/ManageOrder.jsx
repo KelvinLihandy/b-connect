@@ -607,12 +607,13 @@ const ManageOrder = () => {
                   <span>Total</span>
                   <span>Rp. {formattedPrice(totalPrice)}</span>
                 </div>
-              </div>            </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>      <Footer />
+      </div>
+      <Footer />
 
-      {/* Review Modal - Only for buyers (non-freelancers) */}
       {!isFreelancer && (
         <Review
           isOpen={showReviewModal}

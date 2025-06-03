@@ -14,11 +14,12 @@ import default_avatar from '../../assets/default-avatar.png'
 import profile_square from "../../assets/user-profile-square.svg"
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { gigAPI, userAPI } from "../../constants/APIRoutes";
+import { gigAPI, orderAPI, userAPI } from "../../constants/APIRoutes";
 import { DynamicStars } from "../../components/dynamic_stars/DynamicStars";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import Contract from "../../components/contract/Contract";
 import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
+import { set } from "lodash";
 
 const Detail = () => {
   const { auth } = useContext(AuthContext);
@@ -40,6 +41,7 @@ const Detail = () => {
   const [isOwnGig, setIsOwnGig] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [randomDummy, setRandomDummy] = useState(null);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
   const dummyImages = [
     dummy1,
     dummy2,
@@ -79,12 +81,14 @@ const Detail = () => {
       const response = await axios.post(`${gigAPI}/get-gig/${gigId}`);
       const res = response.data;
       setGigDetail(res.detail);
-      setReviews(res.reviews)
+      setReviews(res.reviews);
+      await getCurrentOrder(res.detail._id);
       console.log("detail", res);
     } catch (error) {
       console.error('Error fetching detail:', error.response || error);
     }
   }
+
   const getFreelancer = async () => {
     try {
       const response = await axios.post(`${userAPI}/get-freelancer-data/${gigDetail?.creator}`, {});
@@ -97,6 +101,24 @@ const Detail = () => {
       console.log("freelancer", res);
     } catch (error) {
       console.error('Error fetching freelancer:', error.response || error);
+    }
+  }
+
+  const getCurrentOrder = async (id) => {
+    if (!auth) return;
+    try {
+      const response = await axios.get(`${orderAPI}/current/${id}`,
+        { withCredentials: true }
+      );
+      const res = response.data;
+      console.log("current order", response);
+      if (response.status === 200) {
+        setCurrentOrderId(res?.orderId);
+      } else {
+        console.error(`Unexpected status code: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error fetching current order:', error.response || error);
     }
   }
 
@@ -113,6 +135,7 @@ const Detail = () => {
 
   useEffect(() => {
     getDetail();
+    getCurrentOrder();
   }, []);
 
   useEffect(() => {
@@ -503,15 +526,13 @@ const Detail = () => {
                     </motion.div>
                   </AnimatePresence>
                   <motion.button
-                    disabled={isDisabled}
                     className={`w-full mt-6 py-3 px-4 rounded-md font-medium flex items-center justify-center cursor-pointer text-white 
                       ${isDisabled ? 'bg-gray-600 hover:bg-gray-800' : 'bg-blue-700 hover:bg-blue-800'}`}
                     whileHover={isDisabled ? {} : { scale: 1.02 }}
                     whileTap={isDisabled ? {} : { scale: 0.98 }}
                     onClick={() => {
                       if (isDisabled) {
-                        // navigate()
-                        // nav to history order
+                        navigate(`/manage-order/${currentOrderId}`)
                         return;
                       }
                       if (!auth) {
