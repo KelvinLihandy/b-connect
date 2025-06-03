@@ -634,7 +634,10 @@ console.log("order", orderData)
       <ProofModal
         isOpen={isShowingProofModal}
         onClose={() => setIsShowingProofModal(false)}
-        onConfirm={() => console.log("Proof confirmed")}
+        onConfirm={async () => {
+          handleUpdateProgress(1);
+          setIsShowingProofModal(false);
+        }}
         proofImage={proofId}
       />
     </div>
