@@ -111,7 +111,7 @@ const ProofModal = ({
                   <img
                     src={`${imageShow}${proofImage}`}
                     alt="Proof"
-                    className="w-full h-auto min-h-96 max-h-96 object-contain rounded-lg"
+                    className="w-full h-96 object-cover"
                     onError={() => console.error("Failed to load proof image")}
                   />
                 ) : (
