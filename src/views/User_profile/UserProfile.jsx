@@ -19,10 +19,6 @@ const UserProfile = () => {
   const { auth } = useContext(AuthContext);
   const abortControllerRef = useRef(null);
 
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewModalData, setReviewModalData] = useState(null);
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-
   // Improved caching system
   const dataCache = useRef({
     purchase: {
@@ -225,86 +221,6 @@ const UserProfile = () => {
     socket.on("switch_room", handleSwitchRoom);
   }, [navigate]);
 
-  // const handleWriteReview = useCallback((item) => {
-  //   setReviewModalData(item);
-  //   setShowReviewModal(true);
-  // }, []);
-
-  // const handleCloseReviewModal = useCallback(() => {
-  //   setShowReviewModal(false);
-  //   setReviewModalData(null);
-  // }, []);
-
-  // const submitReview = useCallback(async (reviewData) => {
-  //   if (!reviewModalData) return;
-
-  //   setReviewSubmitting(true);
-  //   try {
-  //     const submitData = {
-  //       orderId: reviewModalData.orderId || reviewModalData.orderNumber,
-  //       serviceId: reviewModalData.serviceId || reviewModalData.id,
-  //       sellerId: reviewModalData.sellerId || reviewModalData.seller,
-  //       rating: reviewData.rating,
-  //       reviewText: reviewData.reviewText,
-  //       deliveryRating: reviewData.deliveryRating,
-  //       communicationRating: reviewData.communicationRating,
-  //       qualityRating: reviewData.qualityRating,
-  //       wouldRecommend: reviewData.wouldRecommend
-  //     };
-
-  //     const response = await axios.post(
-  //       `${userAPI}/submit-review`,
-  //       submitData,
-  //       { withCredentials: true }
-  //     );
-
-  //     if (response.data.success) {
-  //       const newReview = {
-  //         id: `review-${Date.now()}`,
-  //         ...reviewModalData,
-  //         reviewText: reviewData.reviewText,
-  //         userRating: reviewData.rating,
-  //         deliveryRating: reviewData.deliveryRating,
-  //         communicationRating: reviewData.communicationRating,
-  //         qualityRating: reviewData.qualityRating,
-  //         wouldRecommend: reviewData.wouldRecommend,
-  //         reviewDate: new Date().toISOString(),
-  //         verified: true,
-  //         orderStatus: 'completed',
-  //         serviceTitle: reviewModalData.title,
-  //         serviceSeller: reviewModalData.seller,
-  //         servicePrice: reviewModalData.price,
-  //         hasReview: true
-  //       };
-
-  //       // Update reviews cache
-  //       dataCache.current.reviews.data = [newReview, ...dataCache.current.reviews.data];
-  //       setReviews(prev => [newReview, ...prev]);
-
-  //       // Update purchase history cache
-  //       const updatedPurchaseHistory = dataCache.current.purchase.data.map(item =>
-  //         (item.orderId === reviewModalData.orderId || item.orderNumber === reviewModalData.orderNumber)
-  //           ? { ...item, hasReview: true, rating: reviewData.rating }
-  //           : item
-  //       );
-  //       dataCache.current.purchase.data = updatedPurchaseHistory;
-  //       setPurchaseHistory(updatedPurchaseHistory);
-
-  //       handleCloseReviewModal();
-
-  //       if (activeTab !== "reviews") {
-  //         setActiveTab("reviews");
-  //       }
-
-  //       alert("Review berhasil dikirim!");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error submitting review:", error);
-  //     alert("Gagal mengirim review. Silakan coba lagi.");
-  //   } finally {
-  //     setReviewSubmitting(false);
-  //   }
-  // }, [reviewModalData, activeTab, handleCloseReviewModal]);
 
   const fetchUserStats = useCallback(async () => {
     if (!getCurrentUserId) return;
@@ -596,196 +512,6 @@ const UserProfile = () => {
     navigate('/profile');
   }, [navigate]);
 
-  // const ReviewModal = React.memo(() => {
-  //   const [rating, setRating] = useState(5);
-  //   const [reviewText, setReviewText] = useState('');
-  //   const [deliveryRating, setDeliveryRating] = useState(5);
-  //   const [communicationRating, setCommunicationRating] = useState(5);
-  //   const [qualityRating, setQualityRating] = useState(5);
-  //   const [wouldRecommend, setWouldRecommend] = useState(true);
-
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault();
-  //     if (reviewText.trim().length < 10) {
-  //       alert('Review must be at least 10 characters long');
-  //       return;
-  //     }
-
-  //     await submitReview({
-  //       rating,
-  //       reviewText: reviewText.trim(),
-  //       deliveryRating,
-  //       communicationRating,
-  //       qualityRating,
-  //       wouldRecommend
-  //     });
-  //   };
-
-  //   const StarRating = ({ value, onChange, size = "w-8 h-8" }) => (
-  //     <div className="flex gap-1">
-  //       {[1, 2, 3, 4, 5].map((star) => (
-  //         <button
-  //           key={star}
-  //           type="button"
-  //           onClick={() => onChange(star)}
-  //           className={`${size} transition-all duration-200 hover:scale-110 ${star <= value ? 'text-yellow-400' : 'text-gray-300'
-  //             }`}
-  //         >
-  //           <svg fill="currentColor" viewBox="0 0 20 20">
-  //             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-  //           </svg>
-  //         </button>
-  //       ))}
-  //     </div>
-  //   );
-
-  //   if (!showReviewModal || !reviewModalData) return null;
-
-  //   return (
-  //     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-  //       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-  //         <div className="bg-gradient-to-r from-[#2E5077] to-[#2E90EB] p-6 rounded-t-2xl">
-  //           <div className="flex items-center justify-between">
-  //             <div className="flex items-center gap-4">
-  //               <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-white/20">
-  //                 <img
-  //                   src={reviewModalData.image}
-  //                   alt={reviewModalData.title}
-  //                   className="w-full h-full object-cover"
-  //                   onError={handleImageError}
-  //                 />
-  //               </div>
-  //               <div className="text-white">
-  //                 <h2 className="text-xl font-bold mb-1">Write Your Review</h2>
-  //                 <p className="text-white/80 text-sm">{reviewModalData.title}</p>
-  //                 <p className="text-white/60 text-xs">by {reviewModalData.seller}</p>
-  //               </div>
-  //             </div>
-  //             <button
-  //               onClick={handleCloseReviewModal}
-  //               className="text-white/80 hover:text-white transition-colors"
-  //             >
-  //               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  //               </svg>
-  //             </button>
-  //           </div>
-  //         </div>
-
-  //         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-  //           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-  //             <div className="flex items-center gap-2 mb-2">
-  //               <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-  //                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-  //               </svg>
-  //               <h3 className="font-semibold text-blue-800">Service Details</h3>
-  //             </div>
-  //             <div className="grid grid-cols-2 gap-4 text-sm">
-  //               <div>
-  //                 <span className="text-gray-600">Order ID:</span>
-  //                 <span className="ml-2 font-medium">{reviewModalData.orderNumber || reviewModalData.orderId}</span>
-  //               </div>
-  //               <div>
-  //                 <span className="text-gray-600">Price:</span>
-  //                 <span className="ml-2 font-medium text-green-600">{reviewModalData.price}</span>
-  //               </div>
-  //               <div>
-  //                 <span className="text-gray-600">Date:</span>
-  //                 <span className="ml-2 font-medium">{reviewModalData.date}</span>
-  //               </div>
-  //               <div>
-  //                 <span className="text-gray-600">Delivery:</span>
-  //                 <span className="ml-2 font-medium">{reviewModalData.deliveryTime}</span>
-  //               </div>
-  //             </div>
-  //           </div>
-
-  //           <div className="space-y-4">
-  //             <div>
-  //               <label className="block text-sm font-semibold text-gray-700 mb-2">
-  //                 Overall Rating <span className="text-red-500">*</span>
-  //               </label>
-  //               <div className="flex items-center gap-3">
-  //                 <StarRating value={rating} onChange={setRating} />
-  //                 <span className="text-lg font-bold text-gray-700">{rating}.0</span>
-  //               </div>
-  //             </div>
-
-  //             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-  //               <div>
-  //                 <label className="block text-sm font-medium text-gray-700 mb-1">Quality</label>
-  //                 <StarRating value={qualityRating} onChange={setQualityRating} size="w-6 h-6" />
-  //               </div>
-  //               <div>
-  //                 <label className="block text-sm font-medium text-gray-700 mb-1">Communication</label>
-  //                 <StarRating value={communicationRating} onChange={setCommunicationRating} size="w-6 h-6" />
-  //               </div>
-  //               <div>
-  //                 <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Time</label>
-  //                 <StarRating value={deliveryRating} onChange={setDeliveryRating} size="w-6 h-6" />
-  //               </div>
-  //             </div>
-
-  //             <div>
-  //               <label className="block text-sm font-semibold text-gray-700 mb-2">
-  //                 Your Review <span className="text-red-500">*</span>
-  //               </label>
-  //               <textarea
-  //                 value={reviewText}
-  //                 onChange={(e) => setReviewText(e.target.value)}
-  //                 placeholder="Share your experience with this service. What did you like? What could be improved?"
-  //                 className="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#2E5077] focus:border-transparent resize-none"
-  //                 required
-  //               />
-  //               <p className="text-sm text-gray-500 mt-1">
-  //                 {reviewText.length} characters (minimum 10 required)
-  //               </p>
-  //             </div>
-
-  //             <div className="bg-gray-50 rounded-xl p-4">
-  //               <label className="flex items-center gap-3">
-  //                 <input
-  //                   type="checkbox"
-  //                   checked={wouldRecommend}
-  //                   onChange={(e) => setWouldRecommend(e.target.checked)}
-  //                   className="w-5 h-5 text-[#2E5077] rounded focus:ring-[#2E5077]"
-  //                 />
-  //                 <span className="text-sm font-medium text-gray-700">
-  //                   I would recommend this service to others
-  //                 </span>
-  //               </label>
-  //             </div>
-  //           </div>
-
-  //           <div className="flex gap-3 pt-4 border-t">
-  //             <button
-  //               type="button"
-  //               onClick={handleCloseReviewModal}
-  //               className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-  //             >
-  //               Cancel
-  //             </button>
-  //             <button
-  //               type="submit"
-  //               disabled={reviewSubmitting || reviewText.trim().length < 10}
-  //               className="flex-1 py-3 px-6 bg-gradient-to-r from-[#2E5077] to-[#2E90EB] text-white rounded-xl hover:from-[#1e3a5f] hover:to-[#2180d1] transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-  //             >
-  //               {reviewSubmitting ? (
-  //                 <div className="flex items-center justify-center gap-2">
-  //                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-  //                   Submitting...
-  //                 </div>
-  //               ) : (
-  //                 'Submit Review'
-  //               )}
-  //             </button>
-  //           </div>
-  //         </form>
-  //       </div>
-  //     </div>
-  //   );
-  // });
-
   const PurchaseCard = React.memo(({ item }) => {
     const statusInfo = useMemo(() => getStatusInfo(item), [item, getStatusInfo]);
 
@@ -916,15 +642,6 @@ const UserProfile = () => {
                       >
                         Contact Seller
                       </button>
-
-                      {/* {!item.hasReview && (
-                        <button
-                          onClick={() => handleWriteReview(item)}
-                          className="px-6 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
-                        >
-                          Write Review
-                        </button>
-                      )} */}
                     </>
                   )}
 
@@ -952,7 +669,7 @@ const UserProfile = () => {
         </div>
       </div>
     );
-  }, [getStatusInfo, handleViewDetails, handleBuyAgain, handleContactSeller, handleWriteReview, handleImageError]);
+  }, [getStatusInfo, handleViewDetails, handleBuyAgain, handleContactSeller, handleImageError]);
 
   const ReviewCard = React.memo(({ review }) => (
     <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
@@ -1392,7 +1109,6 @@ const UserProfile = () => {
 
       <Footer />
 
-      {/* <ReviewModal /> */}
     </div>
   );
 };
