@@ -1,4 +1,4 @@
-//export const baseAPI = "http://127.0.0.1:5000"; // kalau mau push harus pake yang deploy
+// export const baseAPI = "http://127.0.0.1:5000"; // kalau mau push harus pake yang deploy
  export const baseAPI = "https://b-connect-fxbzejcsd3accdc7.canadacentral-01.azurewebsites.net"
 
 export const authAPI = `${baseAPI}/api/auth`;

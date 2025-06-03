@@ -1,5 +1,5 @@
 import React, { useState, createContext } from 'react'
-import { gigAPI } from '../constants/APIRoutes';
+import { gigAPI, orderAPI } from '../constants/APIRoutes';
 import axios from 'axios';
 
 export const DisabledGigsContext = createContext();
@@ -9,11 +9,15 @@ export const DisabledGigsProvider = ({ children }) => {
   console.log("gigs disabled", disabledGigs);
 
   const getDisabledGigs = async () => {
-    const res = await axios.post(`${gigAPI}/get-disabled-gig-ids`,
-      {},
+    const res = await axios.get(`${orderAPI}/unfinished-contracts`,
       { withCredentials: true }
     )
-    setDisabledGigs(res.data);
+    console.log("disabled gigs", res.data);
+    const gigOrderMap = res.data.reduce((acc, item) => {
+      acc[item.gigId] = item.orderId;
+      return acc;
+    }, {});
+    setDisabledGigs(gigOrderMap);
   };
 
   return (

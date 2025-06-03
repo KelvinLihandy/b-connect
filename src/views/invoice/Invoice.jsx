@@ -7,8 +7,7 @@ import bankTransfer from '../../assets/mo_bank_transfer.svg';
 import logo from '../../assets/invoice_logo.svg';
 
 // Importing API routes
-import { baseAPI, orderAPI, gigAPI } from '../../constants/APIRoutes';
-import { imageShow } from '../../constants/DriveLinkPrefixes';
+import { orderAPI, gigAPI } from '../../constants/APIRoutes';
 
 const formatRupiah = (amount) => {
   return `Rp ${amount.toLocaleString('id-ID')}`;
