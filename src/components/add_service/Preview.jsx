@@ -45,8 +45,8 @@ const Preview = ({ serviceData, onClose }) => {
   };
 
   const previewModalVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       scale: 0.9,
       y: 20
     },
@@ -54,11 +54,11 @@ const Preview = ({ serviceData, onClose }) => {
       opacity: 1,
       scale: 1,
       y: 0,
-      transition: { 
+      transition: {
         type: "spring",
         damping: 25,
         stiffness: 300,
-        duration: 0.4 
+        duration: 0.4
       }
     },
     exit: {
@@ -71,11 +71,11 @@ const Preview = ({ serviceData, onClose }) => {
 
   const backdropVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: { duration: 0.3 }
     },
-    exit: { 
+    exit: {
       opacity: 0,
       transition: { duration: 0.3 }
     }
@@ -126,14 +126,14 @@ const Preview = ({ serviceData, onClose }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="fixed inset-0 bg-black bg-opacity-75 z-50"
       variants={backdropVariants}
       initial="hidden"
       animate="visible"
       exit="exit"
     >
-      <motion.div 
+      <motion.div
         className="relative h-screen"
         variants={previewModalVariants}
         initial="hidden"
@@ -166,7 +166,18 @@ const Preview = ({ serviceData, onClose }) => {
                   </h1>
                   <div className="flex items-center mt-2 mb-6 text-lg font-bold">
                     <span className="font-bold text-gray-700 mr-2">
-                      {auth?.data?.auth?.name || "Service Provider"}
+                      {Array.isArray(serviceData?.categories) ? (
+                        serviceData.categories.map((cat, index) => (
+                          <span key={index} className="">
+                            {cat}
+                            {index < serviceData.categories.length - 1 && ', '}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="">
+                          {'Not Registered Category'}
+                        </span>
+                      )}
                     </span>
                     <span className="px-2">|</span>
                     <div className="flex text-yellow-400">
@@ -237,24 +248,6 @@ const Preview = ({ serviceData, onClose }) => {
                           <ChevronRight size={24} />
                         </motion.button>
                       </>
-                    )}
-                    <div className="absolute top-4 right-4 flex space-x-2">
-                      <motion.button
-                        className="bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 transition-all"
-                        onClick={toggleImageMode}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        title={imageMode === "cover" ? "View full image" : "Fill frame"}
-                      >
-                        {imageMode === "cover" ? (
-                          <ZoomIn size={18} />
-                        ) : (
-                          <Maximize2 size={18} />
-                        )}
-                      </motion.button>
-                    </div>
-                    {images && images.length > 1 && (
-                      <ProgressIndicator current={currentImage} total={images.length} />
                     )}
                   </div>
                   {images && images.length > 0 && (
@@ -417,10 +410,6 @@ const Preview = ({ serviceData, onClose }) => {
           </div>
         </div>
       </motion.div>
-
-      <AnimatePresence>
-        {isFullscreen && <FullscreenView />}
-      </AnimatePresence>
     </motion.div>
   );
 };

@@ -578,9 +578,26 @@ const UserProfile = () => {
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
+<<<<<<< HEAD
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
                   {review.category || 'General'}
                 </span>
+=======
+                  {Array.isArray(review.category) ? (
+                    review.category.map((cat, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                      >
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      {'No Registered Category'}
+                    </span>
+                  )}
+>>>>>>> d397e98276bc0921497c7bbecddaf4e7da680a0c
                 <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
                   COMPLETED
                 </span>

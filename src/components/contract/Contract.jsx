@@ -12,16 +12,19 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
 
 const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
-  const steps = ["Select", "Payment", "Checkout"];
+  const steps = ["Select", "Payment", "Confirm"];
   const { auth } = useContext(AuthContext);
   const { getDisabledGigs } = useContext(DisabledGigsContext);
   const [step, setStep] = useState(1);
   const [selectedPackage, setSelectedPackage] = useState();
   const [finishPay, setFinishPay] = useState(false);
-  const [pendingPay, setPendingPay] = useState(false);
-  const [failPay, setFailPay] = useState(false);
+  const [pendingPay, setPendingPay] = useState(false);  const [failPay, setFailPay] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [showProgress, setShowProgress] = useState(true);
+  const [paymentProofFile, setPaymentProofFile] = useState(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState(null);
+  const [paymentProofError, setPaymentProofError] = useState("");
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
   const navigate = useNavigate();
 
   const contractModalVariants = {
@@ -61,7 +64,6 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       return;
     }
   };
-
   const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
     return (price ?? 0).toLocaleString(locale, {
       minimumFractionDigits: minFraction,
@@ -69,60 +71,147 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     });
   };
 
-  useEffect(() => {
-    const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';
+  // Payment proof file handling functions
+  const handlePaymentProofUpload = (event) => {
+    const file = event.target.files[0];
+    setPaymentProofError("");
 
-    let scriptTag = document.createElement('script');
-    scriptTag.src = midtransScriptUrl;
-    // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
-    const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
-    scriptTag.setAttribute('data-client-key', myMidtransClientKey);
+    if (!file) return;
 
-    document.body.appendChild(scriptTag);
-
-    return () => {
-      document.body.removeChild(scriptTag);
+    // Validate file type (PNG/JPG only)
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setPaymentProofError("Please select a PNG or JPG image file");
+      return;
     }
-  }, []);
 
-  const initiateTransaction = async () => {
-    if (!selectedPackage && finishPay) return;
-    try {
-      const res = await axios.post(`${contractAPI}/create-transaction`,
-        {
-          gigId: gigId,
-          selectedPackage: selectedPackage
-        },
-        { withCredentials: true }
-      )
-      if (res && res.data.status === "success transaction create") {
-        console.log(res);
-        window.snap.pay(res.data.transaction.snap_token, {
-          onSuccess: function (result) {
-            console.log("success", result);
-            setFinishPay(true);
-            setShowProgress(false)
-          },
-          onPending: function (result) {
-            console.log("pending", result);
-            setPendingPay(true);
-            setShowProgress(false)
-          },
-          onClose: function (result) {
-            console.log("close", result);
-            setFailPay(true);
-            setShowProgress(false)
-          }
-        })
-      }
-      else {
-        console.log("error api midtrans", res);
-      }
-    } catch (error) {
-      console.log("error initiate transaction", error);
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setPaymentProofError("File size must be less than 5MB");
+      return;
     }
-    getDisabledGigs();
+
+    setPaymentProofFile(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPaymentProofPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
   };
+
+  const removePaymentProof = () => {
+    setPaymentProofFile(null);
+    setPaymentProofPreview(null);
+    setPaymentProofError("");
+  };
+
+  const handleSubmitPaymentProof = async () => {
+    if (!paymentProofFile) {
+      setPaymentProofError("Please select a payment proof image");
+      return;
+    }
+
+    setIsUploadingProof(true);
+    try {
+      const formData = new FormData();
+      formData.append("paymentProof", paymentProofFile);
+      formData.append("orderId", selectedPackage?.orderId || `manual-order-${Date.now()}`);
+      formData.append("gigId", gigId);
+      formData.append("packageType", selectedPackage?.type);
+      formData.append("amount", selectedPackage?.price);
+
+      // TODO: Implement API call - prepared for backend team
+      // const response = await axios.post(`${contractAPI}/upload-payment-proof`, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   },
+      //   withCredentials: true
+      // });
+
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log("Payment proof uploaded successfully");
+      alert("Payment proof uploaded successfully! Your order is now being processed.");
+      
+      // Navigate to user profile or order history
+      navigate(`/user-profile/${auth?.data?.auth?.id}`);
+      onClose();
+      
+    } catch (error) {
+      console.error("Error uploading payment proof:", error);
+      setPaymentProofError("Failed to upload payment proof. Please try again.");
+    } finally {
+      setIsUploadingProof(false);
+    }
+  };
+  
+  // useEffect(() => {
+  //   const midtransScriptUrl = 'https://app.midtrans.com/snap/snap.js';
+
+  //   let scriptTag = document.createElement('script');
+  //   scriptTag.src = midtransScriptUrl;
+  //   // const myMidtransClientKey = 'SB-Mid-client-jTywWMkTIvxp4C-v';
+  //   const myMidtransClientKey = 'Mid-client-NsyRetKg6B6JB-qU';
+  //   scriptTag.setAttribute('data-client-key', myMidtransClientKey);
+
+  //   document.body.appendChild(scriptTag);
+
+  //   return () => {
+  //     document.body.removeChild(scriptTag);
+  //   }
+  // }, []);
+
+  // Cleanup effect for payment proof preview
+  useEffect(() => {
+    return () => {
+      if (paymentProofPreview && paymentProofPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(paymentProofPreview);
+      }
+    };
+  }, [paymentProofPreview]);
+
+  // const initiateTransaction = async () => {
+  //   if (!selectedPackage && finishPay) return;
+  //   try {
+  //     const res = await axios.post(`${contractAPI}/create-transaction`,
+  //       {
+  //         gigId: gigId,
+  //         selectedPackage: selectedPackage
+  //       },
+  //       { withCredentials: true }
+  //     )
+  //     if (res && res.data.status === "success transaction create") {
+  //       console.log(res);
+  //       window.snap.pay(res.data.transaction.snap_token, {
+  //         onSuccess: function (result) {
+  //           console.log("success", result);
+  //           setFinishPay(true);
+  //           setShowProgress(false)
+  //         },
+  //         onPending: function (result) {
+  //           console.log("pending", result);
+  //           setPendingPay(true);
+  //           setShowProgress(false)
+  //         },
+  //         onClose: function (result) {
+  //           console.log("close", result);
+  //           setFailPay(true);
+  //           setShowProgress(false)
+  //         }
+  //       })
+  //     }
+  //     else {
+  //       console.log("error api midtrans", res);
+  //     }
+  //   } catch (error) {
+  //     console.log("error initiate transaction", error);
+  //   }
+  //   getDisabledGigs();
+  // };
 
   return (
     <AnimatePresence mode="wait">
@@ -366,29 +455,12 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                         Rp. {formattedPrice(selectedPackage?.price)}
                                       </p>
                                     </div>
-                                    {/* <div className="flex flex-row justify-between">
-                                      <p>Pajak</p>
-                                      <p className="font-bold">
-                                        Rp.{" "}
-                                        {formattedPrice(
-                                          (0.7 / 100) * selectedPackage?.price <= 1
-                                            ? "0"
-                                            : (0.7 / 100) * selectedPackage?.price
-                                        )}
-                                      </p>
-                                    </div> */}
                                   </div>
                                   <div className="border-t" />
                                   <div className="flex flex-row font-bold justify-between text-3xl">
                                     <p>Total</p>
                                     <p className="text-wrap">
                                       Rp. {selectedPackage?.price}
-                                      {/* {formattedPrice(
-                                        selectedPackage?.price +
-                                        ((0.7 / 100) * selectedPackage?.price <= 1
-                                          ? 0
-                                          : (0.7 / 100) * selectedPackage?.price)
-                                      )} */}
                                     </p>
                                   </div>
                                   <div className="flex flex-col justify-center mx-5">
@@ -431,7 +503,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                         )}
                         {/* <div id="snap-container" className='flex justify-center'>
                         </div> */}
-                        {step === 3 && finishPay &&
+                        {/* {step === 3 && finishPay &&
                           <>
                             <div className="flex flex-col items-center font-Archivo justify-between h-full py-20">
                               <div className="flex flex-col items-center gap-4">
@@ -490,8 +562,136 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                 onClick={() => { navigate("/catalog") }}
                               />
                             </div>
+                          </>                        } */}
+                        {step === 3 && (
+                          <>
+                            <div className="flex flex-col text-center font-Archivo mt-5">
+                              <p className="text-3xl font-bold">Confirm your payment</p>
+                              <p className="">Add your payment proof to continue processing your order</p>
+                            </div>                            
+                            <div className="flex flex-col justify-center gap-6 px-8 h-130">
+                              {/* File Upload Section with Drag & Drop */}
+                              <div 
+                                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+                                  paymentProofError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+                                }`}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.currentTarget.classList.add('border-blue-400', 'bg-blue-50');
+                                }}
+                                onDragLeave={(e) => {
+                                  e.preventDefault();
+                                  e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+                                  const files = e.dataTransfer.files;
+                                  if (files.length > 0) {
+                                    const file = files[0];
+                                    // Create a fake event object to pass to handlePaymentProofUpload
+                                    const fakeEvent = { target: { files: [file] } };
+                                    handlePaymentProofUpload(fakeEvent);
+                                  }
+                                }}
+                              >
+                                <div className="text-center">   
+                                  {!paymentProofPreview ? (
+                                    <div className="space-y-4">
+                                      <div className="border border-gray-300 rounded-lg p-8 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                                           onClick={() => document.getElementById('paymentProofInput').click()}>
+                                        <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                        <p className="text-lg font-medium text-gray-600 mb-2">Drag & drop an image here</p>
+                                        <p className="text-sm text-gray-500">or click to browse files</p>
+                                        <p className="text-xs text-gray-400 mt-2">PNG, JPG up to 5MB</p>
+                                      </div>
+                                      <input
+                                        id="paymentProofInput"
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/jpg"
+                                        onChange={handlePaymentProofUpload}
+                                        className="hidden"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-4">
+                                      <div className="relative inline-block">
+                                        <img
+                                          src={paymentProofPreview}
+                                          alt="Payment proof preview"
+                                          className="max-w-sm max-h-64 rounded-lg shadow-lg border border-gray-200"
+                                        />
+                                        <button
+                                          onClick={removePaymentProof}
+                                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg hover:bg-red-600 transition-colors shadow-lg"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                      <div className="flex items-center justify-center gap-2 text-green-600">
+                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        <p className="font-medium">Payment proof ready for upload</p>
+                                      </div>
+                                      <button
+                                        onClick={() => {
+                                          setPaymentProofFile(null);
+                                          setPaymentProofPreview(null);
+                                          setPaymentProofError("");
+                                        }}
+                                        className="text-blue-600 text-sm underline hover:text-blue-800 transition-colors"
+                                      >
+                                        Change image
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  {paymentProofError && (
+                                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                      <p className="text-sm text-red-600 font-medium">{paymentProofError}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex justify-between gap-4 mt-6">
+                                <motion.button
+                                  className="bg-gray-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  onClick={() => handleStepClick(step - 1)}
+                                  disabled={isUploadingProof}
+                                >
+                                  Back to Payment
+                                </motion.button>
+                                <motion.button
+                                  className={`px-8 py-3 rounded-lg font-medium transition-colors ${
+                                    paymentProofFile && !isUploadingProof
+                                      ? "bg-green-600 text-white hover:bg-green-700"
+                                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                  }`}
+                                  whileHover={paymentProofFile && !isUploadingProof ? { scale: 1.02 } : {}}
+                                  whileTap={paymentProofFile && !isUploadingProof ? { scale: 0.98 } : {}}
+                                  onClick={handleSubmitPaymentProof}
+                                  disabled={!paymentProofFile || isUploadingProof}
+                                >
+                                  {isUploadingProof ? (
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                      Uploading...
+                                    </div>
+                                  ) : (
+                                    "Confirm Payment"
+                                  )}
+                                </motion.button>
+                              </div>
+                            </div>
                           </>
-                        }
+                        )}
                       </>
                     </div>
                   </div>
