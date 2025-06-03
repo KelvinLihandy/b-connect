@@ -93,7 +93,6 @@ const UserProfile = () => {
       return fallbackImage;
     }
   }, [fallbackImage]);
-
   // Enhanced status detection function
   const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
@@ -103,18 +102,26 @@ const UserProfile = () => {
     console.log('   - status:', item.status);
     console.log('   - statusType:', item.statusType);
     
-    // More comprehensive status detection
-    if (status.includes('delivered') || status.includes('completed') || 
-        status.includes('done') || statusType === 'delivered' || 
-        statusType === 'completed') {
-      console.log('   ✅ Detected as: DELIVERED');
-      return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
-    } else if (status.includes('progress') || status.includes('processing') || 
+    // ✅ NEW: Handle "completed" status (progress == 3)
+    if (statusType === 'completed') {
+      console.log('   🎉 Detected as: COMPLETED (progress == 3)');
+      return { type: 'completed', color: 'green', display: item.status || 'Completed' };
+    }
+    // Handle "progress" status (contract exists, progress < 3)
+    else if (status.includes('progress') || status.includes('processing') || 
                status.includes('ongoing') || status.includes('active') || 
                statusType === 'progress' || statusType === 'processing') {
-      console.log('   🟡 Detected as: IN PROGRESS');
+      console.log('   🟡 Detected as: IN PROGRESS (contract exists, progress < 3)');
       return { type: 'progress', color: 'orange', display: item.status || 'In Progress' };
-    } else if (status.includes('cancelled') || status.includes('canceled') || 
+    }
+    // Handle "delivered" status (old logic for backward compatibility)
+    else if (status.includes('delivered') || status.includes('completed') || 
+        status.includes('done') || statusType === 'delivered') {
+      console.log('   ✅ Detected as: DELIVERED (old logic)');
+      return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
+    } 
+    // Handle cancelled status
+    else if (status.includes('cancelled') || status.includes('canceled') || 
                status.includes('failed') || status.includes('rejected') || 
                statusType === 'cancelled' || statusType === 'canceled') {
       console.log('   ❌ Detected as: CANCELLED');
@@ -434,13 +441,13 @@ const UserProfile = () => {
                       <span className="text-sm font-medium text-gray-700">{item.sellerRating || '0.0'}</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4 mb-4">
+                </div>                <div className="flex items-center gap-4 mb-4">
                   <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
                     statusInfo.type === "progress"
                       ? "bg-orange-100 text-orange-800 border border-orange-200"
                       : statusInfo.type === "delivered"
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : statusInfo.type === "completed"
                       ? "bg-green-100 text-green-800 border border-green-200"
                       : statusInfo.type === "cancelled"
                       ? "bg-red-100 text-red-800 border border-red-200"
@@ -476,31 +483,53 @@ const UserProfile = () => {
                   <div className="text-2xl font-bold text-gray-900">
                     {item.price || 'Rp 0'}
                   </div>
-                </div>              
-                <div className="flex flex-col gap-2">
-                  <button 
-                    onClick={() => {
-                      if (statusInfo.type === "progress") {
-                        navigate(`/manage-order/${item.orderNumber}`);
-                      } else {
-                        navigate(`/detail/${item.serviceId || item.id}`);
-                      }
-                    }}
-                    className={`px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 ${
-                      statusInfo.type === "progress"
-                        ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
-                        : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
-                    }`}
-                  >
-                    {statusInfo.type === "progress" ? "View Details" : "Buy Again"}
-                  </button>
-
-                  {statusInfo.type === "delivered" && (
+                </div>                <div className="flex flex-col gap-2">
+                  {/* ✅ NEW: Logika tombol berdasarkan status */}
+                  {statusInfo.type === "progress" && (
+                    // Contract exists, progress < 3 - show View Details
                     <button 
-                      onClick={() => navigate(`/chat/${item.sellerId || item.seller}`)}
-                      className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
+                      onClick={() => navigate(`/manage-order/${item.orderNumber}`)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
                     >
-                      Contact Seller
+                      View Details
+                    </button>
+                  )}
+
+                  {statusInfo.type === "completed" && (
+                    // Contract exists, progress == 3 - show Buy Again & Contact Seller
+                    <>
+                      <button 
+                        onClick={() => navigate(`/detail/${item.serviceId || item.id}`)}
+                        className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                      >
+                        Buy Again
+                      </button>
+                      <button 
+                        onClick={() => navigate(`/chat/${item.sellerId || item.seller}`)}
+                        className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
+                      >
+                        Contact Seller
+                      </button>
+                    </>
+                  )}
+
+                  {(statusInfo.type === "delivered" || statusInfo.type === "unknown") && (
+                    // Fallback for old logic or unknown status
+                    <button 
+                      onClick={() => navigate(`/detail/${item.serviceId || item.id}`)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                    >
+                      Buy Again
+                    </button>
+                  )}
+
+                  {statusInfo.type === "cancelled" && (
+                    // Cancelled orders - show Buy Again only
+                    <button 
+                      onClick={() => navigate(`/detail/${item.serviceId || item.id}`)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gray-500 text-white hover:bg-gray-600 shadow-lg shadow-gray-500/20"
+                    >
+                      Buy Again
                     </button>
                   )}
                 </div>
