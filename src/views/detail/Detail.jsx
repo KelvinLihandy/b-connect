@@ -510,6 +510,7 @@ const Detail = () => {
                     whileHover={isDisabled ? {} : { scale: 1.02 }}
                     whileTap={isDisabled ? {} : { scale: 0.98 }}
                     onClick={() => {
+                      if( isOwnGig) return;
                       if (isDisabled) {
                         navigate(`/manage-order/${disabledGigs[gigId]}`)
                         return;

@@ -7,7 +7,8 @@ import bankTransfer from '../../assets/mo_bank_transfer.svg';
 import logo from '../../assets/invoice_logo.svg';
 
 // Importing API routes
-import { baseAPI, orderAPI, gigAPI } from '../../constants/APIRoutes';
+import { orderAPI, gigAPI } from '../../constants/APIRoutes';
+import { baseAPI } from '../../constants/BaseAPI';
 import { imageShow } from '../../constants/DriveLinkPrefixes';
 
 const formatRupiah = (amount) => {
