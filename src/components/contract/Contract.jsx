@@ -108,44 +108,35 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
     setPaymentProofFile(null);
     setPaymentProofPreview(null);
     setPaymentProofError("");
-  };  const handleSubmitPaymentProof = async () => {
+  };  
+  
+  const handleSubmitPaymentProof = async () => {
     if (!paymentProofFile) {
       setPaymentProofError("Please select a payment proof image");
       return;
     }
-
-    if (!currentTransactionId) {
-      setPaymentProofError("No transaction ID available. Please try creating the order again.");
-      return;
-    }
-
     setIsUploadingProof(true);
     try {
       const formData = new FormData();
-      formData.append("paymentProof", paymentProofFile);
-      formData.append("orderId", currentTransactionId);
+      formData.append("proof", paymentProofFile);
       formData.append("gigId", gigId);
-      formData.append("packageType", selectedPackage?.type);
-      formData.append("amount", selectedPackage?.price);
+      formData.append("selectedPackage", JSON.stringify(selectedPackage));
 
-      const response = await axios.post(`${contractAPI}/upload-payment-proof`, formData, {
+      const response = await axios.post(`${contractAPI}/create-contract`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
         withCredentials: true
       });
-
-      if (response.data.status === "success") {
-        console.log("Payment proof uploaded successfully:", response.data);
-        alert("Payment proof uploaded successfully! Your order is now being processed.");
+      console.log("response", response);
+      if (response.status === 201) {
+        alert("Your order has successfully sent to out freelancer. Stay tuned for updates.");
         
-        // Navigate to user profile or order history
         navigate(`/user-profile/${auth?.data?.auth?.id}`);
         onClose();
       } else {
         throw new Error(response.data.message || "Upload failed");
       }
-      
     } catch (error) {
       console.error("Error uploading payment proof:", error);
       const errorMessage = error.response?.data?.message || "Failed to upload payment proof. Please try again.";
@@ -154,7 +145,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       setIsUploadingProof(false);
     }
   };
-  // Function to create transaction when user clicks "Place Order"
+
   const handleCreateTransaction = async () => {
     if (!selectedPackage) {
       handleStepClick(step - 1);
@@ -165,32 +156,8 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
       setPhoneError("Phone Number is required. Please set first in settings");
       return;
     }
-
-    setIsCreatingTransaction(true);
-    setPhoneError(""); // Clear any previous errors
-
-    try {
-      const response = await axios.post(`${contractAPI}/create-transaction`, {
-        gigId: gigId,
-        selectedPackage: selectedPackage
-      }, { 
-        withCredentials: true 
-      });
-
-      if (response.data.status === "success transaction create") {
-        console.log("Transaction created:", response.data);
-        setCurrentTransactionId(response.data.transaction.orderId);
-        handleStepClick(step + 1);
-        getDisabledGigs();
-      } else {
-        throw new Error(response.data.message || "Failed to create transaction");
-      }
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-      setPhoneError("Failed to create transaction. Please try again.");
-    } finally {
-      setIsCreatingTransaction(false);
-    }
+    setPhoneError("");
+    handleStepClick(step + 1);
   };
   
   // useEffect(() => {
