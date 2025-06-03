@@ -53,28 +53,8 @@ const Detail = () => {
   }, [])
 
   useEffect(() => {
-    const reasons = disabledGigs[gigId];
-    if (reasons && reasons.length > 0) {
-      setIsDisabled(true);
-    } else {
-      setIsDisabled(false);
-    }
-  }, [disabledGigs, gigId]);
-
-  const getReasonText = () => {
-    const reasons = disabledGigs[gigId];
-    if (!reasons || reasons.length === 0) {
-      return "";
-    }
-    if (reasons.includes("contract-in-progress")) {
-      return "Contract in progress";
-    } else if (reasons.includes("transaction-pending")) {
-      return "Transaction pending";
-    } else {
-      return reasons.join(", ");
-    }
-  };
-  const reasonText = getReasonText();
+    setIsDisabled(gigId in disabledGigs);
+  }, [disabledGigs, gigId])
 
   const getDetail = async () => {
     try {
@@ -135,7 +115,6 @@ const Detail = () => {
 
   useEffect(() => {
     getDetail();
-    getCurrentOrder();
   }, []);
 
   useEffect(() => {
@@ -532,7 +511,7 @@ const Detail = () => {
                     whileTap={isDisabled ? {} : { scale: 0.98 }}
                     onClick={() => {
                       if (isDisabled) {
-                        navigate(`/manage-order/${currentOrderId}`)
+                        navigate(`/manage-order/${disabledGigs[gigId]}`)
                         return;
                       }
                       if (!auth) {
@@ -542,7 +521,7 @@ const Detail = () => {
                       setShowContractModal(true);
                     }}
                   >
-                    {isOwnGig ? "This is your gig" : isDisabled ? reasonText : "Continue"}
+                    {isOwnGig ? "This is your gig" : isDisabled ? "Contract in Progress" : "Continue"}
                     {!isOwnGig && <ChevronRight size={18} className="ml-1" />}
                   </motion.button>
 
