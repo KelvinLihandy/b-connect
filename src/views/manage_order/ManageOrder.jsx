@@ -23,6 +23,7 @@ import dummy4 from "../../assets/Gemini_Generated_Image_zhjybwzhjybwzhjy.png";
 import { orderAPI, gigAPI } from '../../constants/APIRoutes';
 import { imageShow } from '../../constants/DriveLinkPrefixes';
 import { AuthContext } from '../../contexts/AuthContext';
+import ProofModal from './ProofModal';
 
 // Status constants based on current step
 const STATUS_COLORS = {
@@ -64,13 +65,15 @@ const ManageOrder = () => {
   const [error, setError] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [randomDummy, setRandomDummy] = useState(null);
+  const [isShowingProofModal, setIsShowingProofModal] = useState(false);
+  const [proofId, setProofId] = useState("");
   const dummyImages = [
     dummy1,
     dummy2,
     dummy3,
     dummy4
   ];
-
+console.log("order", orderData)
   useEffect(() => {
     setRandomDummy(dummyImages[Math.floor(Math.random() * dummyImages.length)]);
   }, [])
@@ -265,6 +268,7 @@ const ManageOrder = () => {
 
           setOrderData(response.data);
           setCurrentStep(response.data.progress);
+          setProofId(response.data.proofId || "");
           console.log("order data", response.data);
           let gigDetails = null;
           try {
@@ -346,7 +350,7 @@ const ManageOrder = () => {
       socket.off("switch_room");
     };
   }, [orderId]);
-  
+
   const totalPrice = orderDetails.SERVICE_PRICE + orderDetails.PROCESSING_FEE - orderDetails.DISCOUNT;
 
   const steps = [
@@ -548,7 +552,9 @@ const ManageOrder = () => {
                   <div className='flex'>
                     {currentStep === 0 && (
                       <button
-                        onClick={() => handleUpdateProgress(1)}
+                        onClick={() => {
+                          setIsShowingProofModal(true);
+                        }}
                         className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
                       >
                         <img src={status} alt="Status" className="h-10" />
@@ -624,6 +630,16 @@ const ManageOrder = () => {
           }}
         />
       )}
+
+      <ProofModal
+        isOpen={isShowingProofModal}
+        onClose={() => setIsShowingProofModal(false)}
+        onConfirm={async () => {
+          handleUpdateProgress(1);
+          setIsShowingProofModal(false);
+        }}
+        proofImage={proofId}
+      />
     </div>
   );
 };

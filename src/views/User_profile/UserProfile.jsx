@@ -108,7 +108,7 @@ const UserProfile = () => {
     return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='224' viewBox='0 0 320 224'%3E%3Crect width='320' height='224' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3ENo Image Available%3C/text%3E%3C/svg%3E";
   }, []);
 
-  // Optimized image processing (reduced complexity)
+  // FIXED: Optimized image processing
   const processImageUrl = useCallback((imageUrl, imageUrls, itemTitle = '') => {
     if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '' || imageUrl === 'temp') {
       return fallbackImage;
@@ -138,102 +138,67 @@ const UserProfile = () => {
     }
   }, [fallbackImage]);
 
-  // Improved status calculation - no more "processing payment"
-  const getStatusInfo = useMemo(() => {
-    const statusCache = new Map();
-    
-    return (item) => {
-      const cacheKey = `${item.status}-${item.statusType}-${item.orderStatus}-${item.paymentStatus}-${item.completed}-${item.delivered}`;
-      if (statusCache.has(cacheKey)) {
-        return statusCache.get(cacheKey);
-      }
-      
-      const status = (item.status || '').toLowerCase();
-      const statusType = (item.statusType || '').toLowerCase();
-      const orderStatus = (item.orderStatus || '').toLowerCase();
-      const paymentStatus = (item.paymentStatus || '').toLowerCase();
-      const completed = item.completed;
-      const delivered = item.delivered;
-      
-      let result;
-      
-      // Cancelled/Failed orders
-      if (status.includes('cancelled') || status.includes('canceled') || 
-          status.includes('failed') || status.includes('rejected') || 
-          status.includes('expire') || status.includes('refund') ||
-          statusType === 'cancelled' || statusType === 'canceled' || 
-          statusType === 'failed' || statusType === 'rejected' ||
-          orderStatus === 'cancelled' || orderStatus === 'failed' ||
-          paymentStatus === 'failed' || paymentStatus === 'cancelled') {
-        result = { type: 'cancelled', color: 'red', display: 'Cancelled' };
-      }
-      // Completed orders (payment already processed if user can see the order)
-      else if (completed === true || delivered === true ||
-               status.includes('completed') || status.includes('delivered') || 
-               status.includes('settlement') || status.includes('capture') || 
-               status.includes('done') || status.includes('finish') || status.includes('success') ||
-               statusType === 'delivered' || statusType === 'completed' || 
-               statusType === 'settlement' || statusType === 'capture' || 
-               statusType === 'success' ||
-               orderStatus === 'completed' || orderStatus === 'delivered' ||
-               orderStatus === 'finished' || paymentStatus === 'settlement' ||
-               paymentStatus === 'capture') {
-        result = { type: 'delivered', color: 'green', display: 'Completed' };
-      }
-      // In Progress orders (payment already confirmed, work in progress)
-      else {
-        result = { type: 'progress', color: 'orange', display: 'In Progress' };
-      }
-      
-      statusCache.set(cacheKey, result);
-      return result;
-    };
-  }, []);
-
-  const isOrderCompleted = useCallback((item) => {
+  // FIXED: Enhanced status detection function
+  const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
     const statusType = (item.statusType || '').toLowerCase();
     const orderStatus = (item.orderStatus || '').toLowerCase();
     const paymentStatus = (item.paymentStatus || '').toLowerCase();
     
-    return (
-      item.completed === true || 
-      item.delivered === true ||
-      status.includes('completed') || 
-      status.includes('delivered') || 
-      status.includes('settlement') || 
-      status.includes('capture') || 
-      status.includes('done') || 
-      status.includes('finish') || 
-      status.includes('success') ||
-      statusType === 'delivered' || 
-      statusType === 'completed' || 
-      statusType === 'settlement' || 
-      statusType === 'capture' || 
-      statusType === 'success' ||
-      orderStatus === 'completed' ||
-      orderStatus === 'delivered' ||
-      orderStatus === 'finished' ||
-      paymentStatus === 'settlement' ||
-      paymentStatus === 'capture'
-    ) && !(
-      status.includes('cancelled') || 
-      status.includes('canceled') || 
-      status.includes('failed') || 
-      status.includes('rejected') || 
-      status.includes('expire') || 
-      status.includes('refund') ||
-      statusType === 'cancelled' || 
-      statusType === 'canceled' || 
-      statusType === 'failed' || 
-      statusType === 'rejected' ||
-      orderStatus === 'cancelled' || 
-      orderStatus === 'failed' ||
-      paymentStatus === 'failed' || 
-      paymentStatus === 'cancelled'
-    );
+    console.log('🔍 Analyzing status for:', item.title || 'Unknown item');
+    console.log('   - status:', item.status);
+    console.log('   - statusType:', item.statusType);
+    
+    // ✅ NEW: Handle "completed" status (progress == 3)
+    if (statusType === 'completed') {
+      console.log('   🎉 Detected as: COMPLETED (progress == 3)');
+      return { type: 'completed', color: 'green', display: item.status || 'Completed' };
+    }
+    // Handle "progress" status (contract exists, progress < 3)
+    else if (status.includes('progress') || status.includes('processing') || 
+               status.includes('ongoing') || status.includes('active') || 
+               statusType === 'progress' || statusType === 'processing') {
+      console.log('   🟡 Detected as: IN PROGRESS (contract exists, progress < 3)');
+      return { type: 'progress', color: 'orange', display: item.status || 'In Progress' };
+    }
+    // Handle "delivered" status (old logic for backward compatibility)
+    else if (status.includes('delivered') || status.includes('completed') || 
+        status.includes('done') || statusType === 'delivered') {
+      console.log('   ✅ Detected as: DELIVERED (old logic)');
+      return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
+    } 
+    // Handle cancelled status
+    else if (status.includes('cancelled') || status.includes('canceled') || 
+               status.includes('failed') || status.includes('rejected') || 
+               statusType === 'cancelled' || statusType === 'canceled') {
+      console.log('   ❌ Detected as: CANCELLED');
+      return { type: 'cancelled', color: 'red', display: item.status || 'Cancelled' };
+    } else {
+      console.log('   ❓ Status unclear, defaulting to unknown');
+      return { type: 'unknown', color: 'gray', display: item.status || 'Status Unknown' };
+    }
   }, []);
 
+  // FIXED: Added missing makeAPICall function
+  const makeAPICall = useCallback(async (endpoint, options = {}) => {
+    try {
+      const response = await axios.post(
+        endpoint,
+        {},
+        {
+          withCredentials: true,
+          timeout: 10000,
+          ...options
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("API call error:", error);
+      throw error;
+    }
+  }, []);
+
+  // FIXED: Added missing handler functions
   const handleViewDetails = useCallback((orderNumber) => {
     if (orderNumber) {
       navigate(`/manage-order/${orderNumber}`);
@@ -334,24 +299,6 @@ const UserProfile = () => {
       setReviewSubmitting(false);
     }
   }, [reviewModalData, activeTab, handleCloseReviewModal]);
-
-  const makeAPICall = useCallback(async (endpoint, options = {}) => {
-    try {
-      const response = await axios.post(
-        endpoint,
-        {},
-        {
-          withCredentials: true,
-          timeout: 10000,
-          ...options
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("API call error:", error);
-      throw error;
-    }
-  }, []);
 
   const fetchUserStats = useCallback(async () => {
     if (!getCurrentUserId) return;
@@ -902,6 +849,8 @@ const UserProfile = () => {
                       ? "bg-orange-100 text-orange-800 border border-orange-200"
                       : statusInfo.type === "delivered"
                       ? "bg-green-100 text-green-800 border border-green-200"
+                      : statusInfo.type === "completed"
+                      ? "bg-green-100 text-green-800 border border-green-200"
                       : statusInfo.type === "cancelled"
                       ? "bg-red-100 text-red-800 border border-red-200"
                       : "bg-gray-100 text-gray-800 border border-gray-200"
@@ -909,7 +858,7 @@ const UserProfile = () => {
                     {statusInfo.display}
                   </span>
 
-                  {statusInfo.type === "delivered" && item.rating > 0 && (
+                  {(statusInfo.type === "delivered" || statusInfo.type === "completed") && item.rating > 0 && (
                     <div className="flex items-center gap-1">
                       <span className="text-sm text-gray-600">Your rating:</span>
                       <div className="flex">
@@ -936,27 +885,27 @@ const UserProfile = () => {
                   <div className="text-2xl font-bold text-gray-900">
                     {item.price || 'Rp 0'}
                   </div>
-                </div>              
+                </div>
+                
                 <div className="flex flex-col gap-2">
-                  <button 
-                    onClick={() => {
-                      if (statusInfo.type === "progress") {
-                        handleViewDetails(item.orderNumber);
-                      } else {
-                        handleBuyAgain(item);
-                      }
-                    }}
-                    className={`px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 ${
-                      statusInfo.type === "progress"
-                        ? "bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
-                        : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
-                    }`}
-                  >
-                    {statusInfo.type === "progress" ? "View Details" : "Buy Again"}
-                  </button>
+                  {/* Button logic based on status */}
+                  {statusInfo.type === "progress" && (
+                    <button 
+                      onClick={() => handleViewDetails(item.orderNumber)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-[#2E5077] text-white hover:bg-[#1e3a5f] shadow-lg shadow-[#2E5077]/20"
+                    >
+                      View Details
+                    </button>
+                  )}
 
-                  {statusInfo.type === "delivered" && (
+                  {(statusInfo.type === "completed" || statusInfo.type === "delivered") && (
                     <>
+                      <button 
+                        onClick={() => handleBuyAgain(item)}
+                        className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                      >
+                        Buy Again
+                      </button>
                       <button 
                         onClick={() => handleContactSeller(item)}
                         className="px-6 py-2 rounded-lg text-sm font-medium border-2 border-[#2E5077] text-[#2E5077] hover:bg-[#2E5077] hover:text-white transition-all duration-300"
@@ -973,6 +922,24 @@ const UserProfile = () => {
                         </button>
                       )}
                     </>
+                  )}
+
+                  {statusInfo.type === "cancelled" && (
+                    <button 
+                      onClick={() => handleBuyAgain(item)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gray-500 text-white hover:bg-gray-600 shadow-lg shadow-gray-500/20"
+                    >
+                      Buy Again
+                    </button>
+                  )}
+
+                  {statusInfo.type === "unknown" && (
+                    <button 
+                      onClick={() => handleBuyAgain(item)}
+                      className="px-6 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/20"
+                    >
+                      Buy Again
+                    </button>
                   )}
                 </div>
               </div>
