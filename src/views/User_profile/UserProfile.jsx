@@ -50,22 +50,79 @@ const UserProfile = () => {
     return auth?.data?.auth?.id || userId;
   }, [auth?.data?.auth?.id, userId]);
 
-  // Simple fallback image that always works
+  // ✅ FIXED: Better fallback image
   const fallbackImage = useMemo(() => {
-    // Simple SVG that creates a gray placeholder
     return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='224' viewBox='0 0 320 224'%3E%3Crect width='320' height='224' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3ENo Image Available%3C/text%3E%3C/svg%3E";
   }, []);
 
-  // Simple and reliable image error handler
+  // ✅ FIXED: Improved image error handler with better fallback chain
   const handleImageError = useCallback((e) => {
-    console.log('Image failed, using fallback');
-    e.target.src = fallbackImage;
+    const img = e.target;
+    const currentSrc = img.src;
+    
+    console.log('Image failed to load:', currentSrc);
+    
+    // Don't retry if already using fallback
+    if (currentSrc.includes('data:image/svg+xml')) {
+      return;
+    }
+    
+    // Extract image ID from various Google Drive URL formats
+    let imageId = null;
+    const idMatches = [
+      currentSrc.match(/id=([^&]+)/),
+      currentSrc.match(/\/d\/([^\/]+)/),
+      currentSrc.match(/file\/d\/([^\/]+)/),
+      currentSrc.match(/googleusercontent\.com\/d\/([^=]+)/),
+    ];
+    
+    for (const match of idMatches) {
+      if (match && match[1] && match[1] !== 'temp' && match[1] !== 'null') {
+        imageId = match[1];
+        break;
+      }
+    }
+    
+    if (imageId) {
+      // Try alternative Google Drive formats in order of reliability
+      const alternatives = [
+        `https://drive.google.com/thumbnail?id=${imageId}&sz=w400-h300`,
+        `https://lh3.googleusercontent.com/d/${imageId}=w400-h300`,
+        `https://drive.google.com/uc?export=view&id=${imageId}`,
+        `https://drive.google.com/file/d/${imageId}/view`
+      ];
+      
+      // Find current format and try next one
+      let currentIndex = -1;
+      for (let i = 0; i < alternatives.length; i++) {
+        if (currentSrc.includes(imageId) && (
+          currentSrc.includes('thumbnail') && alternatives[i].includes('thumbnail') ||
+          currentSrc.includes('googleusercontent') && alternatives[i].includes('googleusercontent') ||
+          currentSrc.includes('uc?export') && alternatives[i].includes('uc?export') ||
+          currentSrc.includes('/view') && alternatives[i].includes('/view')
+        )) {
+          currentIndex = i;
+          break;
+        }
+      }
+      
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < alternatives.length) {
+        console.log('Trying alternative format:', alternatives[nextIndex]);
+        img.src = alternatives[nextIndex];
+        return;
+      }
+    }
+    
+    // All formats failed, use fallback
+    console.log('All image formats failed, using fallback');
+    img.src = fallbackImage;
   }, [fallbackImage]);
 
-  // ✅ IMPROVED: Better image processing with multiple fallbacks
+  // ✅ FIXED: Better image processing with proper Google Drive URL handling
   const processImageUrl = useCallback((imageUrl, itemTitle = '') => {
-    // If no image URL or it's empty/null, return fallback
-    if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '') {
+    if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined' || imageUrl.trim() === '' || imageUrl === 'temp') {
+      console.log('No valid image URL, using fallback for:', itemTitle);
       return fallbackImage;
     }
     
@@ -74,163 +131,79 @@ const UserProfile = () => {
       return imageUrl;
     }
     
-    // ✅ FIX: Check if it's a Google Drive URL format
-    if (imageUrl.includes('drive.google.com')) {
+    // If it's already a proper Google Drive thumbnail URL, return as is
+    if (imageUrl.includes('drive.google.com/thumbnail') || imageUrl.includes('googleusercontent.com')) {
       return imageUrl;
     }
     
-    // For any other URL, try to use it but fallback will handle errors
+    // If it's just an ID (most reliable case), construct the thumbnail URL
+    if (imageUrl.length > 10 && !imageUrl.includes('http')) {
+      const thumbnailUrl = `https://drive.google.com/thumbnail?id=${imageUrl}&sz=w400-h300`;
+      console.log('Generated thumbnail URL for:', itemTitle, thumbnailUrl);
+      return thumbnailUrl;
+    }
+    
+    // Try to extract ID from other Google Drive formats
+    const idMatch = imageUrl.match(/\/d\/([^\/]+)/) || imageUrl.match(/id=([^&]+)/);
+    if (idMatch && idMatch[1]) {
+      const thumbnailUrl = `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w400-h300`;
+      console.log('Extracted ID and generated thumbnail URL for:', itemTitle, thumbnailUrl);
+      return thumbnailUrl;
+    }
+    
+    // Return original URL as last resort
     return imageUrl;
   }, [fallbackImage]);
 
-  // Simplified status detection
+  // ✅ FIXED: Improved status detection with better mapping
   const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
     const statusType = (item.statusType || '').toLowerCase();
     
-    // More comprehensive status detection
-    if (status.includes('delivered') || status.includes('completed') || 
-        status.includes('done') || statusType === 'delivered' || 
-        statusType === 'completed') {
-      return { type: 'delivered', color: 'green', display: item.status || 'Delivered' };
-    } else if (status.includes('progress') || status.includes('processing') || 
-               status.includes('ongoing') || status.includes('active') || 
-               statusType === 'progress' || statusType === 'processing') {
-      return { type: 'progress', color: 'orange', display: item.status || 'In Progress' };
-    } else if (status.includes('cancelled') || status.includes('canceled') || 
+    console.log('Processing status for item:', item.title, 'Status:', status, 'StatusType:', statusType);
+    
+    // Check for completed/delivered status first (more specific conditions)
+    if (status.includes('completed') || status.includes('delivered') || 
+        status.includes('settlement') || status.includes('capture') || 
+        status.includes('paid') || status.includes('done') || 
+        statusType === 'delivered' || statusType === 'completed' || 
+        statusType === 'settlement' || statusType === 'capture' || 
+        statusType === 'paid') {
+      return { type: 'delivered', color: 'green', display: 'Completed' };
+    } 
+    // Check for cancelled status
+    else if (status.includes('cancelled') || status.includes('canceled') || 
                status.includes('failed') || status.includes('rejected') || 
-               statusType === 'cancelled' || statusType === 'canceled') {
-      return { type: 'cancelled', color: 'red', display: item.status || 'Cancelled' };
-    } else {
-      return { type: 'unknown', color: 'gray', display: item.status || 'Status Unknown' };
+               status.includes('expire') || statusType === 'cancelled' || 
+               statusType === 'canceled' || statusType === 'failed') {
+      return { type: 'cancelled', color: 'red', display: 'Cancelled' };
+    } 
+    // Default to in progress for pending or unknown status
+    else {
+      return { type: 'progress', color: 'orange', display: 'In Progress' };
     }
   }, []);
 
-  // ✅ FIXED: Button action handlers dengan data yang benar
+  // Button action handlers
   const handleViewDetails = useCallback((orderNumber) => {
     if (orderNumber) {
       navigate(`/manage-order/${orderNumber}`);
-    } else {
-      console.error('Order number is missing');
     }
   }, [navigate]);
 
   const handleBuyAgain = useCallback((item) => {
-    // ✅ FIX: Use serviceId from BE response
     const serviceId = item.serviceId || item.id;
     if (serviceId) {
       navigate(`/service/${serviceId}`);
-    } else {
-      console.error('Service ID is missing for buy again:', item);
     }
   }, [navigate]);
 
   const handleContactSeller = useCallback((item) => {
-    // ✅ FIX: Use sellerId from BE response
     const sellerId = item.sellerId || item.seller;
     if (sellerId) {
       navigate(`/chat/${sellerId}`);
-    } else {
-      console.error('Seller ID is missing for contact seller:', item);
     }
   }, [navigate]);
-
-  // ✅ IMPROVED: Review interaction handlers dengan better error handling
-  const handleHelpfulReview = useCallback(async (reviewId) => {
-    if (!reviewId) {
-      console.error('Review ID is missing');
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `${userAPI}/review-helpful/${reviewId}`,
-        {},
-        { withCredentials: true }
-      );
-      
-      if (response.data.success) {
-        setReviews(prevReviews => 
-          prevReviews.map(review => 
-            review.id === reviewId 
-              ? { ...review, helpful: (review.helpful || 0) + 1 }
-              : review
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error marking review as helpful:', error);
-      // ✅ Optional: Show user feedback
-      // alert('Failed to mark review as helpful. Please try again.');
-    }
-  }, []);
-
-  const handleShareReview = useCallback((reviewId, reviewTitle) => {
-    if (!reviewId) {
-      console.error('Review ID is missing');
-      return;
-    }
-
-    const shareUrl = `${window.location.origin}/review/${reviewId}`;
-    const shareTitle = `Review: ${reviewTitle || 'Service Review'}`;
-    const shareText = `Check out this review for ${reviewTitle || 'this service'}`;
-
-    // ✅ IMPROVED: Better sharing with fallbacks
-    if (navigator.share) {
-      navigator.share({
-        title: shareTitle,
-        text: shareText,
-        url: shareUrl
-      }).catch((error) => {
-        console.error('Error sharing:', error);
-        // Fallback to clipboard
-        copyToClipboard(shareUrl);
-      });
-    } else {
-      // Fallback to clipboard
-      copyToClipboard(shareUrl);
-    }
-  }, []);
-
-  // ✅ NEW: Helper function untuk clipboard dengan better UX
-  const copyToClipboard = useCallback((text) => {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
-        // ✅ Optional: Show success feedback
-        console.log('Link copied to clipboard');
-        // alert('Review link copied to clipboard!');
-      }).catch(() => {
-        // Fallback untuk browser lama
-        fallbackCopyToClipboard(text);
-      });
-    } else {
-      fallbackCopyToClipboard(text);
-    }
-  }, []);
-
-  const fallbackCopyToClipboard = useCallback((text) => {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-      document.execCommand('copy');
-      console.log('Link copied to clipboard (fallback)');
-      // ✅ Optional: Show success feedback
-      // alert('Review link copied to clipboard!');
-    } catch (err) {
-      console.error('Fallback copy failed:', err);
-      // Final fallback - prompt user
-      prompt('Copy this link to share the review:', text);
-    } finally {
-      document.body.removeChild(textArea);
-    }
-  }, []);
 
   const fetchUserProfile = useCallback(async () => {
     const targetUserId = getCurrentUserId();
@@ -293,6 +266,11 @@ const UserProfile = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('🔍 DEBUGGING: Fetching purchase history for user ID:', targetUserId);
+      console.log('🔍 DEBUGGING: Current user email:', currentUser.email);
+      console.log('🔍 DEBUGGING: Auth user email:', auth?.data?.auth?.email);
+      
       const response = await axios.post(
         `${userAPI}/purchase-history/${targetUserId}?page=${page}&limit=10`,
         {},
@@ -301,15 +279,23 @@ const UserProfile = () => {
         }
       );
 
+      console.log('🔍 DEBUGGING: Purchase history response:', response.data);
+
       if (response.data && response.data.purchaseHistory) {
         const { purchaseHistory, pagination } = response.data;
 
-        // ✅ IMPROVED: Process each item with better validation
-        const processedHistory = purchaseHistory.map(item => ({
-          ...item,
-          image: processImageUrl(item.image, item.title),
-          id: item.id || Date.now() + Math.random() // Ensure unique ID
-        }));
+        console.log('🔍 DEBUGGING: Raw purchase history from API:', purchaseHistory);
+
+        const processedHistory = purchaseHistory.map(item => {
+          const processedItem = {
+            ...item,
+            image: processImageUrl(item.image, item.title),
+            id: item.id || Date.now() + Math.random()
+          };
+          
+          console.log('🔍 DEBUGGING: Processed item:', processedItem.title, 'Status:', processedItem.status, 'StatusType:', processedItem.statusType);
+          return processedItem;
+        });
 
         setPurchaseHistory(processedHistory);
         setPurchasePagination({
@@ -318,14 +304,19 @@ const UserProfile = () => {
           hasNextPage: pagination.hasNextPage,
           hasPrevPage: pagination.hasPrevPage
         });
+      } else {
+        console.log('🔍 DEBUGGING: No purchase history data in response');
+        setPurchaseHistory([]);
       }
     } catch (error) {
-      console.error("Error fetching purchase history:", error);
+      console.error("🔥 DEBUGGING: Error fetching purchase history:", error);
+      console.error("🔥 DEBUGGING: Error response:", error.response?.data);
+      console.error("🔥 DEBUGGING: Error status:", error.response?.status);
       setError("Failed to load purchase history");
     } finally {
       setLoading(false);
     }
-  }, [getCurrentUserId, processImageUrl]);
+  }, [getCurrentUserId, processImageUrl, currentUser.email, auth?.data?.auth?.email]);
 
   const fetchReviews = useCallback(async (page = 1) => {
     const targetUserId = getCurrentUserId();
@@ -345,11 +336,10 @@ const UserProfile = () => {
       if (response.data && response.data.reviews) {
         const { reviews, pagination } = response.data;
 
-        // ✅ IMPROVED: Process each review with better validation
         const processedReviews = reviews.map(review => ({
           ...review,
           image: processImageUrl(review.image, review.title),
-          id: review.id || Date.now() + Math.random() // Ensure unique ID
+          id: review.id || Date.now() + Math.random()
         }));
 
         setReviews(processedReviews);
@@ -368,31 +358,7 @@ const UserProfile = () => {
     }
   }, [getCurrentUserId, processImageUrl]);
 
-  // Simplified debug function
-  const debugOrderStatus = useCallback(() => {
-    console.log('=== DEBUG ORDER STATUS ===');
-    console.log('Purchase History Count:', purchaseHistory.length);
-    console.log('User ID:', getCurrentUserId());
-    
-    // Check for stuck orders
-    const progressOrders = purchaseHistory.filter(item => {
-      const statusInfo = getStatusInfo(item);
-      return statusInfo.type === 'progress';
-    });
-    
-    console.log('Orders in progress:', progressOrders.length);
-    
-    if (progressOrders.length > 0) {
-      console.log('Orders stuck in progress:');
-      progressOrders.forEach(order => {
-        console.log(`- ${order.title}: Status="${order.status}", Type="${order.statusType}"`);
-      });
-    }
-    
-    console.log('=== END DEBUG ===');
-  }, [purchaseHistory, getCurrentUserId, getStatusInfo]);
-
-  // Initial data loading effect - only run once when component mounts or auth changes
+  // Initial data loading effect
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -419,7 +385,7 @@ const UserProfile = () => {
     };
 
     loadInitialData();
-  }, [auth?.data?.auth?.id, userId]); // Only depend on stable auth ID and userId
+  }, [auth?.data?.auth?.id, userId]);
 
   // Separate effect for tab-specific data loading
   useEffect(() => {
@@ -432,7 +398,7 @@ const UserProfile = () => {
     };
 
     loadTabData();
-  }, [activeTab]); // Only depend on activeTab
+  }, [activeTab]);
 
   const handleTabChange = useCallback(async (tab) => {
     setActiveTab(tab);
@@ -462,13 +428,6 @@ const UserProfile = () => {
     
     return (
       <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#2E5077]/30 transition-all duration-300 hover:shadow-xl overflow-hidden">
-        {/* Debug info overlay (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs p-1 rounded z-10">
-            Type: {statusInfo.type}
-          </div>
-        )}
-        
         <div className="flex flex-col lg:flex-row">
           <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-56">
             <img
@@ -705,25 +664,7 @@ const UserProfile = () => {
             </p>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => handleHelpfulReview(review.id)}
-                className="flex items-center gap-1 hover:text-[#2E5077] transition-colors cursor-pointer"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V9a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 12m5-2v10m-5-2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-7.5" />
-                </svg>
-                Helpful ({review.helpful || 0})
-              </button>
-              <button 
-                onClick={() => handleShareReview(review.id, review.title)}
-                className="hover:text-[#2E5077] transition-colors cursor-pointer"
-              >
-                Share
-              </button>
-            </div>
-          </div>
+          {/* ✅ REMOVED: Helpful and Share buttons completely removed */}
         </div>
       </div>
     </div>
@@ -778,26 +719,15 @@ const UserProfile = () => {
       <div className="text-red-500 text-xl mb-4">⚠️</div>
       <h3 className="text-xl font-semibold text-gray-600 mb-2">Error</h3>
       <p className="text-gray-500 mb-4">{message}</p>
-      <div className="flex gap-3 justify-center">
-        <button
-          onClick={() => window.location.reload()}
-          className="bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
-        >
-          Retry
-        </button>
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={debugOrderStatus}
-            className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
-          >
-            Debug
-          </button>
-        )}
-      </div>
+      <button
+        onClick={() => window.location.reload()}
+        className="bg-[#2E5077] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
+      >
+        Retry
+      </button>
     </div>
   ));
 
-  // Show loading spinner if essential data is still loading
   if (loading && !currentUser.name && !userStats.memberSince) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -926,15 +856,7 @@ const UserProfile = () => {
                 </button>
               </div>
               
-              {/* Debug button for development only */}
-              {process.env.NODE_ENV === 'development' && (
-                <button
-                  onClick={debugOrderStatus}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors"
-                >
-                  Debug
-                </button>
-              )}
+              {/* ✅ REMOVED: Debug button completely removed */}
             </div>
           </div>
 
