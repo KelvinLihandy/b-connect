@@ -257,7 +257,6 @@ const Profile = () => {
     } finally {
       setSaveLoad(false);
     }
-    // window.location.reload();
   }
 
   const handleNewPasswordChange = (e) => {

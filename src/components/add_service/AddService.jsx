@@ -535,6 +535,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 <motion.img
                   onClick={handleClose}
                   src={CancelIcon}
+                  disabled={loadingSave}
                   whileHover={{ scale: 1.1 }}
                   className="w-9 h-9 cursor-pointer"
                 />
@@ -1266,7 +1267,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           >
                             <img src={SaveIcon} alt="Save" className="h-5 w-5 mr-2" />
                             {loadingSave ?
-                              <CircularProgress />
+                              <CircularProgress size={30} color="white"/>
                               :
                               "Save"
                             }
