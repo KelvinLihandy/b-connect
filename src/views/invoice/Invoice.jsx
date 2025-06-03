@@ -8,8 +8,6 @@ import logo from '../../assets/invoice_logo.svg';
 
 // Importing API routes
 import { orderAPI, gigAPI } from '../../constants/APIRoutes';
-import { baseAPI } from '../../constants/BaseAPI';
-import { imageShow } from '../../constants/DriveLinkPrefixes';
 
 const formatRupiah = (amount) => {
   return `Rp ${amount.toLocaleString('id-ID')}`;
