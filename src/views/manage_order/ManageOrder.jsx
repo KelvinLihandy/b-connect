@@ -366,7 +366,7 @@ const ManageOrder = () => {
     {
       id: 0,
       name: "Order Sent",
-      icon: <CircleCheck className='w-8 h-8 text-white' />,
+      icon: check,
       date: orderDates.START_DATE
     },
     {
