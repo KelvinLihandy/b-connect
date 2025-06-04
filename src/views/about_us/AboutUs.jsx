@@ -79,25 +79,23 @@ const AboutUs = () => {
           <div className="relative w-full flex flex-col gap-2 top-20 p-5">
             {/* Elemen 1 */}
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(1)}>
-              <p className="text-[40px] font-semibold">Apa itu B-Connect?</p>
+              <p className="text-[35px] font-semibold">Apa itu B-Connect?</p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
-                    expandedItems.includes(1) ? "-rotate-180" : "rotate-0"
-                  }`}
+                  className={`absolute right-0 transition-transform duration-500 ${expandedItems.includes(1) ? "-rotate-180" : "rotate-0"
+                    }`}
                 />
               </div>
             </div>
             <div
-              className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                expandedItems.includes(1)
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${expandedItems.includes(1)
                   ? "max-h-[500px] opacity-100 translate-y-0"
                   : "max-h-0 opacity-0 -translate-y-2"
-              }`}
+                }`}
             >
-              <p className="text-[30px]">
+              <p className="text-[25px]">
                 B-Connect adalah platform yang menghubungkan mahasiswa dan alumni Binus University
                 dengan klien atau project owner yang membutuhkan jasa freelance. Tujuannya adalah
                 menciptakan ekosistem kerja profesional di lingkungan Binus, sekaligus membuka
@@ -105,68 +103,62 @@ const AboutUs = () => {
               </p>
             </div>
             <div
-              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${
-                expandedItems.includes(1) ? "h-[2px]" : "h-[1px]"
-              }`}
+              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${expandedItems.includes(1) ? "h-[2px]" : "h-[1px]"
+                }`}
             ></div>
 
             {/* Elemen 2 */}
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(2)}>
-              <p className="text-[40px] font-semibold">
+              <p className="text-[30px] font-semibold">
                 Bagaimana cara mencari freelancer di B-Connect?
               </p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
-                    expandedItems.includes(2) ? "-rotate-180" : "rotate-0"
-                  }`}
+                  className={`absolute right-0 transition-transform duration-500 ${expandedItems.includes(2) ? "-rotate-180" : "rotate-0"
+                    }`}
                 />
               </div>
             </div>
             <div
-              className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                expandedItems.includes(2)
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${expandedItems.includes(2)
                   ? "max-h-[500px] opacity-100 translate-y-0"
                   : "max-h-0 opacity-0 -translate-y-2"
-              }`}
+                }`}
             >
-              <p className="text-[30px]">
+              <p className="text-[25px]">
                 Anda bisa mencari freelancer sesuai kebutuhan proyek melalui sistem pencarian kami
                 yang intuitif, cepat, dan tepat. Cukup masukkan kategori atau skill yang dibutuhkan,
                 dan B-Connect akan menampilkan freelancer berkualitas dari komunitas Binus.
               </p>
             </div>
             <div
-              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${
-                expandedItems.includes(2) ? "h-[2px]" : "h-[1px]"
-              }`}
+              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${expandedItems.includes(2) ? "h-[2px]" : "h-[1px]"
+                }`}
             ></div>
 
             {/* Elemen 3 */}
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(3)}>
-              <p className="text-[40px] font-semibold">
+              <p className="text-[30px] font-semibold">
                 Apakah sistem pembayaran di B-Connect aman?
               </p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
-                    expandedItems.includes(3) ? "-rotate-180" : "rotate-0"
-                  }`}
+                  className={`absolute right-0 transition-transform duration-500 ${expandedItems.includes(3) ? "-rotate-180" : "rotate-0"
+                    }`}
                 />
               </div>
             </div>
             <div
-              className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                expandedItems.includes(3)
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${expandedItems.includes(3)
                   ? "max-h-[500px] opacity-100 translate-y-0"
                   : "max-h-0 opacity-0 -translate-y-2"
-              }`}
+                }`}
             >
-              <p className="text-[30px]">
+              <p className="text-[25px]">
                 B-Connect adalah platform yang menghubungkan mahasiswa dan alumni Binus University
                 dengan klien atau project owner yang membutuhkan jasa freelance. Tujuannya adalah
                 menciptakan ekosistem kerja profesional di lingkungan Binus, sekaligus membuka
@@ -174,34 +166,31 @@ const AboutUs = () => {
               </p>
             </div>
             <div
-              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${
-                expandedItems.includes(3) ? "h-[2px]" : "h-[1px]"
-              }`}
+              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${expandedItems.includes(3) ? "h-[2px]" : "h-[1px]"
+                }`}
             ></div>
 
             {/* Elemen 4 */}
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(4)}>
-              <p className="text-[40px] font-semibold">
+              <p className="text-[30px] font-semibold">
                 Bagaimana B-Connect menjamin kualitas hasil kerja?
               </p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
-                    expandedItems.includes(4) ? "-rotate-180" : "rotate-0"
-                  }`}
+                  className={`absolute right-0 transition-transform duration-500 ${expandedItems.includes(4) ? "-rotate-180" : "rotate-0"
+                    }`}
                 />
               </div>
             </div>
             <div
-              className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                expandedItems.includes(4)
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${expandedItems.includes(4)
                   ? "max-h-[500px] opacity-100 translate-y-0"
                   : "max-h-0 opacity-0 -translate-y-2"
-              }`}
+                }`}
             >
-              <p className="text-[30px]">
+              <p className="text-[25px]">
                 B-Connect adalah platform yang menghubungkan mahasiswa dan alumni Binus University
                 dengan klien atau project owner yang membutuhkan jasa freelance. Tujuannya adalah
                 menciptakan ekosistem kerja profesional di lingkungan Binus, sekaligus membuka
@@ -209,9 +198,8 @@ const AboutUs = () => {
               </p>
             </div>
             <div
-              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${
-                expandedItems.includes(4) ? "h-[2px]" : "h-[1px]"
-              }`}
+              className={`transition-[height] duration-500 ease-in-out bg-black w-full ${expandedItems.includes(4) ? "h-[2px]" : "h-[1px]"
+                }`}
             ></div>
           </div>
         </div>
@@ -225,10 +213,14 @@ const AboutUs = () => {
                   Tenang, tim B-Connect siap membantu kamu! Hubungi kami langsung jika kamu tidak
                   menemukan jawaban yang kamu cari.
                 </p>
-                {/* Belom di konekin tombolnya */}
+
                 <button
                   className="relative flex bg-[#565E6D] text-[#FFFFFF] text-[20px] max-w-fit h-[26px] p-6 mt-2 justify-center items-center text-center cursor-pointer"
-                  onClick={() => navigate("/contact-us")}
+                  onClick={() => {
+                    const email = 'bconnect404@gmail.com';
+                    const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`;
+                    window.open(gmailURL, '_blank');
+                  }}
                 >
                   Contact Us
                 </button>
