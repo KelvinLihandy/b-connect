@@ -6,6 +6,7 @@ import { UserTypeContext } from '../../contexts/UserTypeContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { socket } from '../../App';
+import { Clock, CircleX, CircleAlert, FileText, CircleCheck } from 'lucide-react';
 
 import check from '../../assets/mo_check.svg';
 import clock from '../../assets/mo_clock.svg';
@@ -30,21 +31,24 @@ const STATUS_COLORS = {
   0: "bg-gray-500",
   1: "bg-yellow-500",
   2: "bg-blue-500",
-  3: "bg-green-500"
+  3: "bg-green-500",
+  4: "bg-red-500"
 };
 
 const STATUS_ICONS = {
-  0: status,
-  1: status,
-  2: status,
-  3: check
+  0: <Clock className='w-6 h-6 text-white' />,
+  1: <Clock className='w-6 h-6 text-white' />,
+  2: <Clock className='w-6 h-6 text-white' />,
+  3: <CircleCheck className='w-6 h-6 text-white' />,
+  4: <CircleX className="w-6 h-6 text-white" />
 };
 
 const STATUS_TEXT = {
   0: "Waiting",
   1: "In Progress",
   2: "Delivered",
-  3: "Finished"
+  3: "Finished",
+  4: "Rejected"
 };
 
 const formattedPrice = (price, locale = "id-ID", minFraction = 2, maxFraction = 2) => {
@@ -105,7 +109,7 @@ const ManageOrder = () => {
 
     window.open(invoiceUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
   };
-  
+
   const initiateChat = () => {
     if (!auth) {
       navigate("/sign-in");
@@ -211,7 +215,10 @@ const ManageOrder = () => {
         setCurrentStep(response.data.contract.progress);
         const today = new Date();
         const formattedToday = formatDate(today);
-
+        if(response.data.contract.progress > 3){
+          setCurrentStep(response.data.contract.progress);
+          return;
+        };
         if (newProgress === 1) {
           setOrderDates(prevDates => ({
             ...prevDates,
@@ -435,15 +442,11 @@ const ManageOrder = () => {
               onClick={handleInvoiceClick}
               className="flex items-center gap-2 border-4 border-gray-300 bg-white cursor-pointer rounded px-4 hover:bg-gray-50 transition-colors"
             >
-              <img src={invoice} alt="Invoice" className="" />
+              <FileText />
               <span>Invoice</span>
             </button>
             <div className={`flex items-center gap-2 ${STATUS_COLORS[currentStep]} text-white rounded px-4`}>
-              <img
-                src={STATUS_ICONS[currentStep]}
-                alt={STATUS_TEXT[currentStep]}
-                className="w-[37px] h-[37px]"
-              />
+              {STATUS_ICONS[currentStep]}
               <span>{STATUS_TEXT[currentStep]}</span>
             </div>
           </div>
@@ -453,51 +456,65 @@ const ManageOrder = () => {
         <div className="pb-4">
           <div className="flex text-lg gap-8">
             <p>Order date: {orderDates.START_DATE}</p>
-            <p>Expected delivery: <span className="text-green-500">{orderDates.EXPECTED_DELIVERY}</span></p>
+            <p>Expected delivery: &nbsp;
+              {currentStep === 4 ?
+                <span className="text-red-500">REJECTED</span>
+                :
+                <span className="text-green-500">{orderDates.EXPECTED_DELIVERY}</span>
+              }
+            </p>
           </div>
         </div>
 
         <div className="border-t border-[#000] w-full mb-6"></div>
         <div className="mb-8">
           <div className="flex justify-between items-center px-[5%] mb-1 relative">
-            <div className="absolute h-1 top-[35px] -translate-y-1/2 left-[10%] right-[10%] flex">
+            <div className="absolute h-1 top-[35px] -translate-y-1/2 left-[6%] right-[6%] flex">
               <div className="flex-1 bg-gray-200 relative">
                 {currentStep > 0 && (
-                  <div className="absolute inset-0 bg-green-500 transition-all duration-300" />
+                  <div className={`absolute inset-0 transition-all duration-300 ${currentStep === 4 ? 'bg-red-500' : 'bg-green-500'}`} />
                 )}
               </div>
               <div className="flex-1 bg-gray-200 relative">
                 {currentStep > 1 && (
-                  <div className="absolute inset-0 bg-green-500 transition-all duration-300" />
+                  <div className={`absolute inset-0 transition-all duration-300 ${currentStep === 4 ? 'bg-red-500' : 'bg-green-500'}`} />
                 )}
               </div>
               <div className="flex-1 bg-gray-200 relative">
                 {currentStep > 2 && (
-                  <div className="absolute inset-0 bg-green-500 transition-all duration-300" />
+                  <div className={`absolute inset-0 transition-all duration-300 ${currentStep === 4 ? 'bg-red-500' : 'bg-green-500'}`} />
                 )}
               </div>
             </div>
-            {steps.map((step, index) => (
-              <div key={step.id} className="z-10 flex flex-col items-center">
-                {/* Circle indicator */}
-                <div
-                  className={`w-[70px] h-[70px] flex items-center justify-center rounded-full 
-                    ${index <= currentStep ? 'bg-green-500' : 'bg-gray-300'} 
+            <div className='flex flex-row justify-between w-full'>
+              {steps.map((step, index) => (
+                <div key={step.id} className="z-10 flex flex-col items-center">
+                  <div
+                    className={`w-[70px] h-[70px] flex items-center justify-center rounded-full 
+                    ${currentStep === 4 ? 'bg-red-500' : index <= currentStep ? 'bg-green-500' : 'bg-gray-300'} 
                     border-4 border-white shadow-md mb-2`}
-                >
-                  <img
-                    src={step.icon}
-                    alt={step.name}
-                    className="w-8 h-8"
-                  />
+                  >
+                    {currentStep === 4 ?
+                      <CircleAlert className='w-8 h-8 text-white' />
+                      :
+                      <img
+                        src={step.icon}
+                        alt={step.name}
+                        className="w-8 h-8"
+                      />
+                    }
+                  </div>
+                  <div className="text-center mt-2">
+                    <p className="font-medium text-lg">{step.name}</p>
+                    {currentStep === 4 ?
+                      <p className="text-red-500 text-base">REJECTED</p>
+                      :
+                      <p className="text-gray-500 text-base">{step.date ? step.date : '\u00A0'}</p>
+                    }
+                  </div>
                 </div>
-                {/* Step name and date */}
-                <div className="text-center mt-2">
-                  <p className="font-medium text-lg">{step.name}</p>
-                  <p className="text-gray-500 text-base">{step.date ? step.date : '\u00A0'}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
         <div className="border-t border-[#000] w-full mb-6"></div>
@@ -638,6 +655,10 @@ const ManageOrder = () => {
         onClose={() => setIsShowingProofModal(false)}
         onConfirm={async () => {
           handleUpdateProgress(1);
+          setIsShowingProofModal(false);
+        }}
+        onReject={() => {
+          handleUpdateProgress(4);
           setIsShowingProofModal(false);
         }}
         proofImage={proofId}

@@ -281,7 +281,8 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                                 ? "Delivered"
                                                 : order.progress === 3
                                                   ? "Finished"
-                                                  : "Unknown"}
+                                                  : order.progress === 4 
+                                                  ? "Rejected" : "Unknown"}
                                         </div>
                                       </div>
                                       <div className="flex flex-col justify-center items-end h-full text-right">

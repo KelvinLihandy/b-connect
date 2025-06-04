@@ -7,6 +7,7 @@ const ProofModal = ({
   isOpen,
   onClose,
   onConfirm,
+  onReject,
   proofImage,
 }) => {
 
@@ -123,7 +124,14 @@ const ProofModal = ({
                   </div>
                 )}
               </div>
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-10">
+                <motion.button
+                  variants={buttonVariants}
+                  onClick={onReject}
+                  className="px-8 py-3 bg-[linear-gradient(116deg,_#7F1D1D_2.68%,_#DC2626_102.1%)] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200"
+                >
+                  Reject
+                </motion.button>
                 <motion.button
                   variants={buttonVariants}
                   onClick={onConfirm}
