@@ -90,7 +90,7 @@ const Invoice = () => {
             INVOICE: {
               NUMBER: `#INV-${orderData._id}`,
               DATE: formatDate(startDate),
-              STATUS: orderData.transaction?.status === "paid" ? "PAID" : "PENDING"
+              STATUS: orderData.transaction?.status,
             },
             CUSTOMER: {
               NAME: orderData.buyer?.name || "Customer",
