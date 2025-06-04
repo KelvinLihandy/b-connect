@@ -425,9 +425,9 @@ const Profile = () => {
         "Anda dapat mengubah password melalui menu Account Security. Masukkan password lama Anda, lalu masukkan password baru dan konfirmasi. Klik tombol Save Changes untuk menyimpan perubahan.",
     },
     {
-      question: "Bagaimana cara menghubungkan GoPay?",
+      question: "Bagaimana cara mengubah akun pembayaran?",
       answer:
-        "Masuk ke menu Payment Account, lalu klik tombol Tambah Akun GoPay atau Hubungkan Akun. Ikuti instruksi yang diberikan dan pastikan nomor GoPay Anda aktif dan sesuai dengan data akun.",
+        "Masuk ke menu Payment Account, lalu isi form nomor telepon akun. Ikuti instruksi yang diberikan dan pastikan nomor telepon akun Anda aktif dan sesuai dengan data akun.",
     },
   ];
 

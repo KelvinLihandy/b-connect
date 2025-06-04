@@ -23,7 +23,7 @@ const Invoice = () => {
   const [invoiceData, setInvoiceData] = useState({
     COMPANY: {
       NAME: "B-Connect",
-      EMAIL: "B-Connect404@gmail.com"
+      EMAIL: "bconnect404@gmail.com"
     },
     INVOICE: {
       NUMBER: "",
