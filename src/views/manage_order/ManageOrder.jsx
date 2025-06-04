@@ -296,7 +296,7 @@ const ManageOrder = () => {
           if (response.data.transaction) {
             setPaymentMethod({
               TYPE: "Bank Transfer",
-              STATUS: response.data.transaction.status === "paid" ? "Paid" : "Pending"
+              STATUS: "Paid"
             });
           }
 
