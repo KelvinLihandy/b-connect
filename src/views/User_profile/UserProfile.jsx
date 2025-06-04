@@ -130,7 +130,7 @@ const UserProfile = () => {
     }
   }, [fallbackImage]);
 
-  // Enhanced status detection with better logic for manage order button
+  // Enhanced status detection with revised logic
   const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
     const statusType = (item.statusType || '').toLowerCase();
@@ -144,29 +144,52 @@ const UserProfile = () => {
     console.log('   - orderNumber:', item.orderNumber);
     console.log('   - hasValidOrderNumber:', hasValidOrderNumber);
 
+    // REVISI: Status "Finished" → Show Buy Again & Contact FL
+    if (status === 'finished' || statusType === 'finished') {
+      console.log('   ✅ Detected as: FINISHED - Show Buy Again & Contact FL');
+      return { 
+        type: 'completed', 
+        color: 'green', 
+        display: 'Finished',
+        showManageOrder: false,
+        isCompleted: true
+      };
+    }
+    // REVISI: Status "Delivered" → Still show Manage Order
+    else if (status === 'delivered' || statusType === 'delivered') {
+      console.log('   🚚 Detected as: DELIVERED - Show Manage Order');
+      return { 
+        type: 'delivered', 
+        color: 'orange', 
+        display: 'Delivered',
+        showManageOrder: hasValidOrderNumber,
+        isCompleted: false
+      };
+    }
     // Enhanced logic for showing manage order button
-    if (statusType === 'progress' || status.includes('progress') || 
-        status.includes('processing') || status.includes('ongoing') || 
-        status.includes('active') || status.includes('pending') ||
-        status.includes('in progress') || statusType === 'processing') {
+    else if (statusType === 'progress' || status.includes('progress') || 
+            status.includes('processing') || status.includes('ongoing') || 
+            status.includes('active') || status.includes('pending') ||
+            status.includes('in progress') || statusType === 'processing') {
       console.log('   🟡 Detected as: IN PROGRESS - Show Manage Order');
       return { 
         type: 'progress', 
         color: 'orange', 
         display: item.status || 'In Progress',
-        showManageOrder: hasValidOrderNumber 
+        showManageOrder: hasValidOrderNumber,
+        isCompleted: false
       };
     }
     // Handle completed status
     else if (statusType === 'completed' || status.includes('completed') || 
-             status.includes('delivered') || status.includes('done') || 
-             statusType === 'delivered') {
+             status.includes('done') || statusType === 'delivered') {
       console.log('   ✅ Detected as: COMPLETED');
       return { 
         type: 'completed', 
         color: 'green', 
         display: item.status || 'Completed',
-        showManageOrder: false 
+        showManageOrder: false,
+        isCompleted: true
       };
     }
     // Handle cancelled status
@@ -178,7 +201,8 @@ const UserProfile = () => {
         type: 'cancelled', 
         color: 'red', 
         display: item.status || 'Cancelled',
-        showManageOrder: false 
+        showManageOrder: false,
+        isCompleted: false
       };
     } 
     // Default - show manage order for any order with valid order number
@@ -188,10 +212,57 @@ const UserProfile = () => {
         type: 'unknown', 
         color: 'gray', 
         display: item.status || 'Processing',
-        showManageOrder: hasValidOrderNumber 
+        showManageOrder: hasValidOrderNumber,
+        isCompleted: false
       };
     }
   }, []);
+
+  // Enhanced sorting function for purchase history
+  const sortPurchaseHistory = useCallback((items) => {
+    return [...items].sort((a, b) => {
+      const statusA = getStatusInfo(a);
+      const statusB = getStatusInfo(b);
+      
+      // Primary sort: completed orders go to bottom, others stay at top
+      if (statusA.isCompleted !== statusB.isCompleted) {
+        return statusA.isCompleted ? 1 : -1; // completed orders go to bottom
+      }
+      
+      // Secondary sort: by date only
+      const dateA = new Date(a.date || a.createdAt || '1970-01-01');
+      const dateB = new Date(b.date || b.createdAt || '1970-01-01');
+      
+      // For completed orders, oldest first
+      if (statusA.isCompleted && statusB.isCompleted) {
+        return dateA.getTime() - dateB.getTime(); // Oldest first for completed
+      }
+      
+      // For non-completed orders, newest first
+      return dateB.getTime() - dateA.getTime(); // Newest first for active orders
+    });
+  }, [getStatusInfo]);
+
+  // Enhanced sorting function for reviews
+  const sortReviews = useCallback((items) => {
+    return [...items].sort((a, b) => {
+      // Sort reviews by date: oldest first
+      const dateA = new Date(a.reviewDate || a.date || a.createdAt || '1970-01-01');
+      const dateB = new Date(b.reviewDate || b.date || b.createdAt || '1970-01-01');
+      
+      return dateA.getTime() - dateB.getTime(); // Oldest first
+    });
+  }, []);
+
+  // Memoized sorted purchase history
+  const sortedPurchaseHistory = useMemo(() => {
+    return sortPurchaseHistory(purchaseHistory);
+  }, [purchaseHistory, sortPurchaseHistory]);
+
+  // Memoized sorted reviews
+  const sortedReviews = useMemo(() => {
+    return sortReviews(reviews);
+  }, [reviews, sortReviews]);
 
   const makeAPICall = useCallback(async (endpoint, options = {}) => {
     try {
@@ -523,18 +594,18 @@ const UserProfile = () => {
     navigate('/profile');
   }, [navigate]);
 
-  // Enhanced Purchase Card with better design and manage order button
+  // Enhanced Purchase Card with smaller design
   const PurchaseCard = React.memo(({ item }) => {
     const statusInfo = useMemo(() => getStatusInfo(item), [item, getStatusInfo]);
 
     return (
-      <div className="group relative bg-gradient-to-br from-white to-gray-50/30 rounded-3xl border border-gray-200/50 hover:border-blue-300/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10 overflow-hidden transform hover:-translate-y-2 hover:scale-[1.02] backdrop-blur-sm">
+      <div className="group relative bg-gradient-to-br from-white to-gray-50/30 rounded-2xl border border-gray-200/50 hover:border-blue-300/50 transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01] backdrop-blur-sm">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
         
         <div className="relative z-10 flex flex-col lg:flex-row">
-          {/* Enhanced Image Section */}
-          <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-60 relative overflow-hidden rounded-t-3xl lg:rounded-l-3xl lg:rounded-tr-none">
+          {/* Enhanced Image Section - Made smaller */}
+          <div className="flex-shrink-0 w-full lg:w-64 h-48 lg:h-44 relative overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
             <img
               src={item.image}
@@ -544,95 +615,97 @@ const UserProfile = () => {
               loading="lazy"
             />
             {/* Status overlay */}
-            <div className="absolute top-4 left-4 z-20">
-              <span className={`px-4 py-2 rounded-2xl text-sm font-bold shadow-xl backdrop-blur-md border transition-all duration-300 transform group-hover:scale-105 ${
+            <div className="absolute top-3 left-3 z-20">
+              <span className={`px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg backdrop-blur-md border transition-all duration-300 transform group-hover:scale-105 ${
                 statusInfo.type === "progress"
                   ? "bg-orange-100/90 text-orange-800 border-orange-300/50"
                   : statusInfo.type === "completed"
                     ? "bg-green-100/90 text-green-800 border-green-300/50"
-                    : statusInfo.type === "cancelled"
-                      ? "bg-red-100/90 text-red-800 border-red-300/50"
-                      : "bg-gray-100/90 text-gray-800 border-gray-300/50"
+                    : statusInfo.type === "delivered"
+                      ? "bg-blue-100/90 text-blue-800 border-blue-300/50"
+                      : statusInfo.type === "cancelled"
+                        ? "bg-red-100/90 text-red-800 border-red-300/50"
+                        : "bg-gray-100/90 text-gray-800 border-gray-300/50"
               }`}>
                 {statusInfo.display}
               </span>
             </div>
           </div>
 
-          {/* Enhanced Content Section */}
-          <div className="flex-1 p-8 relative">
+          {/* Enhanced Content Section - Made smaller */}
+          <div className="flex-1 p-5 relative">
             <div className="flex justify-between items-start h-full">
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-3">
                 {/* Category Tags */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {Array.isArray(item.category) ? (
                     item.category.map((cat, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1.5 bg-blue-50/80 text-blue-700 text-xs font-semibold rounded-full border border-blue-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-blue-100/80"
+                        className="px-2 py-1 bg-blue-50/80 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-blue-100/80"
                       >
                         {cat}
                       </span>
                     ))
                   ) : (
-                    <span className="px-3 py-1.5 bg-blue-50/80 text-blue-700 text-xs font-semibold rounded-full border border-blue-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-blue-100/80">
+                    <span className="px-2 py-1 bg-blue-50/80 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-blue-100/80">
                       {item.category || 'General'}
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
-                <h3 className="text-2xl font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors duration-300 line-clamp-2">
+                <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors duration-300 line-clamp-2">
                   {item.title || 'Untitled Service'}
                 </h3>
 
                 {/* Description */}
-                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 line-clamp-2">
+                <p className="text-sm text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 line-clamp-2">
                   {item.description || 'No description available'}
                 </p>
 
                 {/* Seller Info */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300 ring-4 ring-white">
-                      <span className="text-white text-sm font-bold">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-300 ring-2 ring-white">
+                      <span className="text-white text-xs font-bold">
                         {(item.seller || 'U').charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <span className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors duration-300 block">
+                      <span className="font-semibold text-sm text-gray-800 group-hover:text-gray-900 transition-colors duration-300 block">
                         {item.seller || 'Unknown Seller'}
                       </span>
                       <div className="flex items-center gap-1">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
-                            <svg key={i} className={`w-3 h-3 ${i < Math.floor(item.sellerRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                            <svg key={i} className={`w-2.5 h-2.5 ${i < Math.floor(item.sellerRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                           ))}
                         </div>
-                        <span className="text-sm text-gray-600 ml-1">{item.sellerRating || '0.0'}</span>
+                        <span className="text-xs text-gray-600 ml-1">{item.sellerRating || '0.0'}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Order Details */}
-                <div className="flex flex-col gap-2 text-sm">
+                <div className="flex flex-col gap-1.5 text-xs">
                   <div className="flex items-center gap-2 text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                     </svg>
                     <span className="font-medium">Order: {item.orderNumber || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m6-10v10" />
                     </svg>
                     <span>{item.date || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>{item.deliveryTime || 'Standard delivery'}</span>
@@ -640,24 +713,24 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              {/* Enhanced Action Section */}
-              <div className="flex flex-col items-end gap-4 ml-8">
+              {/* Enhanced Action Section - Made smaller */}
+              <div className="flex flex-col items-end gap-3 ml-6">
                 <div className="text-right">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
+                  <div className="text-xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
                     {item.price || 'Rp 0'}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
                   {/* Show Manage Order button for orders with valid order numbers */}
                   {statusInfo.showManageOrder && (
                     <button
                       onClick={() => handleViewDetails(item.orderNumber, item)}
-                      className="group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 overflow-hidden"
+                      className="group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <span className="relative z-10 flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         Manage Order
@@ -670,11 +743,11 @@ const UserProfile = () => {
                     <>
                       <button
                         onClick={() => handleBuyAgain(item)}
-                        className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/40 overflow-hidden"
+                        className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-md shadow-green-500/25 hover:shadow-lg hover:shadow-green-500/40 overflow-hidden"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <span className="relative z-10 flex items-center gap-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                           </svg>
                           Buy Again
@@ -682,7 +755,7 @@ const UserProfile = () => {
                       </button>
                       <button
                         onClick={() => handleContactSeller(item)}
-                        className="px-8 py-3 rounded-2xl font-semibold border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
+                        className="px-5 py-2 rounded-xl font-semibold text-sm border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-blue-500/25"
                       >
                         Contact Seller
                       </button>
@@ -693,7 +766,7 @@ const UserProfile = () => {
                   {statusInfo.type === "cancelled" && (
                     <button
                       onClick={() => handleBuyAgain(item)}
-                      className="group relative bg-gradient-to-r from-gray-500 to-slate-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg shadow-gray-500/25 hover:shadow-xl hover:shadow-gray-500/40 overflow-hidden"
+                      className="group relative bg-gradient-to-r from-gray-500 to-slate-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-md shadow-gray-500/25 hover:shadow-lg hover:shadow-gray-500/40 overflow-hidden"
                     >
                       <span className="relative z-10">Buy Again</span>
                     </button>
@@ -707,15 +780,15 @@ const UserProfile = () => {
     );
   }, [getStatusInfo, handleViewDetails, handleBuyAgain, handleContactSeller, handleImageError]);
 
-  // Enhanced Review Card with better design
+  // Enhanced Review Card with smaller design
   const ReviewCard = React.memo(({ review }) => (
-    <div className="group relative bg-gradient-to-br from-white to-green-50/30 rounded-3xl border border-gray-200/50 hover:border-green-300/50 transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/10 overflow-hidden transform hover:-translate-y-2 hover:scale-[1.02] backdrop-blur-sm">
+    <div className="group relative bg-gradient-to-br from-white to-green-50/30 rounded-2xl border border-gray-200/50 hover:border-green-300/50 transition-all duration-500 hover:shadow-xl hover:shadow-green-500/10 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01] backdrop-blur-sm">
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
       
       <div className="relative z-10 flex flex-col lg:flex-row">
-        {/* Enhanced Image Section */}
-        <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-60 relative overflow-hidden rounded-t-3xl lg:rounded-l-3xl lg:rounded-tr-none">
+        {/* Enhanced Image Section - Made smaller */}
+        <div className="flex-shrink-0 w-full lg:w-64 h-48 lg:h-44 relative overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
           <img
             src={review.image}
@@ -725,18 +798,18 @@ const UserProfile = () => {
             loading="lazy"
           />
           {/* Review badge */}
-          <div className="absolute top-4 left-4 z-20">
-            <span className="px-4 py-2 bg-green-100/90 text-green-800 border border-green-300/50 rounded-2xl text-sm font-bold shadow-xl backdrop-blur-md transition-all duration-300 transform group-hover:scale-105">
+          <div className="absolute top-3 left-3 z-20">
+            <span className="px-3 py-1.5 bg-green-100/90 text-green-800 border border-green-300/50 rounded-xl text-xs font-bold shadow-lg backdrop-blur-md transition-all duration-300 transform group-hover:scale-105">
               ⭐ REVIEWED
             </span>
           </div>
           {/* Rating overlay */}
-          <div className="absolute bottom-4 left-4 z-20">
-            <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg">
-              <span className="text-sm font-semibold text-gray-700">Your rating:</span>
+          <div className="absolute bottom-3 left-3 z-20">
+            <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md rounded-lg px-2 py-1.5 shadow-md">
+              <span className="text-xs font-semibold text-gray-700">Your rating:</span>
               <div className="flex">
                 {[...Array(5)].map((_, index) => (
-                  <svg key={index} className={`w-4 h-4 ${index < Math.floor(review.userRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <svg key={index} className={`w-3 h-3 ${index < Math.floor(review.userRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 ))}
@@ -745,80 +818,80 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Enhanced Content Section */}
-        <div className="flex-1 p-8 relative">
+        {/* Enhanced Content Section - Made smaller */}
+        <div className="flex-1 p-5 relative">
           <div className="flex justify-between items-start h-full">
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-3">
               {/* Category and Status Tags */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {Array.isArray(review.category) ? (
                   review.category.map((cat, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1.5 bg-green-50/80 text-green-700 text-xs font-semibold rounded-full border border-green-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-green-100/80"
+                      className="px-2 py-1 bg-green-50/80 text-green-700 text-xs font-semibold rounded-lg border border-green-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-green-100/80"
                     >
                       {cat}
                     </span>
                   ))
                 ) : (
-                  <span className="px-3 py-1.5 bg-green-50/80 text-green-700 text-xs font-semibold rounded-full border border-green-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-green-100/80">
+                  <span className="px-2 py-1 bg-green-50/80 text-green-700 text-xs font-semibold rounded-lg border border-green-200/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 hover:bg-green-100/80">
                     {review.category || 'General'}
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h3 className="text-2xl font-bold text-gray-900 leading-tight group-hover:text-green-600 transition-colors duration-300 line-clamp-2">
+              <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-green-600 transition-colors duration-300 line-clamp-2">
                 {review.serviceTitle || 'Untitled Service'}
               </h3>
 
               {/* Description */}
-              <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 line-clamp-2">
+              <p className="text-sm text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300 line-clamp-2">
                 {review.description || 'Professional service provided'}
               </p>
 
               {/* Seller Info */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300 ring-4 ring-white">
-                    <span className="text-white text-sm font-bold">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-300 ring-2 ring-white">
+                    <span className="text-white text-xs font-bold">
                       {(review.serviceSeller || 'U').charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <span className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors duration-300 block">
+                    <span className="font-semibold text-sm text-gray-800 group-hover:text-gray-900 transition-colors duration-300 block">
                       {review.serviceSeller || 'Unknown Seller'}
                     </span>
                     <div className="flex items-center gap-1">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
-                          <svg key={i} className={`w-3 h-3 ${i < Math.floor(review.sellerRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                          <svg key={i} className={`w-2.5 h-2.5 ${i < Math.floor(review.sellerRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600 ml-1">{review.sellerRating || '0.0'}</span>
+                      <span className="text-xs text-gray-600 ml-1">{review.sellerRating || '0.0'}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Order Details */}
-              <div className="flex flex-col gap-2 text-sm">
+              <div className="flex flex-col gap-1.5 text-xs">
                 <div className="flex items-center gap-2 text-gray-600">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                   </svg>
                   <span className="font-medium">Order: {review.orderId || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m6-10v10" />
                   </svg>
                   <span>{review.reviewDate ? new Date(review.reviewDate).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span>{review.deliveryTime || 'Delivered on time'}</span>
@@ -826,26 +899,26 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Enhanced Action Section */}
-            <div className="flex flex-col items-end gap-4 ml-8">
+            {/* Enhanced Action Section - Made smaller */}
+            <div className="flex flex-col items-end gap-3 ml-6">
               <div className="text-right">
-                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-green-600 bg-clip-text text-transparent">
+                <div className="text-xl font-bold bg-gradient-to-r from-gray-900 to-green-600 bg-clip-text text-transparent">
                   {review.servicePrice || 'Rp 0'}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => handleBuyAgain({
                     serviceId: review.serviceId,
                     id: review.serviceId,
                     title: review.serviceTitle
                   })}
-                  className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/40 overflow-hidden"
+                  className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-md shadow-green-500/25 hover:shadow-lg hover:shadow-green-500/40 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="relative z-10 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     Buy Again
@@ -856,7 +929,7 @@ const UserProfile = () => {
                     sellerId: review.sellerId,
                     seller: review.serviceSeller
                   })}
-                  className="px-8 py-3 rounded-2xl font-semibold border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/25"
+                  className="px-5 py-2 rounded-xl font-semibold text-sm border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-green-500/25"
                 >
                   Contact Seller
                 </button>
@@ -864,19 +937,19 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Review Text Section */}
-          <div className="mt-6 bg-gradient-to-r from-green-50/50 to-blue-50/50 rounded-2xl p-6 border border-green-100/50 group-hover:border-green-200/70 group-hover:shadow-lg transition-all duration-500 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Enhanced Review Text Section - Made smaller */}
+          <div className="mt-4 bg-gradient-to-r from-green-50/50 to-blue-50/50 rounded-xl p-4 border border-green-100/50 group-hover:border-green-200/70 group-hover:shadow-md transition-all duration-500 backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h4 className="text-lg font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300">
+              <h4 className="text-base font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300">
                 My Review
               </h4>
             </div>
-            <p className="text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors duration-300 text-base">
+            <p className="text-sm text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors duration-300">
               "{review.reviewText || 'No review text provided.'}"
             </p>
           </div>
@@ -886,11 +959,11 @@ const UserProfile = () => {
   ), [handleBuyAgain, handleContactSeller, handleImageError]);
 
   const PaginationControls = React.memo(({ pagination, onPageChange }) => (
-    <div className="flex justify-center items-center gap-4 mt-16">
+    <div className="flex justify-center items-center gap-3 mt-12">
       <button
         onClick={() => onPageChange(pagination.currentPage - 1)}
         disabled={!pagination.hasPrevPage}
-        className="group w-14 h-14 border-2 border-gray-200 rounded-2xl text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:border-transparent transition-all duration-300 hover:scale-110 text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600 disabled:hover:scale-100 shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
+        className="group w-10 h-10 border-2 border-gray-200 rounded-xl text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:border-transparent transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600 disabled:hover:scale-100 shadow-md hover:shadow-lg disabled:hover:shadow-md"
       >
         ‹
       </button>
@@ -903,9 +976,9 @@ const UserProfile = () => {
           <button
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
-            className={`w-14 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl ${
+            className={`w-10 h-10 rounded-xl font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg ${
               isActive
-                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-xl shadow-blue-500/25 scale-110"
+                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25 scale-110"
                 : "border-2 border-gray-200 text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:border-transparent hover:scale-105"
             }`}
           >
@@ -917,7 +990,7 @@ const UserProfile = () => {
       <button
         onClick={() => onPageChange(pagination.currentPage + 1)}
         disabled={!pagination.hasNextPage}
-        className="group w-14 h-14 border-2 border-gray-200 rounded-2xl text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:border-transparent transition-all duration-300 hover:scale-110 text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600 disabled:hover:scale-100 shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
+        className="group w-10 h-10 border-2 border-gray-200 rounded-xl text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:border-transparent transition-all duration-300 hover:scale-110 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600 disabled:hover:scale-100 shadow-md hover:shadow-lg disabled:hover:shadow-md"
       >
         ›
       </button>
@@ -925,25 +998,25 @@ const UserProfile = () => {
   ));
 
   const LoadingSpinner = React.memo(() => (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {[...Array(3)].map((_, index) => (
-        <div key={index} className="bg-gradient-to-br from-white to-gray-50/30 rounded-3xl border border-gray-200/50 overflow-hidden animate-pulse">
+        <div key={index} className="bg-gradient-to-br from-white to-gray-50/30 rounded-2xl border border-gray-200/50 overflow-hidden animate-pulse">
           <div className="flex flex-col lg:flex-row">
-            <div className="flex-shrink-0 w-full lg:w-80 h-64 lg:h-60 bg-gradient-to-r from-gray-200 to-gray-300"></div>
-            <div className="flex-1 p-8">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-20 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full"></div>
+            <div className="flex-shrink-0 w-full lg:w-64 h-48 lg:h-44 bg-gradient-to-r from-gray-200 to-gray-300"></div>
+            <div className="flex-1 p-5">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-16 h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
                   </div>
-                  <div className="w-3/4 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl"></div>
-                  <div className="w-full h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
-                  <div className="w-1/2 h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
-                  <div className="w-1/3 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl"></div>
+                  <div className="w-3/4 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
+                  <div className="w-full h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
+                  <div className="w-1/2 h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
+                  <div className="w-1/3 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
                 </div>
-                <div className="flex flex-col items-end gap-3 ml-6">
-                  <div className="w-24 h-10 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl"></div>
-                  <div className="w-32 h-12 bg-gradient-to-r from-gray-200 to-gray-300 rounded-2xl"></div>
+                <div className="flex flex-col items-end gap-2 ml-5">
+                  <div className="w-20 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
+                  <div className="w-24 h-9 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl"></div>
                 </div>
               </div>
             </div>
@@ -954,13 +1027,13 @@ const UserProfile = () => {
   ));
 
   const ErrorMessage = React.memo(({ message }) => (
-    <div className="text-center py-20">
-      <div className="text-red-500 text-8xl mb-8">⚠️</div>
-      <h3 className="text-3xl font-bold text-gray-600 mb-4">Oops! Something went wrong</h3>
-      <p className="text-gray-500 mb-8 text-xl">{message}</p>
+    <div className="text-center py-16">
+      <div className="text-red-500 text-6xl mb-6">⚠️</div>
+      <h3 className="text-2xl font-bold text-gray-600 mb-3">Oops! Something went wrong</h3>
+      <p className="text-gray-500 mb-6 text-lg">{message}</p>
       <button
         onClick={() => window.location.reload()}
-        className="group relative bg-gradient-to-r from-red-500 to-pink-600 text-white px-10 py-4 rounded-2xl hover:from-red-600 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 font-semibold text-lg overflow-hidden"
+        className="group relative bg-gradient-to-r from-red-500 to-pink-600 text-white px-8 py-3 rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-md shadow-red-500/20 hover:shadow-lg hover:shadow-red-500/30 font-semibold text-base overflow-hidden"
       >
         <span className="relative z-10">Try Again</span>
       </button>
@@ -971,26 +1044,26 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
         <Navbar />
-        <div className="h-32"></div>
-        <div className="w-full px-4 lg:px-8 xl:px-12 2xl:px-16">
-          <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl shadow-gray-500/20 overflow-hidden border border-white/50">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-8 relative overflow-hidden">
+        <div className="h-24"></div>
+        <div className="w-full px-4 lg:px-6 xl:px-8 2xl:px-12">
+          <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-gray-500/20 overflow-hidden border border-white/50">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-6 relative overflow-hidden">
               <div className="relative z-10 animate-pulse">
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 bg-white/20 rounded-3xl animate-pulse"></div>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 bg-white/20 rounded-2xl animate-pulse"></div>
                   <div>
-                    <div className="w-64 h-10 bg-white/20 rounded-xl mb-3 animate-pulse"></div>
-                    <div className="w-80 h-7 bg-white/20 rounded-lg mb-2 animate-pulse"></div>
-                    <div className="w-40 h-5 bg-white/20 rounded animate-pulse"></div>
+                    <div className="w-48 h-8 bg-white/20 rounded-lg mb-2 animate-pulse"></div>
+                    <div className="w-64 h-5 bg-white/20 rounded mb-1 animate-pulse"></div>
+                    <div className="w-32 h-4 bg-white/20 rounded animate-pulse"></div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="p-8">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+            <div className="p-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="bg-gradient-to-r from-gray-200 to-gray-300 rounded-2xl h-32"></div>
+                    <div className="bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl h-24"></div>
                   </div>
                 ))}
               </div>
@@ -998,7 +1071,7 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
-        <div className="h-32"></div>
+        <div className="h-24"></div>
         <Footer />
       </div>
     );
@@ -1009,25 +1082,24 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-600/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-32 -right-32 w-64 h-64 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-br from-green-400/20 to-blue-600/20 rounded-full blur-3xl"></div>
       </div>
 
       <Navbar />
       <div className="h-32"></div>
 
-      <div className="w-full px-4 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
-        <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl shadow-gray-500/20 overflow-hidden border border-white/50">
-          {/* Enhanced Header */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 p-8 text-white">
-            {/* <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg" width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg%3E%3Cg" fill="none" fill-rule="evenodd%3E%3Cg" fill="%23ffffff" fill-opacity="0.1" cx="30" cy="30" r="2")></div> */}
+      <div className="w-full px-4 lg:px-6 xl:px-8 2xl:px-12 relative z-10 pt-8">
+        <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-gray-500/20 overflow-hidden border border-white/50">
+          {/* Enhanced Header - Made smaller */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 p-6 text-white">
             
-            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                 <div className="group relative">
-                  <div className="w-28 h-28 bg-white/15 backdrop-blur-sm rounded-3xl flex items-center justify-center border-2 border-white/30 transition-all duration-700 group-hover:scale-110 overflow-hidden shadow-2xl ring-4 ring-white/20">
+                  <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white/30 transition-all duration-700 group-hover:scale-110 overflow-hidden shadow-xl ring-2 ring-white/20">
                     <img
-                      className="w-full h-full object-cover rounded-3xl transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110"
                       src={auth?.data?.auth?.picture === "temp"
                         ? default_avatar
                         : `${imageShow}${auth?.data?.auth?.picture}`}
@@ -1038,23 +1110,23 @@ const UserProfile = () => {
                       }}
                     />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full border-4 border-white shadow-lg animate-pulse"></div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white shadow-md animate-pulse"></div>
                 </div>
                 <div>
-                  <h1 className="text-5xl font-bold mb-4 tracking-tight text-white filter drop-shadow-lg bg-gradient-to-r from-white to-blue-100 bg-clip-text">
+                  <h1 className="text-3xl font-bold mb-2 tracking-tight text-white filter drop-shadow-lg bg-gradient-to-r from-white to-blue-100 bg-clip-text">
                     {auth?.data?.auth?.name || "User"}
                   </h1>
-                  <p className="text-xl opacity-90 font-medium filter drop-shadow-sm">{auth?.data?.auth?.email}</p>
+                  <p className="text-base opacity-90 font-medium filter drop-shadow-sm">{auth?.data?.auth?.email}</p>
                 </div>
               </div>
 
               <button
                 onClick={handleSettingsClick}
-                className="group bg-white/15 backdrop-blur-sm border-2 border-white/30 cursor-pointer rounded-3xl p-5 text-white hover:bg-white/25 hover:border-white/50 transition-all duration-500 hover:scale-125 shadow-xl hover:shadow-2xl ring-2 ring-white/10 hover:ring-white/20"
+                className="group bg-white/15 backdrop-blur-sm border-2 border-white/30 cursor-pointer rounded-2xl p-3 text-white hover:bg-white/25 hover:border-white/50 transition-all duration-500 hover:scale-125 shadow-lg hover:shadow-xl ring-2 ring-white/10 hover:ring-white/20"
               >
                 <svg
-                  width="28"
-                  height="28"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -1069,66 +1141,66 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Stats Section */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-8 bg-gradient-to-r from-blue-50/50 to-purple-50/50 backdrop-blur-sm">
-            <div className="group relative flex flex-col items-center p-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 hover:border-blue-300/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 hover:scale-105 overflow-hidden">
+          {/* Enhanced Stats Section - Made smaller */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 backdrop-blur-sm">
+            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-4xl mb-4">📅</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-3 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Member Since</span>
-              <span className="relative z-10 text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-all duration-300">{userStats.memberSince || "-"}</span>
+              <div className="relative z-10 text-2xl mb-2">📅</div>
+              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Member Since</span>
+              <span className="relative z-10 text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-all duration-300">{userStats.memberSince || "-"}</span>
             </div>
 
-            <div className="group relative flex flex-col items-center p-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 hover:border-green-300/50 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-500 hover:-translate-y-2 hover:scale-105 overflow-hidden">
+            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-green-300/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-4xl mb-4">📋</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-3 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Profile</span>
-              <span className="relative z-10 text-2xl font-bold text-green-600 transition-all duration-300">{userStats.profileCompletion || "0%"}</span>
+              <div className="relative z-10 text-2xl mb-2">📋</div>
+              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Profile</span>
+              <span className="relative z-10 text-lg font-bold text-green-600 transition-all duration-300">{userStats.profileCompletion || "0%"}</span>
             </div>
 
-            <div className="group relative flex flex-col items-center p-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 hover:border-purple-300/50 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-2 hover:scale-105 overflow-hidden">
+            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-purple-300/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-4xl mb-4">🎫</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-3 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Vouchers</span>
-              <span className="relative z-10 text-2xl font-bold text-purple-600 transition-all duration-300">{userStats.activeVouchers || "0"}</span>
+              <div className="relative z-10 text-2xl mb-2">🎫</div>
+              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Vouchers</span>
+              <span className="relative z-10 text-lg font-bold text-purple-600 transition-all duration-300">{userStats.activeVouchers || "0"}</span>
             </div>
 
-            <div className="group relative flex flex-col items-center p-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 hover:border-orange-300/50 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-500 hover:-translate-y-2 hover:scale-105 overflow-hidden">
+            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-orange-300/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-4xl mb-4">📦</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-3 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Orders</span>
-              <span className="relative z-10 text-2xl font-bold text-orange-600 transition-all duration-300">{userStats.totalOrders || "0"}</span>
+              <div className="relative z-10 text-2xl mb-2">📦</div>
+              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Orders</span>
+              <span className="relative z-10 text-lg font-bold text-orange-600 transition-all duration-300">{userStats.totalOrders || "0"}</span>
             </div>
           </div>
 
-          {/* Enhanced Tab Navigation */}
-          <div className="px-8 pt-8 bg-white/80 backdrop-blur-sm">
+          {/* Enhanced Tab Navigation - Made smaller */}
+          <div className="px-6 pt-6 bg-white/80 backdrop-blur-sm">
             <div className="flex justify-between items-center">
-              <div className="inline-flex bg-white/80 backdrop-blur-sm rounded-3xl p-2 shadow-xl border border-white/60 gap-2">
+              <div className="inline-flex bg-white/80 backdrop-blur-sm rounded-2xl p-1.5 border border-white/60 gap-1.5">
                 <button
-                  className={`px-8 py-4 text-sm font-bold uppercase tracking-wider rounded-2xl cursor-pointer transition-all duration-500 relative overflow-hidden whitespace-nowrap ${
+                  className={`px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer transition-all duration-500 relative overflow-hidden whitespace-nowrap ${
                     activeTab === "purchase"
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25 z-10 scale-105"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-md z-0 hover:scale-105"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md shadow-blue-500/25 z-10 scale-105"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-105"
                   }`}
                   onClick={() => handleTabChange("purchase")}
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                     Purchase History
                   </span>
                 </button>
                 <button
-                  className={`px-8 py-4 text-sm font-bold uppercase tracking-wider rounded-2xl cursor-pointer transition-all duration-500 relative overflow-hidden whitespace-nowrap ${
+                  className={`px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer transition-all duration-500 relative overflow-hidden whitespace-nowrap ${
                     activeTab === "reviews"
-                      ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg shadow-green-500/25 z-10 scale-105"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-md z-0 hover:scale-105"
+                      ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-md shadow-green-500/25 z-10 scale-105"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-105"
                   }`}
                   onClick={() => handleTabChange("reviews")}
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                     </svg>
                     My Reviews
@@ -1139,7 +1211,7 @@ const UserProfile = () => {
           </div>
 
           {/* Content Section */}
-          <div className="p-8 bg-white/80 backdrop-blur-sm">
+          <div className="p-6 bg-white/80 backdrop-blur-sm">
             {loading && (!dataCache.current[activeTab].loaded || dataCache.current[activeTab].data.length === 0) ? (
               <LoadingSpinner />
             ) : error ? (
@@ -1147,10 +1219,10 @@ const UserProfile = () => {
             ) : (
               <>
                 {activeTab === "purchase" && (
-                  <div className="space-y-10">
-                    {purchaseHistory.length > 0 ? (
+                  <div className="space-y-6">
+                    {sortedPurchaseHistory.length > 0 ? (
                       <>
-                        {purchaseHistory.map((item) => (
+                        {sortedPurchaseHistory.map((item) => (
                           <PurchaseCard key={item.id} item={item} />
                         ))}
                         {purchasePagination.totalPages > 1 && (
@@ -1161,16 +1233,16 @@ const UserProfile = () => {
                         )}
                       </>
                     ) : (
-                      <div className="text-center py-24 relative">
-                        <div className="text-gray-300 text-9xl mb-10">📦</div>
-                        <h3 className="text-4xl font-bold text-gray-600 mb-6">No Purchase History</h3>
-                        <p className="text-gray-500 text-xl mb-10">You haven't made any purchases yet.</p>
+                      <div className="text-center py-16 relative">
+                        <div className="text-gray-300 text-6xl mb-6">📦</div>
+                        <h3 className="text-2xl font-bold text-gray-600 mb-4">No Purchase History</h3>
+                        <p className="text-gray-500 text-lg mb-6">You haven't made any purchases yet.</p>
                         <button
-                          className="group relative mt-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-12 py-5 rounded-3xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 cursor-pointer hover:scale-105 shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/30 text-xl overflow-hidden"
+                          className="group relative mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 text-lg overflow-hidden"
                           onClick={() => navigate("/catalog")}
                         >
-                          <span className="relative z-10 flex items-center gap-3">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="relative z-10 flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             Browse Services
@@ -1182,10 +1254,10 @@ const UserProfile = () => {
                 )}
 
                 {activeTab === "reviews" && (
-                  <div className="space-y-10">
-                    {reviews.length > 0 ? (
+                  <div className="space-y-6">
+                    {sortedReviews.length > 0 ? (
                       <>
-                        {reviews.map((review) => (
+                        {sortedReviews.map((review) => (
                           <ReviewCard key={review.id} review={review} />
                         ))}
                         {reviewsPagination.totalPages > 1 && (
@@ -1196,17 +1268,17 @@ const UserProfile = () => {
                         )}
                       </>
                     ) : (
-                      <div className="text-center py-24 relative">
-                        <div className="text-gray-300 text-9xl mb-10">📝</div>
-                        <h3 className="text-4xl font-bold text-gray-600 mb-6">No Reviews Written Yet</h3>
-                        <p className="text-gray-500 text-xl mb-4">You haven't written any reviews for completed orders yet.</p>
-                        <p className="text-gray-400 text-base mb-10">Reviews can only be written after your orders are completed or delivered.</p>
+                      <div className="text-center py-16 relative">
+                        <div className="text-gray-300 text-6xl mb-6">📝</div>
+                        <h3 className="text-2xl font-bold text-gray-600 mb-4">No Reviews Written Yet</h3>
+                        <p className="text-gray-500 text-lg mb-3">You haven't written any reviews for completed orders yet.</p>
+                        <p className="text-gray-400 text-sm mb-6">Reviews can only be written after your orders are completed or delivered.</p>
                         <button
-                          className="group relative mt-8 bg-gradient-to-r from-green-500 to-blue-600 text-white px-12 py-5 rounded-3xl cursor-pointer font-bold hover:from-green-600 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-xl shadow-green-500/20 hover:shadow-2xl hover:shadow-green-500/30 text-xl overflow-hidden"
+                          className="group relative mt-6 bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-2xl cursor-pointer font-bold hover:from-green-600 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 text-lg overflow-hidden"
                           onClick={() => handleTabChange("purchase")}
                         >
-                          <span className="relative z-10 flex items-center gap-3">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="relative z-10 flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                             View Purchase History
@@ -1222,10 +1294,11 @@ const UserProfile = () => {
         </div>
       </div>
 
-      <div className="h-32"></div>
+      <div className="h-24"></div>
       <Footer />
     </div>
   </>
   );
 };
+
 export default UserProfile;
