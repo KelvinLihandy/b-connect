@@ -72,7 +72,7 @@ const Invoice = () => {
           
           const orderData = response.data;
           const startDate = new Date(orderData.startTime);
-          
+          console.log("Fetched order data:", orderData);
           let gigDetails = null;
           try {
             const gigResponse = await axios.post(`${gigAPI}/get-gig/${orderData.gigId}`);
