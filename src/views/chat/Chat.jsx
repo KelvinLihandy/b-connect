@@ -71,7 +71,7 @@ const Chat = () => {
   const chatScrollUp = useRef(null)
 
   const handleSendMessage = async () => {
-    if (messageInput.trim() === "") return;
+    if (messageInput.trim() === "" || disableMessaging) return;
     const newMessage = {
       roomId: roomId,
       senderId: auth?.data?.auth?.id,
@@ -93,7 +93,6 @@ const Chat = () => {
     newMessage.append("type", detectedType);
     console.log("file", file);
     console.log("file message", newMessage);
-    setDisableMessaging(true);
     setMessageInput("uploading...");
     try {
       const response = await axios.post(`${chatAPI}/upload-file-message`,
@@ -213,29 +212,25 @@ const Chat = () => {
     >
       <Navbar />
 
-      <div className='flex'>
-        <div className='flex mt-[150px] mb-[50px] ml-[20px] mr-[10px] h-[800px] w-fit font-inter'
-          style={{
-            borderRadius: "12px 12px 0px 0px",
-            background: "#F3F3F3",
-            boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          }}
-        >
-          <div className="max-w-60 min-w-60">
-            <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-2xl">Messages</h2>
-            <div className="space-y-0">
+      <div className='flex justify-around'>
+        <div className='mt-[150px] mb-[50px] h-[800px] w-fit font-inter bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden'>
+          <div className="max-w-80 min-w-80">
+            <div className="bg-gradient-to-r from-[#2E5077] to-[#4391b0] px-4 py-4">
+              <h2 className="font-bold text-white font-Archivo text-2xl">Messages</h2>
+            </div>
+            <div className="space-y-0 max-h-[740px] overflow-y-auto">
               {Array.isArray(availableUsers) && availableUsers.length > 0 ? (
                 availableUsers.map((chat, i) => (
                   <div
                     key={chat?._id}
-                    className={`flex items-center space-x-2 p-2 hover:bg-gray-300 cursor-pointer 
-                    border-b border-gray-300 ${roomIndex === i ? "bg-gray-300" : "bg-[#F3F3F3]"}`}
+                    className={`flex items-center space-x-3 p-4 hover:bg-blue-50 cursor-pointer transition-all duration-200 
+                    border-b border-gray-100 ${roomIndex === i ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}`}
                     onClick={() => {
                       setRoomIndex(i);
                       joinRoom(i);
                     }}
                   >
-                    <div className="w-[65px] h-[65px]">
+                    <div className="w-[60px] h-[60px] relative">
                       <img
                         src={
                           !chat?.picture || chat?.picture === "temp"
@@ -243,51 +238,42 @@ const Chat = () => {
                             : `${imageShow}${chat?.picture}`
                         }
                         alt={chat?.name}
-                        className="w-full h-full rounded-full object-cover"
+                        className="w-full h-full rounded-full object-cover border-2 border-gray-200"
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = default_avatar;
                         }}
                       />
                     </div>
-                    <div>
-                      <div className='font-semibold text-2xl'>{chat?.name}</div>
+                    <div className="flex-1">
+                      <div className='font-semibold text-gray-800 text-lg truncate'>{chat?.name}</div>
+                      <div className='text-sm text-gray-500 truncate'>Click to start conversation</div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center text-gray-400 py-10 text-xl h-180 flex items-center justify-center px-5">
-                  Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
+                <div className="text-center text-gray-400 py-20 px-6">
+                  <div className="text-6xl mb-4">💬</div>
+                  <p className="text-lg">
+                    Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
+                  </p>
                 </div>
               )}
             </div>
           </div>
         </div>
-
-        <div className='flex-1 flex flex-col mt-[150px] mb-[50px] ml-[20px] mr-[10px] h-[800px] w-fit font-inter'
-          style={{
-            borderRadius: "12px 12px 0px 0px",
-            background: "#F3F3F3",
-            boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          }}
-        >
-          <div className="flex items-center bg-[#F3F3F3] p-4 mb-2 shadow-md h-25"
-            style={{
-              borderRadius: "12px 12px 0px 0px",
-              background: "#F3F3F3",
-              boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-            }}
-          >
+        <div className='flex-1 max-w-[1000px] flex flex-col mt-[150px] mb-[50px] h-[800px] font-inter bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden'>
+          <div className="bg-gradient-to-r from-[#2E5077] to-[#4391b0] p-6 shadow-lg">
             {availableUsers[roomIndex] &&
-              <>
-                <div className="w-20 h-20">
+              <div className="flex items-center">
+                <div className="w-16 h-16 relative">
                   <img
                     src={availableUsers[roomIndex]?.picture == "temp" ?
                       default_avatar
                       :
                       `${imageShow}${availableUsers[roomIndex]?.picture}`}
                     alt={availableUsers[roomIndex]?.name}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-cover border-2 border-white/20"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = default_avatar;
@@ -295,34 +281,40 @@ const Chat = () => {
                   />
                 </div>
                 <div className="ml-4">
-                  <div className="font-bold text-3xl">{availableUsers[roomIndex]?.name}</div>
-                  {
-                    availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
-                      (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}</div>)
-                      :
-                      (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}</div>)
-                  }
+                  <div className="font-bold text-white text-2xl">{availableUsers[roomIndex]?.name}</div>
+                  <div className="text-white/80 text-sm">
+                    {
+                      availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
+                        (`Last seen: ${getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}`)
+                        :
+                        (`Last seen: ${getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}`)
+                    }
+                  </div>
                 </div>
-              </>
+              </div>
             }
           </div>
+
           <ScrollToBottom
-            className="flex-1 pt-1 overflow-y-auto"
+            className="flex-1 overflow-y-auto bg-gray-50"
             style={{
               backgroundImage: `url(${logo})`,
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
               backgroundSize: "contain",
-              width: "100%",
-              height: "100%",
+              backgroundAttachment: "fixed",
+              opacity: 0.95,
             }}
           >
-            <div className="flex flex-col gap-2 text-[15px] space-y-4 px-10 py-5">
+            <div className="flex flex-col gap-2 text-[15px] space-y-4 px-6 py-6">
               {Array.isArray(currentRoomMessageList) && currentRoomMessageList.length === 0 ? (
-                <div className="flex justify-center items-center h-160 w-full py-20">
-                  <p className="text-center text-gray-400 w-80 text-2xl">
-                    Ayo, mulai percakapanmu dengan freelancer yg kamu inginkan segera.
-                  </p>
+                <div className="flex justify-center items-center h-full py-32">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">🚀</div>
+                    <p className="text-gray-400 text-xl max-w-md">
+                      Ayo, mulai percakapanmu dengan freelancer yg kamu inginkan segera.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 currentRoomMessageList?.map((message, index) => {
@@ -341,10 +333,10 @@ const Chat = () => {
                   return (
                     <React.Fragment key={index}>
                       {label && (
-                        <div className="flex items-center justify-center my-4">
-                          <div className="flex-1 h-[1px] bg-black max-w-[50px]" />
-                          <span className="px-3 text-gray-500 text-sm">{label}</span>
-                          <div className="flex-1 h-[1px] bg-black max-w-[50px]" />
+                        <div className="flex items-center justify-center my-6">
+                          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-gray-300 to-transparent max-w-[80px]" />
+                          <span className="px-4 text-gray-500 text-sm bg-gray-50 rounded-full py-1 font-medium">{label}</span>
+                          <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-gray-300 to-transparent max-w-[80px]" />
                         </div>
                       )}
                       <Message message={message} roomId={availableRooms[roomIndex]?._id} />
@@ -355,11 +347,13 @@ const Chat = () => {
             </div>
           </ScrollToBottom>
 
-          {/* Input Pesan */}
           {availableUsers[roomIndex] &&
-            <div className="relative flex items-center p-4 gap-2 bg-[#EBECEC]">
-              <button className="p-2" onClick={toggleUpload}>
-                <img src={upload} alt="Upload" className="w-6 h-6 cursor-pointer" />
+            <div className="relative flex items-center p-6 gap-3 bg-white border-t border-gray-200">
+              <button
+                className="p-3 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                onClick={toggleUpload}
+              >
+                <img src={upload} alt="Upload" className="w-6 h-6" />
               </button>
               <div className="relative flex-1">
                 <input
@@ -373,51 +367,54 @@ const Chat = () => {
                       handleSendMessage();
                     }
                   }}
-                  className="w-full p-2 pr-10 bg-white outline-none"
+                  className="w-full py-4 px-5 pr-12 bg-gray-50 border border-gray-200 rounded-full outline-none focus:border-blue-400 focus:bg-white transition-all duration-200"
                 />
                 <img
                   src={emote}
                   alt="Emote"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
-                  onClick={toggleEmoteSelector} // Tampilkan emote selector
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:scale-110 transition-transform duration-200"
+                  onClick={toggleEmoteSelector}
                 />
               </div>
-              <button className="p-2" onClick={handleSendMessage}>
-                <img src={send} alt="Send" className="w-6 h-6 cursor-pointer" />
+              <button
+                className="p-3 bg-blue-500 hover:bg-blue-600 rounded-full transition-colors duration-200"
+                onClick={handleSendMessage}
+              >
+                <img src={send} alt="Send" className="w-5 h-5 filter brightness-0 invert" />
               </button>
 
-              {/* Emote Selector */}
               {isEmoteSelectorVisible && (
                 <div
-                  ref={emoteSelectorRef} // Referensi untuk emote selector
-                  className="absolute bottom-[220px] right-12 bg-white shadow-lg rounded-lg "
+                  ref={emoteSelectorRef}
+                  className="absolute bottom-[70px] right-12 bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden"
                   style={{
-                    width: "300px",
-                    height: "300px",
+                    width: "320px",
+                    height: "320px",
                   }}
                 >
                   <EmojiPicker onEmojiClick={handleEmoteClick} />
                 </div>
               )}
 
-              {/* Floating Div */}
               {isUploadVisible && (
                 <div
-                  className={`absolute bottom-[80px] left-5 rounded-[3px] shadow-lg bg-gray-300 transition-all duration-300 ease-in-out ${isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                  className={`absolute bottom-[70px] left-5 rounded-xl shadow-2xl bg-white border border-gray-200 transition-all duration-300 ease-in-out ${isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                     }`}
                   style={{
                     zIndex: 1000,
                   }}
                 >
-                  <label className="flex items-center gap-2 p-2 bg-gray-300 rounded-md hover:bg-gray-400 cursor-pointer">
+                  <label className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-200 rounded-xl">
                     <img src={sendfrom} alt="Upload Icon" className="w-5 h-5" />
-                    <span className="text-[16px] font-medium">Upload from Computer</span>
+                    <span className="text-[16px] font-medium text-gray-700">Upload from Computer</span>
                     <input
                       type="file"
                       name="message_file"
                       className="hidden"
+                      disabled={disableMessaging}
                       onChange={(e) => {
                         if (e.target.files.length > 0) {
+                          setDisableMessaging(true);
                           handleSendFile(e.target.files[0]);
                         }
                       }}
@@ -428,32 +425,36 @@ const Chat = () => {
             </div>
           }
         </div>
-        <div className='flex mt-[150px] mb-[50px] ml-[20px] mr-[20px] h-fit w-[308px] font-inter'
-          style={{
-            borderRadius: "12px 12px 0px 0px",
-            background: "#F3F3F3",
-            boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          }}
-        >
+        <div className='mt-[150px] mb-[50px] h-fit w-[320px] font-inter bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden'>
           {availableUsers[roomIndex] &&
-            <div className="p-4 w-full">
-              <h2 className="font-bold text-[20px] mb-2 border-b pb-2">About {availableUsers[roomIndex]?.name}</h2>
-              <div className="grid grid-cols-2 text-[16px] gap-y-5 p-2">
-                <div className="text-gray-600">From</div>
-                <div className='text-right'>{availableUsers[roomIndex]?.location === "" ? "unspecified" : availableUsers[roomIndex]?.location}</div>
-                <div className="text-gray-600">Joined Since</div>
-                <div className="text-right">
-                  {availableUsers[roomIndex]?.joinedDate &&
-                    new Date(availableUsers[roomIndex].joinedDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                    })}
-                </div>
-                <div className="text-gray-600">Rating</div>
-                <div className="text-right flex items-center justify-end">
-                  <span className="text-yellow-400 text-[17px]">★</span>
-                  <span className="ml-1 font-bold">{availableUsers[roomIndex]?.rating}</span>
-                  <span className="ml-1 text-gray-500">({availableUsers[roomIndex]?.reviews})</span>
+            <div className="w-full">
+              <div className="bg-gradient-to-r from-[#2E5077] to-[#4391b0] px-4 py-4">
+                <h2 className="font-bold text-white text-[20px]">About {availableUsers[roomIndex]?.name}</h2>
+              </div>
+              <div className="p-6">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 font-medium">From</span>
+                    <span className="text-gray-800 font-semibold">{availableUsers[roomIndex]?.location === "" ? "Unspecified" : availableUsers[roomIndex]?.location}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 font-medium">Joined Since</span>
+                    <span className="text-gray-800 font-semibold">
+                      {availableUsers[roomIndex]?.joinedDate &&
+                        new Date(availableUsers[roomIndex].joinedDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                        })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 font-medium">Rating</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400 text-lg">★</span>
+                      <span className="font-bold text-gray-800">{availableUsers[roomIndex]?.rating}</span>
+                      <span className="text-gray-500">({availableUsers[roomIndex]?.reviews})</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -461,7 +462,7 @@ const Chat = () => {
         </div>
       </div>
       <Footer refScrollUp={chatScrollUp} />
-    </div >
+    </div>
   );
 };
 
