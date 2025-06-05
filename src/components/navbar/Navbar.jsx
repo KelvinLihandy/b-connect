@@ -263,14 +263,16 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                         <p className="font-semibold text-xl mb-2">{order.gig.name}</p>
                                         <div
                                           className={`text-sm p-2 border text-center w-28 rounded ${order.progress === 0
-                                            ? "bg-gray-200 text-gray-700 border-gray-400"
-                                            : order.progress === 1
-                                              ? "bg-yellow-100 text-yellow-800 border-yellow-300"
-                                              : order.progress === 2
-                                                ? "bg-blue-100 text-blue-800 border-blue-300"
-                                                : order.progress === 3
-                                                  ? "bg-green-100 text-green-800 border-green-300"
-                                                  : "bg-red-100 text-red-800 border-red-300"
+                                              ? "bg-gray-200 text-gray-700 border-gray-400"
+                                              : order.progress === 1
+                                                ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                                                : order.progress === 2
+                                                  ? "bg-blue-100 text-blue-800 border-blue-300"
+                                                  : order.progress === 3
+                                                    ? "bg-green-100 text-green-800 border-green-300"
+                                                    : order.progress === 4
+                                                      ? "bg-red-100 text-red-800 border-red-300"
+                                                      : "bg-gray-100 text-gray-700 border-gray-300"
                                             }`}
                                         >
                                           {order.progress === 0
@@ -281,8 +283,8 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                                 ? "Delivered"
                                                 : order.progress === 3
                                                   ? "Finished"
-                                                  : order.progress === 4 
-                                                  ? "Rejected" : "Unknown"}
+                                                  : order.progress === 4
+                                                    ? "Rejected" : "Unknown"}
                                         </div>
                                       </div>
                                       <div className="flex flex-col justify-center items-end h-full text-right">
@@ -468,13 +470,13 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-[99999]"
+                      className="absolute top-full right-0 w-50 bg-white rounded-lg shadow-lg z-[99999] mt-2"
                       onClick={(e) => e.stopPropagation()}
                       style={{ position: 'absolute', zIndex: 99999 }}
                     >
-                      <div className="py-2 px-4 border-b border-gray-100 cursor-default">
-                        <p className="text-gray-800 font-medium">{auth?.data?.auth?.name || "User"}</p>
-                        <p className="text-gray-500 text-xs">{auth?.data?.auth?.email}</p>
+                      <div className="py-2 px-4 border-b border-gray-100 cursor-default bg-gradient-to-r from-[#2E5077] to-[#4391b0]">
+                        <p className="text-white font-bold">{auth?.data?.auth?.name || "User"}</p>
+                        <p className="text-white font-semibold text-xs">{auth?.data?.auth?.email}</p>
                       </div>
 
                       <div className="py-1">

@@ -71,7 +71,7 @@ const Chat = () => {
   const chatScrollUp = useRef(null)
 
   const handleSendMessage = async () => {
-    if (messageInput.trim() === "") return;
+    if (messageInput.trim() === "" || disableMessaging) return;
     const newMessage = {
       roomId: roomId,
       senderId: auth?.data?.auth?.id,
@@ -93,7 +93,6 @@ const Chat = () => {
     newMessage.append("type", detectedType);
     console.log("file", file);
     console.log("file message", newMessage);
-    setDisableMessaging(true);
     setMessageInput("uploading...");
     try {
       const response = await axios.post(`${chatAPI}/upload-file-message`,
@@ -434,6 +433,7 @@ const Chat = () => {
                       className="hidden"
                       onChange={(e) => {
                         if (e.target.files.length > 0) {
+                          setDisableMessaging(true);
                           handleSendFile(e.target.files[0]);
                         }
                       }}

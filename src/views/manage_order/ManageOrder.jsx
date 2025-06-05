@@ -596,7 +596,7 @@ const ManageOrder = () => {
                     {currentStep === 2 && !(isFreelancer && auth?.data.auth.id === response.data.gigInfo?.creator?.id.toString()) && (
                       <button
                         onClick={handleFinishOrder}
-                        className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                        className="bg-blue-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
                       >
                         <img src={check} alt="Check" className="" />
                         <span>Finish Order</span>

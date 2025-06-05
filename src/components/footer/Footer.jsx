@@ -54,10 +54,13 @@ export const Footer = ({ refScrollUp = null, offset = 0 }) => {
             -Connect
           </p>
         </motion.div>
+        <motion.div variants={fadeInUp} className='flex flex-row items-center px-5 justify-center mt-2 mb-6'>
+          <p className='text-lg text-[#92989F] font-bold self-center font-Archivo'>bconnect404@gmail.com - 089728203230</p>
+        </motion.div>
         <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
         <motion.p
           variants={fadeInUp}
-          className='text-xl md:text-3xl text-center p-2 text-wrap'
+          className='text-xl md:text-3xl text-center p-2 text-wrap mt-6'
         >
           Find the perfect freelancer for your project—fast and easy.
         </motion.p>

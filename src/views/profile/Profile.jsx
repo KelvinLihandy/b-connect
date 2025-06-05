@@ -429,6 +429,11 @@ const Profile = () => {
       answer:
         "Masuk ke menu Payment Account, lalu isi form nomor telepon akun. Ikuti instruksi yang diberikan dan pastikan nomor telepon akun Anda aktif dan sesuai dengan data akun.",
     },
+    {
+      question: "Apakah pembayaran dan pemesanan produk bersifat final?",
+      answer:
+        "Pembayaran akan bersifat final dan uang yang sudah dibayarkan tidak dapat dikembalikan dan pesanan tidak dapat dibatallkan"
+    },
   ];
 
   const renderContent = () => {

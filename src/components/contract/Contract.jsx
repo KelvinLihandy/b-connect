@@ -525,7 +525,7 @@ const Contract = ({ isOpen, onClose, gigId, packages, setDisable }) => {
                                     Dengan menekan "Place Order", kamu akan melakukan pembelian
                                     layanan ini menggunakan metode pembayaran yang telah dipilih.
                                     Pastikan detail pesanan sudah benar sebelum melanjutkan.
-                                    Pembayaran bersifat final dan tidak dapat dibatalkan setelah
+                                    Pembayaran bersifat final dan tidak dapat dibatalkan atau refund setelah
                                     diproses.
                                   </p>
                                 </div>
