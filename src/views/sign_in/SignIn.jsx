@@ -56,22 +56,8 @@ const SignIn = () => {
 	return (
 		<div className='flex flex-col items-center justify-center justify-items-center h-screen'>
 			<div className='font-poppins relative text-center gap-4 item-center mt-5 mb-5'>
-				<p className='text-3xl font-semibold'>Log in</p>
+				<p className='text-3xl font-semibold'>Sign in</p>
 			</div>
-
-			{/* <div className='flex flex-col text-lg justify-center gap-4 min-w-140 max-w-170'>
-				<button className='flex flex-row items-center gap-2 py-3 px-5 rounded-full border border-black justify-center cursor-pointer hover:backdrop-blur-sm hover:opacity-60 transition-all'>
-					<img className='h-5 self-center' src={google} alt="" />
-					<div>Continue with Google</div>
-				</button>
-			</div> */}
-
-			{/* <Divider
-				className="!flex-[0_0_auto] !w-[560px] pt-7 pb-6"
-				divClassName="!text-[#111111] !text-xl"
-			/> */}
-
-			{/* Bagian Textbox */}
 			<div className='font-poppins inline-flex flex-col gap-4 items-center mb-8'>
 				<div className='flex flex-col gap-1'>
 					<label className='text-[#666666] text-lg'>
@@ -107,12 +93,12 @@ const SignIn = () => {
 					</input>
 					<div className='flex justify-end text-right'>
 						<Link to="/sign-in/forget">
-						<span className=' text-[#111111] text-base font-normal underline'>
-							Forget your password
-						</span>
+							<span className=' text-[#111111] text-base font-normal underline'>
+								Forget your password
+							</span>
 						</Link>
 					</div>
-					
+
 
 					<label className="flex items-center space-x-3">
 						<input
@@ -126,13 +112,12 @@ const SignIn = () => {
 						</span>
 					</label>
 				</div>
-
-				{/* Button Login */}
 				<div className='mt-3 mb-3'>
 					<button className='bg-[#111111]/25 text-xl text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90'
 						onClick={() => {
 							setIsLoading(true);
-							login()}
+							login()
+						}
 						}
 					>
 						{isLoading ?
@@ -161,6 +146,9 @@ const SignIn = () => {
 					onClick={() => navigate("/sign-up")}>
 					Sign Up
 				</button>
+				<Link to="/home" className='text-blue-500 text-lg font-medium hover:text-blue-800 p-3'>
+					Back to Home
+				</Link>
 			</div>
 			<div className='absolute -z-[100] w-screen'>
 				<img

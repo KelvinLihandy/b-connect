@@ -99,9 +99,10 @@ const SignUp = () => {
 								</span>
 							</Link>
 						</p>
+						<Link to="/home" className='text-blue-500 text-base font-medium hover:text-blue-800 p-2'>
+							Back to Home
+						</Link>
 					</div>
-
-					<div className='h-4' />
 
 					<div className='flex flex-col gap-10 min-w-180 max-w-200'>
 						<div className='flex flex-col gap-2'>
@@ -189,39 +190,6 @@ const SignUp = () => {
 						</p>
 					}
 				</div>
-
-				{/* <div className='h-10' />
-
-				<div className='flex flex-col gap-1 font-nunito min-w-180 max-w-200 items-center'>
-					<label className='text-[#666666] text-2xl'>
-						OR Continue with
-					</label>
-					<div className='flex flex-row justify-between'>
-						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
-							onClick={() => console.log("facebook")}>
-							<img
-								className='h-5 self-center'
-								src={facebook} />
-							<div className=''>Facebook</div>
-						</button>
-						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-80 h-15 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
-							onClick={() => console.log("google")}>
-							<img className='h-auto self-center'
-								src={google}
-							/>
-							<p className='text-xl'>
-								Google
-							</p>
-						</button>
-						<button className='flex flex-row items-center gap-2 py-2 px-5 rounded-full border border-[#000000] min-w-40 justify-center hover:backdrop-blur-sm hover:opacity-60 transition-all'
-							onClick={() => console.log("apple")}>
-							<img
-								className='h-5 self-center'
-								src={apple} />
-							<p>Apple</p>
-						</button>
-					</div>
-				</div> */}
 			</div>
 		</div >
 	)
