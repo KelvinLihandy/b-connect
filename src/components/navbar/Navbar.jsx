@@ -470,7 +470,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full right-0 w-50 bg-white rounded-lg shadow-lg z-[99999] mt-2"
+                      className="absolute top-full right-0 w-[250px] bg-white rounded-lg shadow-lg z-[99999] mt-2"
                       onClick={(e) => e.stopPropagation()}
                       style={{ position: 'absolute', zIndex: 99999 }}
                     >
