@@ -551,7 +551,7 @@ const ManageOrder = () => {
             <span className={`inline-block ${STATUS_COLORS[currentStep]} text-white rounded px-2 py-1 text-sm mt-1`}>{STATUS_TEXT[currentStep]}</span>
           </div>
           <div className="text-right">
-            <p className="font-bold text-xl">RP. {formattedPrice(orderDetails.SERVICE_PRICE)}</p>
+            <p className="font-bold text-xl">Rp. {formattedPrice(orderDetails.SERVICE_PRICE)}</p>
           </div>
         </div>
 
