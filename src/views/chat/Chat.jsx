@@ -210,32 +210,33 @@ const Chat = () => {
   return (
     <div
       ref={chatScrollUp}
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50"
     >
       <Navbar />
 
-      <div className='flex'>
-        <div className='flex mt-[150px] mb-[50px] ml-[20px] mr-[10px] h-[800px] w-fit font-inter'
-          style={{
-            borderRadius: "12px 12px 0px 0px",
-            background: "#F3F3F3",
-            boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          }}
-        >
-          <div className="max-w-60 min-w-60">
-            <h2 className="font-bold pl-3 pt-2 mb-1 font-Archivo text-2xl">Messages</h2>
-            <div className="space-y-0">
+      <div className='flex gap-6 px-6'>
+        {/* Sidebar - Users List */}
+        <div className='mt-[150px] mb-[50px] h-[800px] w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+          <div className="h-full flex flex-col">
+            <div className="bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-6">
+              <h2 className="font-bold text-white text-2xl font-Archivo">Messages</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {Array.isArray(availableUsers) && availableUsers.length > 0 ? (
                 availableUsers.map((chat, i) => (
                   <div
                     key={chat?._id}
-                    className={`flex items-center space-x-2 p-2 hover:bg-gray-300 cursor-pointer 
-                    border-b border-gray-300 ${roomIndex === i ? "bg-gray-300" : "bg-[#F3F3F3]"}`}
+                    className={`flex items-center space-x-4 p-4 cursor-pointer transition-all duration-200 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 ${
+                      roomIndex === i 
+                        ? "bg-gradient-to-r from-blue-100 to-purple-100 border-l-4 border-l-blue-500" 
+                        : ""
+                    }`}
                     onClick={() => {
                       setRoomIndex(i);
                       joinRoom(i);
                     }}
                   >
-                    <div className="w-[65px] h-[65px]">
+                    <div className="w-16 h-16 relative">
                       <img
                         src={
                           !chat?.picture || chat?.picture === "temp"
@@ -243,86 +244,94 @@ const Chat = () => {
                             : `${imageShow}${chat?.picture}`
                         }
                         alt={chat?.name}
-                        className="w-full h-full rounded-full object-cover"
+                        className="w-full h-full rounded-full object-cover border-2 border-white shadow-md"
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = default_avatar;
                         }}
                       />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white"></div>
                     </div>
-                    <div>
-                      <div className='font-semibold text-2xl'>{chat?.name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className='font-semibold text-lg text-gray-800 truncate'>{chat?.name}</div>
+                      <div className='text-sm text-gray-500'>Online</div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center text-gray-400 py-10 text-xl h-180 flex items-center justify-center px-5">
-                  Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
+                <div className="flex items-center justify-center h-full p-6">
+                  <div className="text-center">
+                    <div className="text-gray-400 text-6xl mb-4">💬</div>
+                    <p className="text-gray-500 text-lg leading-relaxed">
+                      Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className='flex-1 flex flex-col mt-[150px] mb-[50px] ml-[20px] mr-[10px] h-[800px] w-fit font-inter'
-          style={{
-            borderRadius: "12px 12px 0px 0px",
-            background: "#F3F3F3",
-            boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          }}
-        >
-          <div className="flex items-center bg-[#F3F3F3] p-4 mb-2 shadow-md h-25"
-            style={{
-              borderRadius: "12px 12px 0px 0px",
-              background: "#F3F3F3",
-              boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-            }}
-          >
-            {availableUsers[roomIndex] &&
+        {/* Main Chat Area */}
+        <div className='flex-1 flex flex-col mt-[150px] mb-[50px] h-[800px] font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+          {/* Chat Header */}
+          <div className="flex items-center bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-6 text-white">
+            {availableUsers[roomIndex] ? (
               <>
-                <div className="w-20 h-20">
+                <div className="w-14 h-14 relative mr-4">
                   <img
                     src={availableUsers[roomIndex]?.picture == "temp" ?
                       default_avatar
                       :
                       `${imageShow}${availableUsers[roomIndex]?.picture}`}
                     alt={availableUsers[roomIndex]?.name}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-cover border-2 border-white shadow-md"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = default_avatar;
                     }}
                   />
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                 </div>
-                <div className="ml-4">
-                  <div className="font-bold text-3xl">{availableUsers[roomIndex]?.name}</div>
-                  {
-                    availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
-                      (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])}</div>)
-                      :
-                      (<div className="text-[#00000] text-[16px]">Last seen: {getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])}</div>)
-                  }
+                <div>
+                  <div className="font-bold text-xl">{availableUsers[roomIndex]?.name}</div>
+                  <div className="text-blue-100 text-sm">
+                    Last seen: {
+                      availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
+                        getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])
+                        :
+                        getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[1])
+                    }
+                  </div>
                 </div>
               </>
-            }
+            ) : (
+              <div className="font-bold text-xl">Select a conversation</div>
+            )}
           </div>
+
+          {/* Messages Area */}
           <ScrollToBottom
-            className="flex-1 pt-1 overflow-y-auto"
+            className="flex-1 bg-gray-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 hover:scrollbar-thumb-gray-500"
+            followButtonClassName="hidden"
             style={{
               backgroundImage: `url(${logo})`,
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
               backgroundSize: "contain",
-              width: "100%",
-              height: "100%",
+              opacity: 0.05,
+              maxHeight: "calc(800px - 160px)",
             }}
           >
-            <div className="flex flex-col gap-2 text-[15px] space-y-4 px-10 py-5">
+            <div className="flex flex-col gap-2 text-sm space-y-4 px-6 py-6 min-h-full">
               {Array.isArray(currentRoomMessageList) && currentRoomMessageList.length === 0 ? (
-                <div className="flex justify-center items-center h-160 w-full py-20">
-                  <p className="text-center text-gray-400 w-80 text-2xl">
-                    Ayo, mulai percakapanmu dengan freelancer yg kamu inginkan segera.
-                  </p>
+                <div className="flex justify-center items-center h-full">
+                  <div className="text-center">
+                    <div className="text-gray-300 text-8xl mb-6">💭</div>
+                    <p className="text-gray-400 text-xl max-w-md">
+                      Ayo, mulai percakapanmu dengan freelancer yg kamu inginkan segera.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 currentRoomMessageList?.map((message, index) => {
@@ -341,10 +350,10 @@ const Chat = () => {
                   return (
                     <React.Fragment key={index}>
                       {label && (
-                        <div className="flex items-center justify-center my-4">
-                          <div className="flex-1 h-[1px] bg-black max-w-[50px]" />
-                          <span className="px-3 text-gray-500 text-sm">{label}</span>
-                          <div className="flex-1 h-[1px] bg-black max-w-[50px]" />
+                        <div className="flex items-center justify-center my-6">
+                          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent max-w-20" />
+                          <span className="px-4 text-gray-500 text-xs font-medium bg-white rounded-full border">{label}</span>
+                          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent max-w-20" />
                         </div>
                       )}
                       <Message message={message} roomId={availableRooms[roomIndex]?._id} />
@@ -355,11 +364,14 @@ const Chat = () => {
             </div>
           </ScrollToBottom>
 
-          {/* Input Pesan */}
-          {availableUsers[roomIndex] &&
-            <div className="relative flex items-center p-4 gap-2 bg-[#EBECEC]">
-              <button className="p-2" onClick={toggleUpload}>
-                <img src={upload} alt="Upload" className="w-6 h-6 cursor-pointer" />
+          {/* Message Input */}
+          {availableUsers[roomIndex] && (
+            <div className="relative flex items-center p-4 gap-3 bg-white border-t border-gray-100">
+              <button 
+                className="p-3 hover:bg-gray-100 rounded-full transition-colors duration-200" 
+                onClick={toggleUpload}
+              >
+                <img src={upload} alt="Upload" className="w-5 h-5" />
               </button>
               <div className="relative flex-1">
                 <input
@@ -373,45 +385,49 @@ const Chat = () => {
                       handleSendMessage();
                     }
                   }}
-                  className="w-full p-2 pr-10 bg-white outline-none"
+                  className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-full outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
-                <img
-                  src={emote}
-                  alt="Emote"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 cursor-pointer"
-                  onClick={toggleEmoteSelector} // Tampilkan emote selector
-                />
+                <button
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors duration-200"
+                  onClick={toggleEmoteSelector}
+                >
+                  <img src={emote} alt="Emote" className="w-5 h-5" />
+                </button>
               </div>
-              <button className="p-2" onClick={handleSendMessage}>
-                <img src={send} alt="Send" className="w-6 h-6 cursor-pointer" />
+              <button 
+                className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full transition-all duration-200 shadow-lg hover:shadow-xl" 
+                onClick={handleSendMessage}
+              >
+                <img src={send} alt="Send" className="w-5 h-5" />
               </button>
 
-              {/* Emote Selector */}
+              {/* Emoji Picker */}
               {isEmoteSelectorVisible && (
                 <div
-                  ref={emoteSelectorRef} // Referensi untuk emote selector
-                  className="absolute bottom-[220px] right-12 bg-white shadow-lg rounded-lg "
+                  ref={emoteSelectorRef}
+                  className="absolute bottom-20 right-16 bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden"
                   style={{
-                    width: "300px",
-                    height: "300px",
+                    width: "320px",
+                    height: "320px",
                   }}
                 >
                   <EmojiPicker onEmojiClick={handleEmoteClick} />
                 </div>
               )}
 
-              {/* Floating Div */}
+              {/* Upload Options */}
               {isUploadVisible && (
                 <div
-                  className={`absolute bottom-[80px] left-5 rounded-[3px] shadow-lg bg-gray-300 transition-all duration-300 ease-in-out ${isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                    }`}
+                  className={`absolute bottom-20 left-4 rounded-xl shadow-2xl bg-white border border-gray-200 transition-all duration-300 ease-in-out ${
+                    isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                  }`}
                   style={{
                     zIndex: 1000,
                   }}
                 >
-                  <label className="flex items-center gap-2 p-2 bg-gray-300 rounded-md hover:bg-gray-400 cursor-pointer">
+                  <label className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer rounded-xl transition-colors duration-200">
                     <img src={sendfrom} alt="Upload Icon" className="w-5 h-5" />
-                    <span className="text-[16px] font-medium">Upload from Computer</span>
+                    <span className="text-sm font-medium text-gray-700">Upload from Computer</span>
                     <input
                       type="file"
                       name="message_file"
@@ -426,42 +442,48 @@ const Chat = () => {
                 </div>
               )}
             </div>
-          }
+          )}
         </div>
-        <div className='flex mt-[150px] mb-[50px] ml-[20px] mr-[20px] h-fit w-[308px] font-inter'
-          style={{
-            borderRadius: "12px 12px 0px 0px",
-            background: "#F3F3F3",
-            boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
-          }}
-        >
-          {availableUsers[roomIndex] &&
-            <div className="p-4 w-full">
-              <h2 className="font-bold text-[20px] mb-2 border-b pb-2">About {availableUsers[roomIndex]?.name}</h2>
-              <div className="grid grid-cols-2 text-[16px] gap-y-5 p-2">
-                <div className="text-gray-600">From</div>
-                <div className='text-right'>{availableUsers[roomIndex]?.location === "" ? "unspecified" : availableUsers[roomIndex]?.location}</div>
-                <div className="text-gray-600">Joined Since</div>
-                <div className="text-right">
-                  {availableUsers[roomIndex]?.joinedDate &&
-                    new Date(availableUsers[roomIndex].joinedDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                    })}
+
+        {/* User Info Panel */}
+        <div className='mt-[150px] mb-[50px] h-fit w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+          {availableUsers[roomIndex] && (
+            <div className="p-6">
+              <div className="bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] -m-6 mb-6 p-6">
+                <h2 className="font-bold text-white text-lg">About {availableUsers[roomIndex]?.name}</h2>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium">From</span>
+                  <span className="text-gray-800 font-semibold">
+                    {availableUsers[roomIndex]?.location === "" ? "Unspecified" : availableUsers[roomIndex]?.location}
+                  </span>
                 </div>
-                <div className="text-gray-600">Rating</div>
-                <div className="text-right flex items-center justify-end">
-                  <span className="text-yellow-400 text-[17px]">★</span>
-                  <span className="ml-1 font-bold">{availableUsers[roomIndex]?.rating}</span>
-                  <span className="ml-1 text-gray-500">({availableUsers[roomIndex]?.reviews})</span>
+                <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium">Joined Since</span>
+                  <span className="text-gray-800 font-semibold">
+                    {availableUsers[roomIndex]?.joinedDate &&
+                      new Date(availableUsers[roomIndex].joinedDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                      })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-3">
+                  <span className="text-gray-600 font-medium">Rating</span>
+                  <div className="flex items-center">
+                    <span className="text-yellow-400 text-lg">★</span>
+                    <span className="ml-1 font-bold text-gray-800">{availableUsers[roomIndex]?.rating}</span>
+                    <span className="ml-1 text-gray-500">({availableUsers[roomIndex]?.reviews})</span>
+                  </div>
                 </div>
               </div>
             </div>
-          }
+          )}
         </div>
       </div>
       <Footer refScrollUp={chatScrollUp} />
-    </div >
+    </div>
   );
 };
 

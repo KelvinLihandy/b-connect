@@ -14,6 +14,7 @@ const UserProfile = () => {
   const { userId } = useParams();
   const [activeTab, setActiveTab] = useState("purchase");
   const [loading, setLoading] = useState(false);
+  const [tabLoading, setTabLoading] = useState(false); // New state for tab transitions
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const { auth } = useContext(AuthContext);
@@ -130,7 +131,7 @@ const UserProfile = () => {
     }
   }, [fallbackImage]);
 
-  // Enhanced status detection with revised logic
+  // Enhanced status detection with rejected status handling
   const getStatusInfo = useCallback((item) => {
     const status = (item.status || '').toLowerCase();
     const statusType = (item.statusType || '').toLowerCase();
@@ -141,11 +142,25 @@ const UserProfile = () => {
     console.log('🔍 Analyzing status for:', item.title || 'Unknown item');
     console.log('   - status:', item.status);
     console.log('   - statusType:', item.statusType);
-    console.log('   - orderNumber:', item.orderNumber);
+    console.log('   - progress:', item.progress);
+    console.log('   - step:', item.step);
     console.log('   - hasValidOrderNumber:', hasValidOrderNumber);
 
-    // REVISI: Status "Finished" → Show Buy Again & Contact FL
-    if (status === 'finished' || statusType === 'finished') {
+    // Handle rejected status specifically (PRIORITY CHECK)
+    if (status === 'rejected' || statusType === 'rejected' || 
+        status.includes('rejected') || item.progress === 4 || item.step === 4) {
+      console.log('   ❌ Detected as: REJECTED');
+      return { 
+        type: 'rejected', 
+        color: 'red', 
+        display: 'Rejected',
+        showManageOrder: hasValidOrderNumber, // Allow viewing order details
+        isCompleted: false
+      };
+    }
+    // Status "Finished" → Show Buy Again & Contact FL
+    else if (status === 'finished' || statusType === 'finished' || 
+             item.progress === 3 || item.step === 3) {
       console.log('   ✅ Detected as: FINISHED - Show Buy Again & Contact FL');
       return { 
         type: 'completed', 
@@ -155,8 +170,9 @@ const UserProfile = () => {
         isCompleted: true
       };
     }
-    // REVISI: Status "Delivered" → Still show Manage Order
-    else if (status === 'delivered' || statusType === 'delivered') {
+    // Status "Delivered" → Still show Manage Order
+    else if (status === 'delivered' || statusType === 'delivered' || 
+             item.progress === 2 || item.step === 2) {
       console.log('   🚚 Detected as: DELIVERED - Show Manage Order');
       return { 
         type: 'delivered', 
@@ -170,7 +186,8 @@ const UserProfile = () => {
     else if (statusType === 'progress' || status.includes('progress') || 
             status.includes('processing') || status.includes('ongoing') || 
             status.includes('active') || status.includes('pending') ||
-            status.includes('in progress') || statusType === 'processing') {
+            status.includes('in progress') || statusType === 'processing' ||
+            item.progress === 1 || item.step === 1) {
       console.log('   🟡 Detected as: IN PROGRESS - Show Manage Order');
       return { 
         type: 'progress', 
@@ -180,9 +197,21 @@ const UserProfile = () => {
         isCompleted: false
       };
     }
-    // Handle completed status
+    // Handle waiting/sent status
+    else if (status === 'waiting' || statusType === 'waiting' || 
+             status.includes('sent') || item.progress === 0 || item.step === 0) {
+      console.log('   ⏳ Detected as: WAITING - Show Manage Order');
+      return { 
+        type: 'waiting', 
+        color: 'gray', 
+        display: 'Waiting',
+        showManageOrder: hasValidOrderNumber,
+        isCompleted: false
+      };
+    }
+    // Handle completed status (fallback)
     else if (statusType === 'completed' || status.includes('completed') || 
-             status.includes('done') || statusType === 'delivered') {
+             status.includes('done')) {
       console.log('   ✅ Detected as: COMPLETED');
       return { 
         type: 'completed', 
@@ -192,10 +221,9 @@ const UserProfile = () => {
         isCompleted: true
       };
     }
-    // Handle cancelled status
+    // Handle cancelled status (excluding rejected which is handled above)
     else if (status.includes('cancelled') || status.includes('canceled') ||
-             status.includes('failed') || status.includes('rejected') ||
-             statusType === 'cancelled' || statusType === 'canceled') {
+             status.includes('failed') || statusType === 'cancelled' || statusType === 'canceled') {
       console.log('   ❌ Detected as: CANCELLED');
       return { 
         type: 'cancelled', 
@@ -218,28 +246,32 @@ const UserProfile = () => {
     }
   }, []);
 
-  // Enhanced sorting function for purchase history
+  // Enhanced sorting function for purchase history with rejected status handling
   const sortPurchaseHistory = useCallback((items) => {
     return [...items].sort((a, b) => {
       const statusA = getStatusInfo(a);
       const statusB = getStatusInfo(b);
       
-      // Primary sort: completed orders go to bottom, others stay at top
-      if (statusA.isCompleted !== statusB.isCompleted) {
-        return statusA.isCompleted ? 1 : -1; // completed orders go to bottom
+      // Define order priority: Active orders (1), Failed orders (2), Completed orders (3)
+      const getOrderPriority = (status) => {
+        if (status.isCompleted) return 3; // Bottom (finished orders)
+        if (status.type === 'rejected' || status.type === 'cancelled') return 2; // Middle (failed orders)
+        return 1; // Top (active orders: waiting, progress, delivered)
+      };
+      
+      const priorityA = getOrderPriority(statusA);
+      const priorityB = getOrderPriority(statusB);
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB; // Lower priority number = higher position
       }
       
-      // Secondary sort: by date only
+      // Secondary sort: by date within same priority group
       const dateA = new Date(a.date || a.createdAt || '1970-01-01');
       const dateB = new Date(b.date || b.createdAt || '1970-01-01');
       
-      // For completed orders, oldest first
-      if (statusA.isCompleted && statusB.isCompleted) {
-        return dateA.getTime() - dateB.getTime(); // Oldest first for completed
-      }
-      
-      // For non-completed orders, newest first
-      return dateB.getTime() - dateA.getTime(); // Newest first for active orders
+      // For all groups, newest first
+      return dateB.getTime() - dateA.getTime();
     });
   }, [getStatusInfo]);
 
@@ -349,7 +381,7 @@ const UserProfile = () => {
     }
   }, [getCurrentUserId, makeAPICall]);
 
-  const fetchPurchaseHistory = useCallback(async (page = 1, force = false) => {
+  const fetchPurchaseHistory = useCallback(async (page = 1, force = false, isTabSwitch = false) => {
     if (!getCurrentUserId) return;
 
     const cache = dataCache.current.purchase;
@@ -363,7 +395,14 @@ const UserProfile = () => {
 
     try {
       cache.loading = true;
-      setLoading(true);
+      
+      // For tab switch, use light loading
+      if (isTabSwitch) {
+        setTabLoading(true);
+      } else {
+        setLoading(true);
+      }
+      
       setError(null);
 
       const data = await makeAPICall(
@@ -373,16 +412,61 @@ const UserProfile = () => {
       if (data && data.purchaseHistory) {
         const { purchaseHistory, pagination } = data;
 
-        const processedHistory = purchaseHistory.map(item => ({
-          ...item,
-          image: processImageUrl(item.image, item.imageUrls, item.title),
-          id: item.id || `purchase-${Date.now()}-${Math.random()}`,
-          deliveryTime: normalizeDeliveryStatus(
-            item.deliveryTime || item.delivery,
-            item.status || item.orderStatus
-          ),
-          paymentStatus: item.paymentStatus === 'processing' ? 'paid' : item.paymentStatus
-        }));
+        const processedHistory = purchaseHistory.map(item => {
+          // Map progress/step numbers to status strings for better detection
+          let mappedStatus = item.status;
+          let mappedStatusType = item.statusType;
+          
+          // Handle numeric progress/step values (from ManageOrder component)
+          if (item.progress !== undefined || item.step !== undefined) {
+            const progressValue = item.progress ?? item.step;
+            switch (progressValue) {
+              case 0:
+                mappedStatus = 'waiting';
+                mappedStatusType = 'waiting';
+                break;
+              case 1:
+                mappedStatus = 'in progress';
+                mappedStatusType = 'progress';
+                break;
+              case 2:
+                mappedStatus = 'delivered';
+                mappedStatusType = 'delivered';
+                break;
+              case 3:
+                mappedStatus = 'finished';
+                mappedStatusType = 'finished';
+                break;
+              case 4:
+                mappedStatus = 'rejected';
+                mappedStatusType = 'rejected';
+                break;
+              default:
+                // Keep original status if not recognized
+                break;
+            }
+          }
+
+          return {
+            ...item,
+            // Use mapped status for better detection
+            status: mappedStatus || item.status,
+            statusType: mappedStatusType || item.statusType,
+            // Keep original values for reference
+            originalStatus: item.status,
+            originalStatusType: item.statusType,
+            progress: item.progress,
+            step: item.step,
+            // Process other fields
+            image: processImageUrl(item.image, item.imageUrls, item.title),
+            id: item.id || `purchase-${Date.now()}-${Math.random()}`,
+            deliveryTime: normalizeDeliveryStatus(
+              item.deliveryTime || item.delivery,
+              mappedStatus || item.status || item.orderStatus
+            ),
+            paymentStatus: item.paymentStatus === 'processing' ? 'paid' : item.paymentStatus
+          };
+        });
 
         cache.data = processedHistory;
         cache.pagination = {
@@ -421,10 +505,11 @@ const UserProfile = () => {
     } finally {
       cache.loading = false;
       setLoading(false);
+      setTabLoading(false);
     }
   }, [getCurrentUserId, makeAPICall, processImageUrl, normalizeDeliveryStatus]);
 
-  const fetchReviews = useCallback(async (page = 1, force = false) => {
+  const fetchReviews = useCallback(async (page = 1, force = false, isTabSwitch = false) => {
     if (!getCurrentUserId) return;
 
     const cache = dataCache.current.reviews;
@@ -438,7 +523,14 @@ const UserProfile = () => {
 
     try {
       cache.loading = true;
-      setLoading(true);
+      
+      // For tab switch, use light loading
+      if (isTabSwitch) {
+        setTabLoading(true);
+      } else {
+        setLoading(true);
+      }
+      
       setError(null);
 
       const data = await makeAPICall(
@@ -525,6 +617,7 @@ const UserProfile = () => {
     } finally {
       cache.loading = false;
       setLoading(false);
+      setTabLoading(false);
     }
   }, [getCurrentUserId, makeAPICall, processImageUrl, normalizeDeliveryStatus]);
 
@@ -559,6 +652,7 @@ const UserProfile = () => {
     }
   }, [auth?.data?.auth?.id, userId, getCurrentUserId, fetchUserStats, fetchPurchaseHistory, activeTab]);
 
+  // Modified handleTabChange - key improvement here
   const handleTabChange = useCallback(async (tab) => {
     setActiveTab(tab);
     setError(null);
@@ -566,18 +660,22 @@ const UserProfile = () => {
     if (tab === "purchase") {
       const cache = dataCache.current.purchase;
       if (cache.loaded) {
+        // Data already exists, show immediately without loading
         setPurchaseHistory(cache.data);
         setPurchasePagination(cache.pagination);
       } else if (!cache.loading) {
-        fetchPurchaseHistory(1);
+        // Data doesn't exist, fetch with light loading
+        fetchPurchaseHistory(1, false, true);
       }
     } else if (tab === "reviews") {
       const cache = dataCache.current.reviews;
       if (cache.loaded) {
+        // Data already exists, show immediately without loading
         setReviews(cache.data);
         setReviewsPagination(cache.pagination);
       } else if (!cache.loading) {
-        fetchReviews(1);
+        // Data doesn't exist, fetch with light loading
+        fetchReviews(1, false, true);
       }
     }
   }, [fetchPurchaseHistory, fetchReviews]);
@@ -594,7 +692,7 @@ const UserProfile = () => {
     navigate('/profile');
   }, [navigate]);
 
-  // Enhanced Purchase Card with smaller design
+  // Enhanced Purchase Card with rejected status handling
   const PurchaseCard = React.memo(({ item }) => {
     const statusInfo = useMemo(() => getStatusInfo(item), [item, getStatusInfo]);
 
@@ -623,9 +721,13 @@ const UserProfile = () => {
                     ? "bg-green-100/90 text-green-800 border-green-300/50"
                     : statusInfo.type === "delivered"
                       ? "bg-blue-100/90 text-blue-800 border-blue-300/50"
-                      : statusInfo.type === "cancelled"
+                      : statusInfo.type === "rejected"
                         ? "bg-red-100/90 text-red-800 border-red-300/50"
-                        : "bg-gray-100/90 text-gray-800 border-gray-300/50"
+                        : statusInfo.type === "cancelled"
+                          ? "bg-red-100/90 text-red-800 border-red-300/50"
+                          : statusInfo.type === "waiting"
+                            ? "bg-gray-100/90 text-gray-800 border-gray-300/50"
+                            : "bg-gray-100/90 text-gray-800 border-gray-300/50"
               }`}>
                 {statusInfo.display}
               </span>
@@ -708,7 +810,12 @@ const UserProfile = () => {
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>{item.deliveryTime || 'Standard delivery'}</span>
+                    <span className={`${statusInfo.type === 'rejected' ? 'text-red-600 font-semibold' : statusInfo.type === 'cancelled' ? 'text-red-600 font-semibold' : ''}`}>
+                      {statusInfo.type === 'rejected' || statusInfo.type === 'cancelled' 
+                        ? statusInfo.display 
+                        : (item.deliveryTime || 'Standard delivery')
+                      }
+                    </span>
                   </div>
                 </div>
               </div>
@@ -733,7 +840,7 @@ const UserProfile = () => {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        Manage Order
+                        {statusInfo.type === "rejected" ? "View Details" : "Manage Order"}
                       </span>
                     </button>
                   )}
@@ -762,13 +869,18 @@ const UserProfile = () => {
                     </>
                   )}
 
-                  {/* Show Buy Again for cancelled orders */}
-                  {statusInfo.type === "cancelled" && (
+                  {/* Show Try Again for rejected/cancelled orders */}
+                  {(statusInfo.type === "rejected" || statusInfo.type === "cancelled") && (
                     <button
                       onClick={() => handleBuyAgain(item)}
                       className="group relative bg-gradient-to-r from-gray-500 to-slate-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-md shadow-gray-500/25 hover:shadow-lg hover:shadow-gray-500/40 overflow-hidden"
                     >
-                      <span className="relative z-10">Buy Again</span>
+                      <span className="relative z-10 flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Try Again
+                      </span>
                     </button>
                   )}
                 </div>
@@ -1172,7 +1284,7 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Tab Navigation - Made smaller */}
+          {/* Enhanced Tab Navigation with loading indicator */}
           <div className="px-6 pt-6 bg-white/80 backdrop-blur-sm">
             <div className="flex justify-between items-center">
               <div className="inline-flex bg-white/80 backdrop-blur-sm rounded-2xl p-1.5 border border-white/60 gap-1.5">
@@ -1183,11 +1295,16 @@ const UserProfile = () => {
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-105"
                   }`}
                   onClick={() => handleTabChange("purchase")}
+                  disabled={tabLoading}
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
+                    {tabLoading && activeTab === "purchase" ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                    )}
                     Purchase History
                   </span>
                 </button>
@@ -1198,11 +1315,16 @@ const UserProfile = () => {
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-105"
                   }`}
                   onClick={() => handleTabChange("reviews")}
+                  disabled={tabLoading}
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
+                    {tabLoading && activeTab === "reviews" ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    )}
                     My Reviews
                   </span>
                 </button>
@@ -1210,9 +1332,9 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Content Section */}
+          {/* Content Section - Modified loading logic */}
           <div className="p-6 bg-white/80 backdrop-blur-sm">
-            {loading && (!dataCache.current[activeTab].loaded || dataCache.current[activeTab].data.length === 0) ? (
+            {loading && initialLoading ? (
               <LoadingSpinner />
             ) : error ? (
               <ErrorMessage message={error} />
@@ -1222,9 +1344,11 @@ const UserProfile = () => {
                   <div className="space-y-6">
                     {sortedPurchaseHistory.length > 0 ? (
                       <>
-                        {sortedPurchaseHistory.map((item) => (
-                          <PurchaseCard key={item.id} item={item} />
-                        ))}
+                        <div className={`${tabLoading ? 'opacity-70 pointer-events-none' : ''} transition-opacity duration-300 space-y-6`}>
+                          {sortedPurchaseHistory.map((item) => (
+                            <PurchaseCard key={item.id} item={item} />
+                          ))}
+                        </div>
                         {purchasePagination.totalPages > 1 && (
                           <PaginationControls
                             pagination={purchasePagination}
@@ -1233,22 +1357,27 @@ const UserProfile = () => {
                         )}
                       </>
                     ) : (
-                      <div className="text-center py-16 relative">
-                        <div className="text-gray-300 text-6xl mb-6">📦</div>
-                        <h3 className="text-2xl font-bold text-gray-600 mb-4">No Purchase History</h3>
-                        <p className="text-gray-500 text-lg mb-6">You haven't made any purchases yet.</p>
-                        <button
-                          className="group relative mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 text-lg overflow-hidden"
-                          onClick={() => navigate("/catalog")}
-                        >
-                          <span className="relative z-10 flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Browse Services
-                          </span>
-                        </button>
-                      </div>
+                      // Show loading spinner only if data hasn't been loaded yet
+                      !dataCache.current.purchase.loaded && loading ? (
+                        <LoadingSpinner />
+                      ) : (
+                        <div className="text-center py-16 relative">
+                          <div className="text-gray-300 text-6xl mb-6">📦</div>
+                          <h3 className="text-2xl font-bold text-gray-600 mb-4">No Purchase History</h3>
+                          <p className="text-gray-500 text-lg mb-6">You haven't made any purchases yet.</p>
+                          <button
+                            className="group relative mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 cursor-pointer hover:scale-105 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 text-lg overflow-hidden"
+                            onClick={() => navigate("/catalog")}
+                          >
+                            <span className="relative z-10 flex items-center gap-2">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                              Browse Services
+                            </span>
+                          </button>
+                        </div>
+                      )
                     )}
                   </div>
                 )}
@@ -1257,9 +1386,11 @@ const UserProfile = () => {
                   <div className="space-y-6">
                     {sortedReviews.length > 0 ? (
                       <>
-                        {sortedReviews.map((review) => (
-                          <ReviewCard key={review.id} review={review} />
-                        ))}
+                        <div className={`${tabLoading ? 'opacity-70 pointer-events-none' : ''} transition-opacity duration-300 space-y-6`}>
+                          {sortedReviews.map((review) => (
+                            <ReviewCard key={review.id} review={review} />
+                          ))}
+                        </div>
                         {reviewsPagination.totalPages > 1 && (
                           <PaginationControls
                             pagination={reviewsPagination}
@@ -1268,23 +1399,28 @@ const UserProfile = () => {
                         )}
                       </>
                     ) : (
-                      <div className="text-center py-16 relative">
-                        <div className="text-gray-300 text-6xl mb-6">📝</div>
-                        <h3 className="text-2xl font-bold text-gray-600 mb-4">No Reviews Written Yet</h3>
-                        <p className="text-gray-500 text-lg mb-3">You haven't written any reviews for completed orders yet.</p>
-                        <p className="text-gray-400 text-sm mb-6">Reviews can only be written after your orders are completed or delivered.</p>
-                        <button
-                          className="group relative mt-6 bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-2xl cursor-pointer font-bold hover:from-green-600 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 text-lg overflow-hidden"
-                          onClick={() => handleTabChange("purchase")}
-                        >
-                          <span className="relative z-10 flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                            View Purchase History
-                          </span>
-                        </button>
-                      </div>
+                      // Show loading spinner only if data hasn't been loaded yet
+                      !dataCache.current.reviews.loaded && loading ? (
+                        <LoadingSpinner />
+                      ) : (
+                        <div className="text-center py-16 relative">
+                          <div className="text-gray-300 text-6xl mb-6">📝</div>
+                          <h3 className="text-2xl font-bold text-gray-600 mb-4">No Reviews Written Yet</h3>
+                          <p className="text-gray-500 text-lg mb-3">You haven't written any reviews for completed orders yet.</p>
+                          <p className="text-gray-400 text-sm mb-6">Reviews can only be written after your orders are completed or delivered.</p>
+                          <button
+                            className="group relative mt-6 bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-2xl cursor-pointer font-bold hover:from-green-600 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 text-lg overflow-hidden"
+                            onClick={() => handleTabChange("purchase")}
+                          >
+                            <span className="relative z-10 flex items-center gap-2">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                              </svg>
+                              View Purchase History
+                            </span>
+                          </button>
+                        </div>
+                      )
                     )}
                   </div>
                 )}
