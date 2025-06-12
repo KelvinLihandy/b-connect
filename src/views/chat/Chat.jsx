@@ -249,7 +249,6 @@ const Chat = () => {
                           e.target.src = default_avatar;
                         }}
                       />
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white"></div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className='font-semibold text-lg text-gray-800 truncate'>{chat?.name}</div>
@@ -290,7 +289,6 @@ const Chat = () => {
                       e.target.src = default_avatar;
                     }}
                   />
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                 </div>
                 <div>
                   <div className="font-bold text-xl">{availableUsers[roomIndex]?.name}</div>
