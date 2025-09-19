@@ -58,23 +58,23 @@ const ForgotPassword = () => {
         src={bg_right}
       />
 
-      <div className='w-2xl max-h-3/4 p-8 bg-[#F3F3F3] rounded-lg flex flex-col gap-10 justify-around z-10'>
+      <div className='w-full mx-4 md:w-2xl max-h-3/4 p-4 md:p-8 bg-[#F3F3F3] rounded-lg flex flex-col gap-6 md:gap-10 justify-around z-10'>
         <div className='text-center mb-8'>
-          <h1 className='text-4xl font-extrabold text-[#333333] mb-6 font-Archivo'>
+          <h1 className='text-2xl md:text-4xl font-extrabold text-[#333333] mb-4 md:mb-6 font-Archivo'>
             Forget your password?
           </h1>
-          <p className='text-[#333333] font-Archivo text-2xl'>
+          <p className='text-[#333333] font-Archivo text-lg md:text-2xl px-2 md:px-0'>
             Please enter the email address you'd like your password to be reset
           </p>
         </div>
 
         <div className='mb-8 font-poppins text-[#666666] '>
-          <label className='block text-xl font-medium mb-1'
+          <label className='block text-lg md:text-xl font-medium mb-1'
             htmlFor='email' >
             Enter Email Address
           </label>
           <input
-            className='w-full px-4 py-3 text-lg border border-[#66666659] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            className='w-full px-3 md:px-4 py-3 text-base md:text-lg border border-[#66666659] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             type='email'
             id='email'
             placeholder='emailAddress@gmail.com'
@@ -85,7 +85,7 @@ const ForgotPassword = () => {
           </label>
         </div>
         <div className='flex flex-col justify-center gap-5'>
-          <button className={`w-3/4 py-3 px-4 border rounded-full self-center h-15 text-lg text-gray-800 font-medium ${!isLoading && 'hover:bg-white'}  mb-4 cursor-pointer`}
+          <button className={`w-full md:w-3/4 py-3 px-4 border rounded-full self-center h-12 md:h-15 text-base md:text-lg text-gray-800 font-medium ${!isLoading && 'hover:bg-white'}  mb-4 cursor-pointer`}
             onClick={() => sendOTP(email)}
             disabled={isLoading}
           >
@@ -101,7 +101,7 @@ const ForgotPassword = () => {
             </p>
           }
           <div className='text-center'>
-            <Link className='text-xl font-poppins text-[#004B90] hover:text-[#0073E6]' to='/sign-in'>
+            <Link className='text-lg md:text-xl font-poppins text-[#004B90] hover:text-[#0073E6]' to='/sign-in'>
               Back To Login
             </Link>
           </div>

@@ -55,22 +55,22 @@ const SignIn = () => {
 
 	return (
 		<div className='flex flex-col items-center justify-center justify-items-center h-screen'>
-			<div className='font-poppins relative text-center gap-4 item-center mt-5 mb-5'>
-				<p className='text-3xl font-semibold'>Sign in</p>
+			<div className='font-poppins relative text-center gap-4 item-center mt-5 mb-5 px-4'>
+				<p className='text-2xl md:text-3xl font-semibold'>Sign in</p>
 			</div>
-			<div className='font-poppins inline-flex flex-col gap-4 items-center mb-8'>
+			<div className='font-poppins inline-flex flex-col gap-4 items-center mb-8 w-full px-4 md:px-0'>
 				<div className='flex flex-col gap-1'>
 					<label className='text-[#666666] text-lg'>
 						Email address
 					</label>
-					<input className='form-input text-base h-12 min-w-140 max-w-170 px-5'
+					<input className='form-input text-base h-12 w-full md:min-w-140 md:max-w-170 px-5'
 						type='text'
 						placeholder=''
 						onChange={(event) => setEmail(event.target.value)}
 					/>
 				</div>
 				<div className='flex flex-col gap-1'>
-					<div className='flex flex-row justify-between min-w-140 max-w-170'>
+					<div className='flex flex-row justify-between w-full md:min-w-140 md:max-w-170'>
 						<label className='text-[#666666] text-lg'>
 							Password
 						</label>
@@ -85,7 +85,7 @@ const SignIn = () => {
 							</p>
 						</div>
 					</div>
-					<input className='form-input text-base h-12 min-w-140 max-w-170 px-5'
+					<input className='form-input text-base h-12 w-full md:min-w-140 md:max-w-170 px-5'
 						type={showPass ? "text" : "password"}
 						placeholder=''
 						onChange={(event) => setPassword(event.target.value)}
@@ -113,7 +113,7 @@ const SignIn = () => {
 					</label>
 				</div>
 				<div className='mt-3 mb-3'>
-					<button className='bg-[#111111]/25 text-xl text-white font-bold min-w-140 max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90'
+					<button className='bg-[#111111]/25 text-lg md:text-xl text-white font-bold w-full md:min-w-140 md:max-w-170 rounded-4xl min-h-14 transition cursor-pointer hover:text-black hover:opacity-90'
 						onClick={() => {
 							setIsLoading(true);
 							login()
@@ -133,7 +133,7 @@ const SignIn = () => {
 					}
 				</div>
 
-				<div className="mt-5 mb-5 flex w-[560px] items-center relative flex-[0_0_auto]">
+				<div className="mt-5 mb-5 flex w-full md:w-[560px] items-center relative flex-[0_0_auto]">
 					<div className="relative flex-1 grow h-0.5 bg-[#66666640]" />
 				</div>
 
@@ -142,7 +142,7 @@ const SignIn = () => {
 						Don't have an account?</p>
 				</div>
 				<button
-					className='bg-[#FFFFFF] text-black text-xl font-medium min-w-140 max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50'
+					className='bg-[#FFFFFF] text-black text-lg md:text-xl font-medium w-full md:min-w-140 md:max-w-170 rounded-4xl border border-black min-h-14 transition cursor-pointer hover:bg-gray-100 hover:text-black/50'
 					onClick={() => navigate("/sign-up")}>
 					Sign Up
 				</button>

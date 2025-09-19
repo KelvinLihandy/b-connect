@@ -29,8 +29,8 @@ import PrivacyPolicy from "./views/privacy_policy/PrivacyPolicy";
 //   transports: ["polling"],
 // });
 
+// export const socket = io("http://localhost:5000");
 export const socket = io("http://localhost:5000");
-
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
   const { isFreelancer } = useContext(UserTypeContext);

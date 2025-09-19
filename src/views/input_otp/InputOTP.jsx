@@ -136,20 +136,20 @@ const InputOTP = () => {
         src={bg_right}
       />
 
-      <div className='w-2xl max-h-3/4 p-8 bg-[#F3F3F3] rounded-lg flex flex-col gap-15 justify-around z-10'>
+      <div className='w-full mx-4 md:w-2xl max-h-3/4 p-4 md:p-8 bg-[#F3F3F3] rounded-lg flex flex-col gap-8 md:gap-15 justify-around z-10'>
         <div className='text-center'>
-          <h1 className='text-4xl font-extrabold text-[#333333] mb-6 font-Archivo'>
+          <h1 className='text-2xl md:text-4xl font-extrabold text-[#333333] mb-4 md:mb-6 font-Archivo'>
             Verify Email
           </h1>
-          <p className='text-[#333333] font-Archivo text-2xl'>
+          <p className='text-[#333333] font-Archivo text-lg md:text-2xl px-2 md:px-0'>
             We have sent an OTP code to your email {email}
           </p>
-          <p className='text-[#333333] font-Archivo text-2xl pt-3'>
+          <p className='text-[#333333] font-Archivo text-lg md:text-2xl pt-3'>
             {formatTime(timeOtpLeft)}
           </p>
         </div>
 
-        <div className="flex flex-row items-center justify-between mx-auto w-full max-w-md">
+        <div className="flex flex-row items-center justify-between mx-auto w-full max-w-[280px] md:max-w-md gap-2 md:gap-4">
           <div className="w-16 h-16 ">
             <input
               maxLength="1"
@@ -267,7 +267,7 @@ const InputOTP = () => {
         </div>
 
         <div className='flex flex-col justify-center gap-5'>
-          <button className='w-3/4 py-3 px-4 border rounded-full self-center h-15 text-lg text-gray-800 font-medium hover:bg-white mb-4 cursor-pointer'
+          <button className='w-full md:w-3/4 py-3 px-4 border rounded-full self-center h-12 md:h-15 text-base md:text-lg text-gray-800 font-medium hover:bg-white mb-4 cursor-pointer'
             onClick={() => verifyOTP(token)}
             disabled={isLoading}
           >
@@ -292,7 +292,7 @@ const InputOTP = () => {
                 Resend in {timeReqLeft}
               </span>
             </p>
-            <Link className='text-xl font-poppins text-[#004B90] hover:text-[#0073E6]' to='/sign-in'>
+            <Link className='text-base md:text-xl font-poppins text-[#004B90] hover:text-[#0073E6]' to='/sign-in'>
               Back To Login
             </Link>
           </div>

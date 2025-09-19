@@ -83,14 +83,14 @@ const Message = ({ message, roomId }) => {
 
   if (isLoading && (message.type === "file" || message.type === "image")) {
     return (
-      <div 
+      <div
         ref={messageRef}
         className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4`}
       >
         <div className={`
-          relative overflow-hidden rounded-2xl shadow-lg max-w-[45%] min-w-[120px]
-          ${isOwnMessage 
-            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white" 
+          relative overflow-hidden rounded-2xl shadow-lg max-w-[80%] sm:max-w-[60%] md:max-w-[45%] min-w-[120px]
+          ${isOwnMessage
+            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
             : "bg-white border border-gray-200 text-gray-800"
           }
         `}>
@@ -107,28 +107,28 @@ const Message = ({ message, roomId }) => {
 
   if (message.type === "text") {
     return (
-      <div 
+      <div
         ref={messageRef}
         className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4 group`}
       >
         <div className={`
-          relative overflow-hidden rounded-2xl shadow-lg max-w-[45%] min-w-[80px]
+          relative overflow-hidden rounded-2xl shadow-lg max-w-[80%] sm:max-w-[60%] md:max-w-[45%] min-w-[80px]
           transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl
-          ${isOwnMessage 
-            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white" 
+          ${isOwnMessage
+            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
             : "bg-white border border-gray-200 text-gray-800 hover:border-gray-300"
           }
         `}>
           {/* Message bubble tail */}
           <div className={`
             absolute bottom-0 w-4 h-4 transform rotate-45
-            ${isOwnMessage 
-              ? "bg-blue-600 -right-2" 
+            ${isOwnMessage
+              ? "bg-blue-600 -right-2"
               : "bg-white border-r border-b border-gray-200 -left-2"
             }
           `}></div>
-          
-          <div className="relative z-10 px-4 py-3">
+
+          <div className="relative z-10 px-3 py-2 sm:px-4 sm:py-3">
             <p className={`
               text-sm leading-relaxed break-words
               ${isOwnMessage ? "text-white" : "text-gray-800"}
@@ -149,27 +149,27 @@ const Message = ({ message, roomId }) => {
 
   if (message.type === "image") {
     return (
-      <div 
+      <div
         ref={messageRef}
         className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4 group`}
       >
         <div className={`
-          relative overflow-hidden rounded-2xl shadow-lg max-w-[45%] min-w-[200px]
+          relative overflow-hidden rounded-2xl shadow-lg max-w-[80%] sm:max-w-[70%] md:max-w-[45%] min-w-[150px]
           transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl
-          ${isOwnMessage 
-            ? "bg-gradient-to-br from-blue-500 to-blue-600" 
+          ${isOwnMessage
+            ? "bg-gradient-to-br from-blue-500 to-blue-600"
             : "bg-white border border-gray-200"
           }
         `}>
           {/* Message bubble tail */}
           <div className={`
             absolute bottom-0 w-4 h-4 transform rotate-45
-            ${isOwnMessage 
-              ? "bg-blue-600 -right-2" 
+            ${isOwnMessage
+              ? "bg-blue-600 -right-2"
               : "bg-white border-r border-b border-gray-200 -left-2"
             }
           `}></div>
-          
+
           <div className="relative z-10 p-2">
             <div className="relative overflow-hidden rounded-xl">
               {isImageLoading && (
@@ -224,7 +224,7 @@ const Message = ({ message, roomId }) => {
 
   if (message.type === "file") {
     return (
-      <div 
+      <div
         ref={messageRef}
         className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4 group`}
       >
@@ -232,7 +232,7 @@ const Message = ({ message, roomId }) => {
           href={`${fileDownload}${message.content}`}
           download={fileData?.fileName}
           className={`
-            relative overflow-hidden rounded-2xl shadow-lg max-w-[45%] min-w-[240px]
+            relative overflow-hidden rounded-2xl shadow-lg max-w-[90%] sm:max-w-[70%] md:max-w-[45%] min-w-[200px]
             transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl
             bg-white border border-gray-200 hover:border-gray-300
             no-underline block
@@ -241,12 +241,12 @@ const Message = ({ message, roomId }) => {
         >
           {/* Message bubble tail */}
           <div className="absolute bottom-0 w-4 h-4 transform rotate-45 bg-white border-r border-b border-gray-200 -left-2"></div>
-          
-          <div className="relative z-10 p-4">
+
+          <div className="relative z-10 p-3 sm:p-4">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-                  <img src={file} alt="File" className="w-6 h-6 filter brightness-0 invert" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                  <img src={file} alt="File" className="w-5 h-5 sm:w-6 sm:h-6 filter brightness-0 invert" />
                 </div>
               </div>
               

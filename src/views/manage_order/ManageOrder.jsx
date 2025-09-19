@@ -422,31 +422,31 @@ const ManageOrder = () => {
   return (
     <div className="font-Archivo">
       <Navbar alt />
-      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15'>
+      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-28 lg:mt-35 mb-15'>
         {/* Order Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-semibold">Order #{orderDetails.ORDER_NUMBER}</h1>
-          <div className="flex text-lg gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
+          <h1 className="text-2xl lg:text-3xl font-semibold">Order #{orderDetails.ORDER_NUMBER}</h1>
+          <div className="flex flex-wrap text-sm lg:text-lg gap-2 lg:gap-4">
             <button
               onClick={initiateChat}
-              className="flex items-center gap-2 border-4 border-blue-500 bg-blue-400 cursor-pointer rounded px-4 transition-colors"
+              className="flex items-center gap-2 border-2 lg:border-4 border-blue-500 bg-blue-400 cursor-pointer rounded px-2 lg:px-4 py-1 lg:py-0 transition-colors"
             >
               <img
                 src={message_icon}
                 alt="Contact"
-                className="w-[25px] h-[25px]"
+                className="w-5 h-5 lg:w-[25px] lg:h-[25px]"
               />
               <span className='text-white'>Contact</span>
             </button>
             <button
               onClick={handleInvoiceClick}
-              className="flex items-center gap-2 border-4 border-gray-300 bg-white cursor-pointer rounded px-4 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 border-2 lg:border-4 border-gray-300 bg-white cursor-pointer rounded px-2 lg:px-4 py-1 lg:py-0 hover:bg-gray-50 transition-colors"
             >
-              <FileText />
+              <FileText className="w-4 h-4 lg:w-auto lg:h-auto" />
               <span>Invoice</span>
             </button>
-            <div className={`flex items-center gap-2 ${STATUS_COLORS[currentStep]} text-white rounded px-4`}>
-              {STATUS_ICONS[currentStep]}
+            <div className={`flex items-center gap-2 ${STATUS_COLORS[currentStep]} text-white rounded px-2 lg:px-4 py-1 lg:py-2`}>
+              {React.cloneElement(STATUS_ICONS[currentStep], { className: 'w-4 h-4 lg:w-6 lg:h-6 text-white' })}
               <span>{STATUS_TEXT[currentStep]}</span>
             </div>
           </div>
@@ -454,7 +454,7 @@ const ManageOrder = () => {
 
         {/* Order Date Info */}
         <div className="pb-4">
-          <div className="flex text-lg gap-8">
+          <div className="flex flex-col lg:flex-row text-sm lg:text-lg gap-2 lg:gap-8">
             <p>Order date: {orderDates.START_DATE}</p>
             <p>Expected delivery: &nbsp;
               {currentStep === 4 ?
@@ -468,7 +468,7 @@ const ManageOrder = () => {
 
         <div className="border-t border-[#000] w-full mb-6"></div>
         <div className="mb-8">
-          <div className="flex justify-between items-center px-[5%] mb-1 relative">
+          <div className="hidden lg:flex justify-between items-center px-[5%] mb-1 relative">
             <div className="absolute h-1 top-[35px] -translate-y-1/2 left-[6%] right-[6%] flex">
               <div className="flex-1 bg-gray-200 relative">
                 {currentStep > 0 && (
@@ -516,15 +516,45 @@ const ManageOrder = () => {
               ))}
             </div>
           </div>
+          {/* Mobile steps view */}
+          <div className="lg:hidden flex flex-col gap-4">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center gap-4">
+                <div
+                  className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full 
+                  ${currentStep === 4 ? 'bg-red-500' : index <= currentStep ? 'bg-green-500' : 'bg-gray-300'} 
+                  border-2 border-white shadow-md`}
+                >
+                  {currentStep === 4 ?
+                    <CircleAlert className='w-6 h-6 text-white' />
+                    :
+                    <img
+                      src={step.icon}
+                      alt={step.name}
+                      className="w-6 h-6"
+                    />
+                  }
+                </div>
+                <div>
+                  <p className="font-medium text-base">{step.name}</p>
+                  {currentStep === 4 ?
+                    <p className="text-red-500 text-sm">REJECTED</p>
+                    :
+                    <p className="text-gray-500 text-sm">{step.date ? step.date : 'Pending'}</p>
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="border-t border-[#000] w-full mb-6"></div>
-        <div className="flex items-center py-4 mb-6">
-          <div className="rounded mr-4">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center py-4 mb-6 gap-4">
+          <div className="rounded flex-shrink-0">
             {orderDetails.SERVICE_IMAGE && orderDetails.SERVICE_IMAGE.startsWith('1') ? (
               <img
                 src={`${imageShow}${orderDetails.SERVICE_IMAGE}`}
                 alt="Service"
-                className="w-[120px] h-[120px] object-cover rounded bg-gray-200"
+                className="w-24 h-24 lg:w-[120px] lg:h-[120px] object-cover rounded bg-gray-200"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = randomDummy;
@@ -534,7 +564,7 @@ const ManageOrder = () => {
               <img
                 src={image}
                 alt="Service"
-                className="w-[80px] h-[80px] rounded bg-gray-200"
+                className="w-20 h-20 lg:w-[80px] lg:h-[80px] rounded bg-gray-200"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = randomDummy;
@@ -543,49 +573,49 @@ const ManageOrder = () => {
             )}
           </div>
           <div className="flex-grow">
-            <h3 className="font-medium text-2xl">{orderDetails.SERVICE_NAME}</h3>
-            <div className="text-gray-500 text-lg flex items-center gap-2">
+            <h3 className="font-medium text-xl lg:text-2xl">{orderDetails.SERVICE_NAME}</h3>
+            <div className="text-gray-500 text-sm lg:text-lg flex flex-col lg:flex-row lg:items-center gap-0 lg:gap-2">
               <p>Order {orderDetails.ORDER_NUMBER}</p>
               <p>{orderDates.ORDER_CONFIRMATION_DATE}</p>
             </div>
-            <span className={`inline-block ${STATUS_COLORS[currentStep]} text-white rounded px-2 py-1 text-sm mt-1`}>{STATUS_TEXT[currentStep]}</span>
+            <span className={`inline-block ${STATUS_COLORS[currentStep]} text-white rounded px-2 py-1 text-xs lg:text-sm mt-1`}>{STATUS_TEXT[currentStep]}</span>
           </div>
-          <div className="text-right">
-            <p className="font-bold text-xl">Rp. {formattedPrice(orderDetails.SERVICE_PRICE)}</p>
+          <div className="text-left lg:text-right w-full lg:w-auto">
+            <p className="font-bold text-lg lg:text-xl">Rp. {formattedPrice(orderDetails.SERVICE_PRICE)}</p>
           </div>
         </div>
 
         <div className="border-t border-[#000] w-full mb-6"></div>
         {/* Payment Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-medium mb-2">Payment</h2>
-          <div className="flex items-center">
-            <div className="flex items-center gap-2 text-xl font-Archivo">
-              <img src={bankTransfer} alt="Bank Transfer" className="" />
+          <h2 className="text-xl lg:text-2xl font-medium mb-2">Payment</h2>
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+            <div className="flex items-center gap-2 text-lg lg:text-xl font-Archivo">
+              <img src={bankTransfer} alt="Bank Transfer" className="w-8 h-8 lg:w-auto lg:h-auto" />
               <span>Bank Transfer</span>
-              <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-sm ml-2">{paymentMethod.STATUS}</span>
+              <span className="bg-[#DBEAFE] text-gray-600 rounded px-2 py-1 text-xs lg:text-sm ml-2">{paymentMethod.STATUS}</span>
             </div>
-            <div className="ml-auto">
+            <div className="lg:ml-auto w-full lg:w-auto">
               {isFreelancer && auth?.data.auth.id === orderData.gigInfo?.creator?.id.toString() ?
                 (
-                  <div className='flex'>
+                  <div className='flex flex-col lg:flex-row gap-2'>
                     {currentStep === 0 && (
                       <button
                         onClick={() => {
                           setIsShowingProofModal(true);
                         }}
-                        className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                        className="bg-yellow-500 cursor-pointer text-white text-base lg:text-lg rounded px-4 py-2 flex items-center justify-center gap-2"
                       >
-                        <img src={status} alt="Status" className="h-10" />
+                        <img src={status} alt="Status" className="h-8 lg:h-10" />
                         <span>Confirm Order</span>
                       </button>
                     )}
                     {currentStep === 1 && (
                       <button
                         onClick={() => handleUpdateProgress(2)}
-                        className="bg-yellow-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                        className="bg-yellow-500 cursor-pointer text-white text-base lg:text-lg rounded px-4 py-2 flex items-center justify-center gap-2"
                       >
-                        <img src={check} alt="Check" className="h-10 w-10" />
+                        <img src={check} alt="Check" className="h-8 w-8 lg:h-10 lg:w-10" />
                         <span>Deliver Order</span>
                       </button>
                     )}
@@ -596,9 +626,9 @@ const ManageOrder = () => {
                     {currentStep === 2 && !(isFreelancer && auth?.data.auth.id === response.data.gigInfo?.creator?.id.toString()) && (
                       <button
                         onClick={handleFinishOrder}
-                        className="bg-blue-500 cursor-pointer text-white text-lg rounded px-4 py-1 flex items-center gap-2"
+                        className="bg-blue-500 cursor-pointer text-white text-base lg:text-lg rounded px-4 py-2 flex items-center justify-center gap-2"
                       >
-                        <img src={check} alt="Check" className="" />
+                        <img src={check} alt="Check" className="w-8 h-8" />
                         <span>Finish Order</span>
                       </button>
                     )}
@@ -610,10 +640,10 @@ const ManageOrder = () => {
 
         <div className="border-t border-[#000] w-full mb-6"></div>
 
-        <div className="flex">
-          <div className="w-1/2 pl-4">
-            <h2 className="text-2xl mb-3">Order Summary</h2>
-            <div className="space-y-2 text-lg font-Archivo">
+        <div className="flex flex-col lg:flex-row">
+          <div className="w-full lg:w-1/2 lg:pl-4">
+            <h2 className="text-xl lg:text-2xl mb-3">Order Summary</h2>
+            <div className="space-y-2 text-base lg:text-lg font-Archivo">
               <div className="flex justify-between">
                 <span>Service Price</span>
                 <span>Rp. {formattedPrice(orderDetails.SERVICE_PRICE)}</span>

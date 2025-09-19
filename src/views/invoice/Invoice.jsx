@@ -164,24 +164,24 @@ const Invoice = () => {
   return (
     <div className="font-Archivo">
       {/* <Navbar alt />         */}
-      <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md p-10 mt-15 mb-15 max-w-4xl">
+      <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md p-4 sm:p-6 md:p-10 mt-8 mb-8 max-w-4xl">
         {/* Header Section */}
-        <div className="flex justify-between items-start mb-10">
-          <div>
-            <img src={logo} alt="B-Connect Logo" className="h-12 mb-4" />
+        <div className="flex flex-col sm:flex-row justify-between items-start mb-8 sm:mb-10">
+          <div className="mb-6 sm:mb-0">
+            <img src={logo} alt="B-Connect Logo" className="h-10 sm:h-12 mb-4" />
             <h2 className="text-lg font-bold">{invoiceData.COMPANY.NAME}</h2>
             <p className="text-gray-600">{invoiceData.COMPANY.EMAIL}</p>
           </div>
-          <div className="text-right">
-            <h1 className="text-3xl font-bold mb-2">INVOICE</h1>
-            <p className="text-xl text-gray-700">{invoiceData.INVOICE.NUMBER}</p>
+          <div className="text-left sm:text-right">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">INVOICE</h1>
+            <p className="text-lg sm:text-xl text-gray-700">{invoiceData.INVOICE.NUMBER}</p>
           </div>
         </div>
 
         <hr className="border-t border-gray-300 mb-8" />
 
         {/* Client and Invoice Info */}
-        <div className="grid grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="text-sm font-bold text-gray-600 uppercase mb-2">BILLED TO</h3>
             <p className="font-semibold">{invoiceData.CUSTOMER.NAME}</p>
@@ -206,18 +206,19 @@ const Invoice = () => {
         </div>
         {/* Service Details */}
         <div className="mb-8">
-          <div className="grid grid-cols-5 text-sm font-bold text-gray-600 uppercase border-b pb-2">
+          <div className="hidden sm:grid grid-cols-5 text-sm font-bold text-gray-600 uppercase border-b pb-2">
             <div className="col-span-4">DESCRIPTION</div>
             <div className="text-right">PRICE</div>
-          </div>                <div className="py-4 border-b">
-            <div className="grid grid-cols-5">
-              <div className="col-span-4">
+          </div>
+          <div className="py-4 border-b">
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-y-2">
+              <div className="col-span-1 sm:col-span-4">
                 <div>
                   <p className="font-semibold">{invoiceData.ORDER.SERVICE_NAME}</p>
                   <p className="text-gray-600 mt-1">Order {invoiceData.ORDER.ORDER_NUMBER} · {invoiceData.ORDER.PACKAGE}</p>
                 </div>
               </div>
-              <div className="text-right font-semibold">
+              <div className="text-left sm:text-right font-semibold">
                 {formatRupiah(invoiceData.ORDER.PRICE)}
               </div>
             </div>
@@ -226,7 +227,7 @@ const Invoice = () => {
 
         {/* Summary */}
         <div className="flex justify-end mb-8">
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2 lg:w-2/5">
             <div className="flex justify-between mb-2">
               <span>Subtotal</span>
               <span className="font-semibold">{formatRupiah(invoiceData.ORDER.PRICE)}</span>
@@ -239,7 +240,7 @@ const Invoice = () => {
               <span>Processing Fee</span>
               <span className="font-semibold">{formatRupiah(invoiceData.ORDER.PROCESSING_FEE)}</span>
             </div>
-            <div className="flex justify-between border-t pt-2 font-bold">
+            <div className="flex justify-between border-t pt-2 font-bold text-lg">
               <span>Total</span>
               <span>{formatRupiah(total)}</span>
             </div>
@@ -247,15 +248,17 @@ const Invoice = () => {
         </div>
 
         {/* Payment Details */}
-        <div className="bg-gray-50 p-6 rounded-lg mb-8">
+        <div className="bg-gray-50 p-4 sm:p-6 rounded-lg mb-8">
           <h3 className="font-bold mb-4">Payment Details</h3>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div className="flex items-center mb-2 sm:mb-0">
               <img src={bankTransfer} alt="Bank Transfer" className="h-6 mr-2" />
-              <span className="font-medium">{invoiceData.PAYMENT.METHOD}</span>
-              <span className="text-gray-600 ml-2">(Transaction ID: {invoiceData.PAYMENT.TRANSACTION_ID})</span>
+              <div className="flex flex-col sm:flex-row">
+                <span className="font-medium">{invoiceData.PAYMENT.METHOD}</span>
+                <span className="text-gray-600 sm:ml-2">(Transaction ID: {invoiceData.PAYMENT.TRANSACTION_ID})</span>
+              </div>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               {invoiceData.PAYMENT.DATE}
             </div>
           </div>

@@ -10,7 +10,7 @@ export const DynamicStars = ({ number }) => {
         .map((_, i) => (
           <Star
             key={i}
-            className="w-4 h-4"
+            className="w-4 h-4 sm:w-5 sm:h-5"
             fill={i < Math.floor(number) ? "#FFD700" : "#D1D5DB"}
             stroke={i < Math.floor(number) ? "#FFD700" : "#D1D5DB"}
           />

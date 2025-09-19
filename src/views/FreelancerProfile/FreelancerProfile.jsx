@@ -180,14 +180,14 @@ const FreelancerProfile = () => {
     <>
       <Navbar alt={true} />
 
-      <main className="flex flex-col min-h-screen bg-gray-50 pt-25">
-        <div className="container mx-auto px-5 mt-8">
-          <div className="flex flex-col lg:flex-row gap-6">
+      <main className="flex flex-col min-h-screen bg-gray-50 pt-20">
+        <div className="container mx-auto px-3 sm:px-5 mt-6 sm:mt-8">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             <div className="w-full lg:w-8/12">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+              <div className="bg-white rounded-md sm:rounded-lg shadow-sm border border-gray-100 p-3 sm:p-6">
                 <div className="flex flex-col md:flex-row">
-                  <div className="md:w-1/4 flex flex-col items-center mb-6 md:mb-0">
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-200 overflow-hidden mb-4 flex items-center justify-center relative border">
+                  <div className="w-full md:w-1/4 flex flex-col items-center mb-4 md:mb-0">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full bg-gray-200 overflow-hidden mb-3 sm:mb-4 flex items-center justify-center relative border">
                       <img
                         className="w-full h-full object-cover"
                         src={
@@ -215,7 +215,7 @@ const FreelancerProfile = () => {
                             navigate(url);
                           })
                         }}
-                        className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                        className="mt-3 sm:mt-4 w-full flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Contact me
@@ -224,7 +224,7 @@ const FreelancerProfile = () => {
                     {isOwnProfile && isFreelancer &&
                       <button
                         onClick={() => { navigate(`/profile`); }}
-                        className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                        className="mt-3 sm:mt-4 w-full flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Profile
@@ -232,19 +232,19 @@ const FreelancerProfile = () => {
                     }
                   </div>
 
-                  <div className="md:w-3/4 md:pl-8">
+                  <div className="w-full md:w-3/4 md:pl-6">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start">
                       <div>
                         <div className="flex items-center mb-1">
-                          <h1 className="text-2xl font-semibold">{freelancerData?.name}</h1>
+                          <h1 className="text-lg sm:text-2xl font-semibold">{freelancerData?.name}</h1>
                         </div>
-                        <span className="text-gray-500 text-sm block mb-2">
+                        <span className="text-gray-500 text-xs sm:text-sm block mb-2">
                           {freelancerData?.email}
                         </span>
-                        <p className="text-gray-800 font-medium mb-3">
+                        <p className="text-gray-800 font-medium mb-2 sm:mb-3">
                           {freelancerData?.type.join(', ')}
                         </p>
-                        <div className="flex flex-wrap gap-3 mb-4">
+                        <div className="flex flex-wrap gap-2 sm:gap-3 mb-3 sm:mb-4">
                           <div className="flex items-center text-gray-600">
                             <MapPin className="h-4 w-4 mr-1" />
                             <span className="text-sm">
@@ -263,7 +263,7 @@ const FreelancerProfile = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="mb-4 flex items-center text-gray-600">
+                        <div className="mb-3 sm:mb-4 flex items-center text-gray-600">
                           <CircleCheckBig className="h-4 w-4 mr-1" />
                           <span className="text-sm">
                             Completed {freelancerData?.completes} gig(s)
@@ -271,9 +271,9 @@ const FreelancerProfile = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-6">
-                      <h2 className="font-semibold text-lg mb-2">About me</h2>
-                      <p className="text-gray-700">
+                    <div className="mt-4 sm:mt-6">
+                      <h2 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">About me</h2>
+                      <p className="text-gray-700 text-xs sm:text-sm">
                         {freelancerData?.description?.trim()
                           ? freelancerData.description
                           : isOwnProfile ?
@@ -286,8 +286,8 @@ const FreelancerProfile = () => {
                 </div>
               </div>
               <div>
-                <div className="flex justify-between items-center my-5">
-                  <h2 className="text-xl font-semibold">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center my-4 sm:my-5 gap-2">
+                  <h2 className="text-base sm:text-xl font-semibold">
                     {isOwnProfile ? "My Gigs" : "Available Gigs"}
                   </h2>
                   {isOwnProfile && isFreelancer && (
@@ -295,7 +295,7 @@ const FreelancerProfile = () => {
                       onClick={() => {
                         setShowAddServiceModal(true);
                       }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md text-xs sm:text-sm hover:bg-blue-700 transition-colors"
                     >
                       Create New Gig
                     </button>
@@ -364,18 +364,18 @@ const FreelancerProfile = () => {
                       </motion.div>
                     )}
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <div className="bg-white rounded-md sm:rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4">
                   {gigData?.length > 0 ?
                     (
                       <div className="flex flex-col gap-6 mb-4">
                         {/* Category Buttons */}
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                          <div className="flex flex-row gap-4">
+                        <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2">
+                          <div className="flex flex-row gap-2 sm:gap-4">
                             {categoryList.map((category) => (
                               <button
                                 key={category}
                                 onClick={() => setSelectedCategory(category)}
-                                className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${selectedCategory === category
+                                className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm whitespace-nowrap ${selectedCategory === category
                                   ? "bg-blue-600 text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                   }`}
@@ -386,7 +386,7 @@ const FreelancerProfile = () => {
                           </div>
                         </div>
                         <motion.div
-                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"
                           variants={containerVariants}
                           initial="hidden"
                           animate="visible"
@@ -419,13 +419,13 @@ const FreelancerProfile = () => {
                                   custom={index}
                                   variants={cardVariants}
                                   onClick={() => { navigate(`/detail/${gig._id}`) }}
-                                  className="bg-white rounded-lg shadow-sm border relative border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+                                  className="bg-white rounded-md sm:rounded-lg shadow-sm border relative border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                                 >
                                   <div className="relative">
                                     <motion.img
                                       src={imageSrc}
                                       alt={gig.name}
-                                      className="w-full h-58 object-cover bg-white"
+                                      className="w-full h-36 sm:h-44 md:h-58 object-cover bg-white"
                                       whileHover={{ scale: 1.05 }}
                                       transition={{ duration: 0.3 }}
                                       onLoad={() => {
@@ -443,17 +443,17 @@ const FreelancerProfile = () => {
                                     )}
                                   </div>
 
-                                  <div className="p-5 h-42">
-                                    <h3 className="text-sm font-medium mb-2 line-clamp-2 transition-colors duration-100">
+                                  <div className="p-3 sm:p-5 h-42">
+                                    <h3 className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 line-clamp-2 transition-colors duration-100">
                                       {gig.name}
                                     </h3>
-                                    <div className="flex-col items-center mb-2">
-                                      <p className="text-sm font-semibold text-black">
+                                    <div className="flex-col items-center mb-1 sm:mb-2">
+                                      <p className="text-xs sm:text-sm font-semibold text-black">
                                         Rp. {formattedPrice(gig.packages[0].price)}
                                       </p>
                                     </div>
-                                    <div className="flex items-center text-base w-full justify-between mb-4">
-                                      <div className="flex flex-row items-center gap-3 flex-wrap">
+                                    <div className="flex items-center text-xs sm:text-base w-full justify-between mb-2 sm:mb-4">
+                                      <div className="flex flex-row items-center gap-2 sm:gap-3 flex-wrap">
                                         <div className="flex flex-row">
                                           <DynamicStars number={gig.rating} />
                                         </div>
@@ -461,18 +461,18 @@ const FreelancerProfile = () => {
                                       </div>
                                       <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
                                     </div>
-                                    <div className="flex gap-2 mb-2">
+                                    <div className="flex gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
                                       {Array.isArray(gig.categories) ? (
                                         gig.categories.map((cat, index) => (
                                           <span
                                             key={index}
-                                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                                            className="px-2 py-1 bg-blue-100 text-blue-800 text-[10px] sm:text-xs font-medium rounded-full"
                                           >
                                             {cat}
                                           </span>
                                         ))
                                       ) : (
-                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-[10px] sm:text-xs font-medium rounded-full">
                                           {'No Registered Category'}
                                         </span>
                                       )}
@@ -487,7 +487,7 @@ const FreelancerProfile = () => {
                             selectedCategory === "All" ||
                             (Array.isArray(g.categories) && g.categories.includes(selectedCategory))
                         ).length === 0 && (
-                            <div className="flex flex-col items-center justify-center  py-6 rounded-lg">
+                            <div className="flex flex-col items-center justify-center py-4 sm:py-6 rounded-md sm:rounded-lg">
                               <AlertCircle className="h-12 w-12 text-gray-400 mb-2" />
                               <h3 className="text-lg font-medium text-gray-800 text-center">
                                 No Gigs Currently Available for This Category
@@ -498,7 +498,7 @@ const FreelancerProfile = () => {
                     )
                     :
                     (
-                      <div className="text-center p-6">
+                      <div className="text-center p-4 sm:p-6">
                         <div className="mb-4 flex justify-center">
                           {!isOwnProfile ? (
                             <AlertCircle className="h-12 w-12 text-gray-400" />
@@ -522,13 +522,13 @@ const FreelancerProfile = () => {
                 </div>
               </div>
 
-              <div div className="mt-8 mb-12" >
-                <div className="flex justify-between items-center my-5">
-                  <h2 className="text-xl font-semibold">
+              <div className="mt-6 sm:mt-8 mb-8 sm:mb-12">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center my-4 sm:my-5 gap-2">
+                  <h2 className="text-base sm:text-xl font-semibold">
                     {isOwnProfile ? "My Reviews" : "Reviews"}
                   </h2>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded-md sm:rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
                   {reviews?.length === 0 ? (
                     <div className="text-center p-6">
                       <div className="mb-4 flex justify-center">
@@ -545,31 +545,31 @@ const FreelancerProfile = () => {
                     </div>
                   ) : (
                     <div>
-                      <div className="flex items-center justify-between bg-blue-50 p-4 rounded-lg mb-6 px-25">
+                      <div className="flex flex-col sm:flex-row items-center justify-between bg-blue-50 p-3 sm:p-4 rounded-md sm:rounded-lg mb-4 sm:mb-6">
                         <div className="flex flex-col items-center justify-center">
-                          <div className="text-3xl font-bold text-blue-700">
+                          <div className="text-xl sm:text-3xl font-bold text-blue-700">
                             {Math.round(freelancerData.rating * 10) / 10}
                           </div>
                           <div className="flex mt-1">
                             <DynamicStars number={freelancerData.rating} />
                           </div>
-                          <p className="text-lg text-gray-600 mt-1">
+                          <p className="text-sm sm:text-lg text-gray-600 mt-1">
                             {reviews?.length} reviews
                           </p>
                         </div>
-                        <div className="w-2/3">
+                        <div className="w-full sm:w-2/3 mt-3 sm:mt-0">
                           {ratings.map((item, index) => (
                             <div key={index} className="flex items-center mb-1">
-                              <span className="text-xs w-10"><DynamicStars number={item.rating} /></span>
-                              <div className="w-full mx-4">
-                                <div className="w-full bg-gray-200 rounded-full h-2">
+                              <span className="text-[10px] sm:text-xs w-8 sm:w-10"><DynamicStars number={item.rating} /></span>
+                              <div className="w-full mx-2 sm:mx-4">
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
                                   <div
-                                    className="bg-blue-600 h-2 rounded-full"
+                                    className="bg-blue-600 h-1.5 sm:h-2 rounded-full"
                                     style={{ width: `${((item.count / ratings.reduce((sum, i) => sum + i.count, 0)) * 100).toFixed(1)}%` }}
                                   ></div>
                                 </div>
                               </div>
-                              <span className="text-xs w-6 text-right">
+                              <span className="text-[10px] sm:text-xs w-5 sm:w-6 text-right">
                                 {item.count}
                               </span>
                             </div>
@@ -577,15 +577,15 @@ const FreelancerProfile = () => {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2 overflow-y-auto h-105">
+                      <div className="flex flex-col gap-2 overflow-y-auto h-60 sm:h-105">
                         {reviews?.map((review) => (
-                          <div
-                            key={review._id}
-                            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 w-full"
-                          >
-                            <div className="flex justify-between mb-2">
+                            <div
+                              key={review._id}
+                              className="p-3 sm:p-4 border rounded-md sm:rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0 w-full"
+                            >
+                            <div className="flex flex-col sm:flex-row justify-between mb-1 sm:mb-2 gap-2">
                               <div className="flex items-center">
-                                <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3 font-semibold border">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mr-2 sm:mr-3 font-semibold border">
                                   <img
                                     className="w-full h-full rounded-full object-cover"
                                     src={
@@ -603,9 +603,9 @@ const FreelancerProfile = () => {
                                 </div>
                                 <div>
                                   <div className="flex items-center">
-                                    <div className="text-sm font-medium mr-2">
+                                    <div className="text-xs sm:text-sm font-medium mr-1 sm:mr-2">
                                       {review.reviewerName}
-                                      <div className="flex gap-3">
+                                      <div className="flex gap-1 sm:gap-3">
                                         <DynamicStars number={review.rating} />
                                         <span>
                                           On "{review.reviewedGig.name}"
@@ -613,7 +613,7 @@ const FreelancerProfile = () => {
                                       </div>
                                     </div>
                                   </div>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="text-[10px] sm:text-xs text-gray-500">
                                     {new Date(review.createdDate).toLocaleDateString("en-GB", {
                                       day: "2-digit",
                                       month: "long",
@@ -623,7 +623,7 @@ const FreelancerProfile = () => {
                                 </div>
                               </div>
                             </div>
-                            <p className="text-lg text-gray-700 mt-2">{review.reviewMessage}</p>
+                            <p className="text-xs sm:text-lg text-gray-700 mt-1 sm:mt-2">{review.reviewMessage}</p>
                           </div>
                         ))}
                       </div>
@@ -633,13 +633,13 @@ const FreelancerProfile = () => {
               </div>
             </div>
 
-            <div className="w-full lg:w-4/12">
-              <div className="sticky top-33">
-                <div className="bg-blue-50 rounded-lg shadow-sm border border-blue-100 overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-2">
+            <div className="w-full lg:w-4/12 mt-6 lg:mt-0">
+              <div className="sticky top-28">
+                <div className="bg-blue-50 rounded-md sm:rounded-lg shadow-sm border border-blue-100 overflow-hidden">
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
                       <div className="flex-1">
-                        <div className="w-16 h-16 bg-gray-300 rounded-md flex items-center justify-center mb-2">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-300 rounded-md flex items-center justify-center mb-1 sm:mb-2">
                           <img
                             className="w-full h-full object-cover rounded-md"
                             src={
@@ -655,15 +655,15 @@ const FreelancerProfile = () => {
                             }}
                           />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800">{freelancerData?.name}</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-gray-800">{freelancerData?.name}</h3>
                         <div className="flex items-center mt-1">
                           <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
-                          <span className="text-sm text-green-600">Open for work</span>
+                          <span className="text-xs sm:text-sm text-green-600">Open for work</span>
                         </div>
                       </div>
-                      <div className="flex flex-row gap-2">
-                        <p>{copyMessage}</p>
-                        <button className="p-1.5 bg-blue-100 rounded-full"
+                      <div className="flex flex-row gap-1 sm:gap-2 mt-2 sm:mt-0">
+                        <p className="text-xs sm:text-sm">{copyMessage}</p>
+                        <button className="p-1 bg-blue-100 rounded-full"
                           onClick={async () => {
                             try {
                               await navigator.clipboard.writeText(window.location.href);
@@ -678,12 +678,12 @@ const FreelancerProfile = () => {
                       </div>
                     </div>
 
-                    <div className="mt-4">
-                      <p className="text-gray-700 text-sm font-medium mb-2">
+                    <div className="mt-3 sm:mt-4">
+                      <p className="text-gray-700 text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                         {isOwnProfile ? "Your portfolio link" : "Checkout my portfolio"}
                       </p>
-                      <div className="bg-white rounded-md p-3 border border-gray-200 flex text-black">
-                        <div className="w-full text-gray-500 text-sm bg-transparent outline-none">
+                      <div className="bg-white rounded-md p-2 sm:p-3 border border-gray-200 flex text-black">
+                        <div className="w-full text-gray-500 text-xs sm:text-sm bg-transparent outline-none">
                           <a href={freelancerData?.portofolioUrl?.startsWith('http')
                             ? freelancerData.portofolioUrl
                             : `https://${freelancerData?.portofolioUrl}`}
@@ -693,7 +693,7 @@ const FreelancerProfile = () => {
                           </a>
                         </div>
                         <button
-                          className="text-blue-600 text-sm font-medium"
+                          className="text-blue-600 text-xs sm:text-sm font-medium"
                           onClick={async () => {
                             try {
                               await navigator.clipboard.writeText(freelancerData?.portofolioUrl);

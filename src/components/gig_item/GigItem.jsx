@@ -55,15 +55,15 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
           {starter && (
             <div className="flex flex-col">
               <motion.div
-                className="bg-white h-58 rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
+                className="bg-white h-auto md:h-58 rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <div className="h-58 p-3 flex flex-col justify-between relative">
-                  <p className='font-Archivo font-bold text-4xl text-gray-800 w-1/2'>
+                  <p className='font-Archivo font-bold text-2xl md:text-4xl text-gray-800 w-full md:w-1/2'>
                     Our Best Sellers
                   </p>
                   <motion.img
-                    className='absolute right-8 bottom-10'
+                    className='absolute right-8 bottom-10 hidden md:block'
                     src={mr_pink_hair}
                     alt="mr pink hair"
                     animate={{ y: [0, -10, 0] }}
@@ -71,12 +71,12 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
                     style={{ maxHeight: '140px', pointerEvents: 'none', userSelect: 'none' }}
                   />
                   <motion.button
-                    className='bg-[#CFD2DA] flex flex-row w-57 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300 mb-5 relative z-10'
+                    className='bg-[#CFD2DA] flex flex-row w-full md:w-57 gap-4 justify-center p-3 rounded-md hover:bg-[#2E90EB] hover:text-white transition-all duration-300 mb-5 relative z-10'
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => navigate("/catalog")}
                   >
-                    <p className='font-Archivo text-3xl font-bold text-[#565E6D]'>
+                    <p className='font-Archivo text-2xl md:text-3xl font-bold text-[#565E6D]'>
                       Shop Now
                     </p>
                     <motion.img
@@ -88,7 +88,7 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
                   </motion.button>
                 </div>
               </motion.div>
-              <div className="h-42" />
+              <div className="h-auto md:h-42" />
             </div>
           )}
           {
@@ -102,21 +102,20 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
               return (
                 <motion.div
                   key={gig._id}
-                  className="bg-white h-110 rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200"
+                  className="bg-white h-full rounded-xl shadow-sm overflow-hidden relative group border-2 border-gray-100 hover:border-black hover:shadow-lg transition-all duration-200 flex flex-col"
                   variants={cardVariants}
                   custom={i}
                   whileHover={{ y: -5 }}
                   onClick={() => navigate(`/detail/${gig._id}`)}
                 >
-                  <div className="relative">
+                  <div className="relative w-full pt-[56.25%]"> {/* 16:9 Aspect Ratio */}
                     <motion.img
                       src={imageSrc}
                       alt={gig.name}
-                      className="w-full h-58 object-cover bg-black"
+                      className="absolute top-0 left-0 w-full h-full object-cover bg-black"
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                       onLoad={() => {
-                        console.log("image load", gig.name);
                         setImageLoading(false);
                       }}
                       onError={(e) => {
@@ -126,8 +125,8 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
                     />
                   </div>
 
-                  <div className="p-5 h-42">
-                    <h3 className="text-base font-medium mb-2 line-clamp-2 transition-colors duration-100">
+                  <div className="p-3 md:p-4 flex flex-col flex-grow">
+                    <h3 className="text-sm md:text-base font-medium mb-2 line-clamp-2 flex-grow">
                       {gig.name}
                     </h3>
                     <div className="flex-col items-center mb-2">
@@ -135,18 +134,18 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
                         Rp. {formattedPrice(gig.packages[0].price)}
                       </p>
                     </div>
-                    <div className="flex items-center text-base w-full justify-between mb-4">
-                      <div className="flex flex-row items-center gap-3 flex-wrap">
+                    <div className="flex items-center text-xs sm:text-sm w-full justify-between mb-3">
+                      <div className="flex flex-row items-center gap-1 sm:gap-2">
                         <div className="flex flex-row">
                           <DynamicStars number={gig.rating} />
                         </div>
                         <div>{gig.rating}</div>
                       </div>
-                      <div className="ml-1 text-gray-500">{gig.sold} items sold</div>
+                      <div className="ml-1 text-gray-500">{gig.sold} sold</div>
                     </div>
-                    <div className="flex gap-2 mb-2">
+                    <div className="flex flex-wrap gap-1 mb-2">
                       {Array.isArray(gig.categories) ? (
-                        gig.categories.map((cat, index) => (
+                        gig.categories.slice(0, 2).map((cat, index) => (
                           <span
                             key={index}
                             className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
@@ -156,7 +155,7 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
                         ))
                       ) : (
                         <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                          {'No Registered Category'}
+                          {'No Category'}
                         </span>
                       )}
                     </div>
@@ -169,12 +168,12 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
         :
         <>
           <motion.div
-            className={`text-center font-Archivo text-black font-semibold text-xl py-10 ${!home && "w-297"} col-span-4`}
+            className={`text-center font-Archivo text-black font-semibold text-lg sm:text-xl py-10 ${!home && "w-full"} col-span-full`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            There is currently no gigs with this specification.
+            There are currently no gigs with this specification.
           </motion.div>
         </>
       }
@@ -182,4 +181,4 @@ const GigItem = ({ data, home = false, start = 0, end = 6, starter = false }) =>
   )
 }
 
-export default GigItem
+export default GigItem;

@@ -213,9 +213,9 @@ const Chat = () => {
     >
       <Navbar />
 
-      <div className='flex gap-6 px-6'>
+      <div className='flex flex-col lg:flex-row gap-6 px-2 sm:px-6'>
         {/* Sidebar - Users List */}
-        <div className='mt-[150px] mb-[50px] h-[800px] w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+        <div className='hidden lg:block mt-[150px] mb-[50px] h-[800px] w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
           <div className="h-full flex flex-col">
             <div className="bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-6">
               <h2 className="font-bold text-white text-2xl font-Archivo">Messages</h2>
@@ -235,7 +235,7 @@ const Chat = () => {
                       joinRoom(i);
                     }}
                   >
-                    <div className="w-16 h-16 relative">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex-shrink-0">
                       <img
                         src={
                           !chat?.picture || chat?.picture === "temp"
@@ -251,16 +251,16 @@ const Chat = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className='font-semibold text-lg text-gray-800 truncate'>{chat?.name}</div>
-                      <div className='text-sm text-gray-500'>Online</div>
+                      <div className='font-semibold text-base sm:text-lg text-gray-800 truncate'>{chat?.name}</div>
+                      <div className='text-xs sm:text-sm text-gray-500'>Online</div>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="flex items-center justify-center h-full p-6">
                   <div className="text-center">
-                    <div className="text-gray-400 text-6xl mb-4">💬</div>
-                    <p className="text-gray-500 text-lg leading-relaxed">
+                    <div className="text-gray-400 text-5xl sm:text-6xl mb-4">💬</div>
+                    <p className="text-gray-500 text-base sm:text-lg leading-relaxed">
                       Halo, sepertinya kamu belum melakukan percakapan dengan freelancer kami.
                     </p>
                   </div>
@@ -271,12 +271,12 @@ const Chat = () => {
         </div>
 
         {/* Main Chat Area */}
-        <div className='flex-1 flex flex-col mt-[150px] mb-[50px] h-[800px] font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+        <div className='flex-1 flex flex-col mt-20 lg:mt-[150px] mb-[50px] h-[calc(100vh-120px)] lg:h-[800px] font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
           {/* Chat Header */}
-          <div className="flex items-center bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-6 text-white">
+          <div className="flex items-center bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-4 sm:p-6 text-white">
             {availableUsers[roomIndex] ? (
               <>
-                <div className="w-14 h-14 relative mr-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 relative mr-4 flex-shrink-0">
                   <img
                     src={availableUsers[roomIndex]?.picture == "temp" ?
                       default_avatar
@@ -291,8 +291,8 @@ const Chat = () => {
                   />
                 </div>
                 <div>
-                  <div className="font-bold text-xl">{availableUsers[roomIndex]?.name}</div>
-                  <div className="text-blue-100 text-sm">
+                  <div className="font-bold text-lg sm:text-xl">{availableUsers[roomIndex]?.name}</div>
+                  <div className="text-blue-100 text-xs sm:text-sm">
                     Last seen: {
                       availableRooms[roomIndex]?.users[0] === auth?.data?.auth?.id ?
                         getRelativeTimeLabel(availableRooms[roomIndex]?.lastSeen[0])
@@ -303,7 +303,7 @@ const Chat = () => {
                 </div>
               </>
             ) : (
-              <div className="font-bold text-xl">Select a conversation</div>
+              <div className="font-bold text-lg sm:text-xl">Select a conversation</div>
             )}
           </div>
 
@@ -317,15 +317,15 @@ const Chat = () => {
               backgroundPosition: "center",
               backgroundSize: "contain",
               opacity: 0.05,
-              maxHeight: "calc(800px - 160px)",
+              maxHeight: "calc(100% - 160px)",
             }}
           >
-            <div className="flex flex-col gap-2 text-sm space-y-4 px-6 py-6 min-h-full">
+            <div className="flex flex-col gap-2 text-sm space-y-4 px-4 sm:px-6 py-6 min-h-full">
               {Array.isArray(currentRoomMessageList) && currentRoomMessageList.length === 0 ? (
                 <div className="flex justify-center items-center h-full">
                   <div className="text-center">
-                    <div className="text-gray-300 text-8xl mb-6">💭</div>
-                    <p className="text-gray-400 text-xl max-w-md">
+                    <div className="text-gray-300 text-6xl sm:text-8xl mb-6">💭</div>
+                    <p className="text-gray-400 text-lg sm:text-xl max-w-md">
                       Ayo, mulai percakapanmu dengan freelancer yg kamu inginkan segera.
                     </p>
                   </div>
@@ -363,9 +363,9 @@ const Chat = () => {
 
           {/* Message Input */}
           {availableUsers[roomIndex] && (
-            <div className="relative flex items-center p-4 gap-3 bg-white border-t border-gray-100">
+            <div className="relative flex items-center p-2 sm:p-4 gap-2 sm:gap-3 bg-white border-t border-gray-100">
               <button 
-                className="p-3 hover:bg-gray-100 rounded-full transition-colors duration-200" 
+                className="p-2 sm:p-3 hover:bg-gray-100 rounded-full transition-colors duration-200" 
                 onClick={toggleUpload}
               >
                 <img src={upload} alt="Upload" className="w-5 h-5" />
@@ -382,17 +382,17 @@ const Chat = () => {
                       handleSendMessage();
                     }
                   }}
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-full outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-2 sm:py-3 pr-10 sm:pr-12 bg-gray-50 border border-gray-200 rounded-full outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
                 <button
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors duration-200"
+                  className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors duration-200"
                   onClick={toggleEmoteSelector}
                 >
                   <img src={emote} alt="Emote" className="w-5 h-5" />
                 </button>
               </div>
               <button 
-                className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full transition-all duration-200 shadow-lg hover:shadow-xl" 
+                className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full transition-all duration-200 shadow-lg hover:shadow-xl" 
                 onClick={handleSendMessage}
               >
                 <img src={send} alt="Send" className="w-5 h-5" />
@@ -402,7 +402,7 @@ const Chat = () => {
               {isEmoteSelectorVisible && (
                 <div
                   ref={emoteSelectorRef}
-                  className="absolute bottom-20 right-16 bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden"
+                  className="absolute bottom-16 sm:bottom-20 right-4 sm:right-16 bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden z-20"
                   style={{
                     width: "320px",
                     height: "320px",
@@ -415,14 +415,11 @@ const Chat = () => {
               {/* Upload Options */}
               {isUploadVisible && (
                 <div
-                  className={`absolute bottom-20 left-4 rounded-xl shadow-2xl bg-white border border-gray-200 transition-all duration-300 ease-in-out ${
+                  className={`absolute bottom-16 sm:bottom-20 left-2 sm:left-4 rounded-xl shadow-2xl bg-white border border-gray-200 transition-all duration-300 ease-in-out z-20 ${
                     isUploadVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                   }`}
-                  style={{
-                    zIndex: 1000,
-                  }}
                 >
-                  <label className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer rounded-xl transition-colors duration-200">
+                  <label className="flex items-center gap-3 p-3 sm:p-4 hover:bg-gray-50 cursor-pointer rounded-xl transition-colors duration-200">
                     <img src={sendfrom} alt="Upload Icon" className="w-5 h-5" />
                     <span className="text-sm font-medium text-gray-700">Upload from Computer</span>
                     <input
@@ -444,7 +441,7 @@ const Chat = () => {
         </div>
 
         {/* User Info Panel */}
-        <div className='mt-[150px] mb-[50px] h-fit w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+        <div className='hidden lg:block mt-[150px] mb-[50px] h-fit w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
           {availableUsers[roomIndex] && (
             <div className="p-6">
               <div className="bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] -m-6 mb-6 p-6">

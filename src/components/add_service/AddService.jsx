@@ -515,21 +515,21 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             <motion.div
-              className="w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-400 flex flex-col"
+              className="w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-400 flex flex-col"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
-              <nav className="flex flex-row items-center justify-between px-8 h-[68px] bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)] flex-shrink-0">
-                <h2 className="text-white text-[24px] md:text-[28px] lg:text-[32px] font-Archivo">
+              <nav className="flex flex-row items-center justify-between px-4 sm:px-8 h-[68px] bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)] flex-shrink-0">
+                <h2 className="text-white text-xl sm:text-2xl md:text-[28px] lg:text-[32px] font-Archivo">
                   Add Product
                 </h2>
                 <motion.img
@@ -537,11 +537,11 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                   src={CancelIcon}
                   disabled={loadingSave}
                   whileHover={{ scale: 1.1 }}
-                  className="w-9 h-9 cursor-pointer"
+                  className="w-8 h-8 sm:w-9 sm:h-9 cursor-pointer"
                 />
               </nav>
               <div className="flex-1 overflow-y-auto overflow-x-hidden">
-                <div className="px-8 py-6">
+                <div className="px-4 sm:px-8 py-6">
                   <div className="flex justify-between items-center relative">
                     {steps.map((label, index) => {
                       const current = index + 1;
@@ -552,12 +552,12 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                       return (
                         <div
                           key={index}
-                          className="flex flex-col items-center relative z-10 w-[20%]"
+                          className="flex flex-col items-center relative z-10 w-1/6"
                           onClick={() => handleStepClick(current)}
                           style={{ cursor: isClickable ? "pointer" : "default" }}
                         >
                           <div
-                            className={`rounded-full flex items-center justify-center w-8 h-8 mb-2
+                            className={`rounded-full flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 mb-2
                               ${isActive
                                 ? "bg-blue-500 border-2 border-[#2E5077]"
                                 : isCompleted
@@ -569,7 +569,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           >
                             <span
                               className={
-                                isCompleted || isActive ? "text-white" : "text-gray-600"
+                                `text-sm sm:text-base ${isCompleted || isActive ? "text-white" : "text-gray-600"}`
                               }
                             >
                               {isCompleted
@@ -581,12 +581,12 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                             </span>
                           </div>
                           <span
-                            className={`text-xs ${isActive ? "text-blue-500 font-Archivo font-bold" : "text-gray-500"}`}
+                            className={`text-center text-[10px] sm:text-xs ${isActive ? "text-blue-500 font-Archivo font-bold" : "text-gray-500"}`}
                           >
                             {label}
                           </span>
                           {index < steps.length - 1 && (
-                            <div className="absolute top-4 left-[60%] w-[80%] px-1">
+                            <div className="absolute top-3 sm:top-4 left-1/2 w-full px-1">
                               <div
                                 className={`h-0.5 ${isCompleted ? "bg-green-500" : "bg-gray-300"}`}
                               ></div>
@@ -595,32 +595,26 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                         </div>
                       );
                     })}
-                    <div className="absolute top-4 h-0.5 bg-gray-200 w-full -z-1">
-                      <div
-                        className="h-full bg-blue-500"
-                        style={{ width: `${(step - 1) * 25}%` }}
-                      ></div>
-                    </div>
                   </div>
                 </div>
 
                 {step === 1 && (
-                  <div className="px-8 py-4 h-[40vh]">
-                    <h3 className="text-center font-Archivo text-[32px]">
+                  <div className="px-4 sm:px-8 py-4 min-h-[40vh]">
+                    <h3 className="text-center font-Archivo text-2xl sm:text-3xl">
                       Title & Category
                     </h3>
-                    <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
+                    <p className="text-center font-Archivo text-sm sm:text-base text-[#636363] mb-4">
                       Tambahkan judul dan kategori dari product service kamu
                     </p>
 
                     <div className="flex flex-col md:flex-row gap-4 px-4 py-4 border border-gray-300 rounded-md">
-                      <div className="flex-1 mb-6">
-                        <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                      <div className="flex-1 mb-4 md:mb-6">
+                        <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                           Title
                         </label>
                         <input
                           type="text"
-                          className={`w-full px-3 py-2 border ${errors.title ? "border-red-500" : "border-gray-400"
+                          className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.title ? "border-red-500" : "border-gray-400"
                             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                           placeholder="Ketik judul disini"
                           value={title}
@@ -632,19 +626,19 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           }}
                         />
                         {errors.title && (
-                          <p className="text-red-500 font-inter text-sm">
+                          <p className="text-red-500 font-inter text-xs sm:text-sm">
                             {errors.title}
                           </p>
                         )}
                       </div>
-                      <div className="flex-1 mb-6">
-                        <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                      <div className="flex-1 mb-4 md:mb-6">
+                        <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                           Category (Maksimal 2)
                         </label>
                         <div className="relative" ref={dropdownRef}>
                           <input
                             type="text"
-                            className={`w-full px-3 py-2 border ${errors.category ? "border-red-500" : "border-gray-400"
+                            className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.category ? "border-red-500" : "border-gray-400"
                               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                             placeholder={selectedTags.length >= 2 ? "Pilihan Category Sudah Penuh" : "Search Category"}
                             value={searchCategory}
@@ -661,7 +655,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                               {filteredCategories.map((category, index) => (
                                 <div
                                   key={index}
-                                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm sm:text-base"
                                   onClick={() => handleTagSelect(category)}
                                 >
                                   {category}
@@ -674,7 +668,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           {selectedTags.map((tag, index) => (
                             <span
                               key={index}
-                              className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-full text-sm"
+                              className="inline-flex items-center px-2 sm:px-3 py-1 bg-gray-100 rounded-full text-xs sm:text-sm"
                             >
                               {tag}
                               <button
@@ -687,7 +681,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           ))}
                         </div>
                         {errors.category && (
-                          <p className="text-red-500 font-inter -translate-y-2 text-sm">
+                          <p className="text-red-500 font-inter -translate-y-2 text-xs sm:text-sm">
                             {errors.category}
                           </p>
                         )}
@@ -697,16 +691,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 )}
 
                 {step === 2 && (
-                  <div className="px-8 py-4">
-                    <h3 className="text-center font-Archivo text-[32px]">Attachment</h3>
-                    <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
+                  <div className="px-4 sm:px-8 py-4">
+                    <h3 className="text-center font-Archivo text-2xl sm:text-3xl">Attachment</h3>
+                    <p className="text-center font-Archivo text-sm sm:text-base text-[#636363] mb-4">
                       Tambahkan Gambar pada product servicemu
                     </p>
                     <div className="px-4 py-4 border border-gray-300 rounded-md">
                       <div className="mb-6">
                         {attachments.length < 3 ? (
                           <div
-                            className="border-2 border-dashed border-gray-300 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50"
+                            className="border-2 border-dashed border-gray-300 rounded-md p-4 sm:p-8 text-center cursor-pointer hover:bg-gray-50"
                             onClick={() => {
                               fileInputRef.current.click();
                             }}
@@ -722,7 +716,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                             <div className="flex flex-col font-inter items-center">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-12 w-12 text-gray-400 mb-3"
+                                className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -734,29 +728,29 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                   d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                 />
                               </svg>
-                              <p className="text-gray-700 font-medium">
+                              <p className="text-gray-700 font-medium text-sm sm:text-base">
                                 Klik untuk upload gambar
                               </p>
-                              <p className="text-gray-500 text-sm mt-1">
+                              <p className="text-gray-500 text-xs sm:text-sm mt-1">
                                 Hanya mendukung format JPG dan PNG (Maksimal ukuran: 2MB)
                               </p>
-                              <p className="text-gray-500 text-sm mt-1">
+                              <p className="text-gray-500 text-xs sm:text-sm mt-1">
                                 {attachments.length} dari 3 gambar diupload
                               </p>
                             </div>
                           </div>
                         ) : (
-                          <div className="border-2 border-gray-300 rounded-md p-8 text-center bg-gray-50">
-                            <p className="text-gray-700 font-medium">
+                          <div className="border-2 border-gray-300 rounded-md p-4 sm:p-8 text-center bg-gray-50">
+                            <p className="text-gray-700 font-medium text-sm sm:text-base">
                               Batas 3 gambar tercapai
                             </p>
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-gray-500 text-xs sm:text-sm mt-1">
                               Hapus beberapa gambar untuk upload gambar lain
                             </p>
                           </div>
                         )}
                         {errors.attachments && (
-                          <p className="text-red-500 text-sm mt-2">
+                          <p className="text-red-500 text-xs sm:text-sm mt-2">
                             {errors.attachments}
                           </p>
                         )}
@@ -768,7 +762,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                               <img
                                 src={attachment.preview}
                                 alt={`Attachment ${index + 1}`}
-                                className="w-full h-32 object-cover rounded-md"
+                                className="w-full h-24 sm:h-32 object-cover rounded-md"
                               />
                               <div className="absolute inset-0 backdrop-blur-sm bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
                                 <button
@@ -792,10 +786,10 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 </button>
                               </div>
                               <div className="mt-1">
-                                <p className="text-sm text-gray-500 truncate">{attachment.name}</p>
+                                <p className="text-xs sm:text-sm text-gray-500 truncate">{attachment.name}</p>
                                 <div className="flex justify-between items-center">
-                                  <p className="text-xs text-gray-400">{attachment.formattedSize}</p>
-                                  <span className="text-xs px-1.5 py-0.5 bg-gray-100 rounded font-mono">{attachment.extension}</span>
+                                  <p className="text-[10px] sm:text-xs text-gray-400">{attachment.formattedSize}</p>
+                                  <span className="text-[10px] sm:text-xs px-1.5 py-0.5 bg-gray-100 rounded font-mono">{attachment.extension}</span>
                                 </div>
                               </div>
                             </div>
@@ -807,25 +801,25 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 )}
 
                 {step === 3 && (
-                  <div className="px-8 py-4">
-                    <h3 className="text-center font-Archivo text-[32px]">
+                  <div className="px-4 sm:px-8 py-4">
+                    <h3 className="text-center font-Archivo text-2xl sm:text-3xl">
                       Description
                     </h3>
-                    <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
+                    <p className="text-center font-Archivo text-sm sm:text-base text-[#636363] mb-4">
                       Tambahkan Penjelasan Deskripsi tentang product servicemu
                     </p>
 
                     <div className="px-4 py-4 border border-gray-300 rounded-md">
                       <div className="flex flex-col md:flex-row w-full gap-6">
                         <div className="md:w-1/2">
-                          <label className="block font-inter text-[16px] text-[#424956] mb-3">
+                          <label className="block font-inter text-sm sm:text-base text-[#424956] mb-3">
                             Work flow (maksimal 7)
                           </label>
                           {workFlows.map((flow, index) => (
                             <div key={index} className="mb-3 relative">
                               <input
                                 type="text"
-                                className={`w-full px-3 py-2 border rounded-md ${errors[`workflow_${index}`] ? "border-red-500" : "border-gray-400"
+                                className={`w-full px-3 py-2 border rounded-md text-sm sm:text-base ${errors[`workflow_${index}`] ? "border-red-500" : "border-gray-400"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder={`${index === 0 ? 'Flow 1' : index === 1 ? 'Flow 2' : index === 2 ? 'Flow 3' : `Flow ${index + 1}`}`}
                                 value={flow}
@@ -843,7 +837,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 </button>
                               )}
                               {errors[`workflow_${index}`] && (
-                                <p className="text-red-500 text-sm mt-1">
+                                <p className="text-red-500 text-xs sm:text-sm mt-1">
                                   {errors[`workflow_${index}`]}
                                 </p>
                               )}
@@ -864,11 +858,11 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                           </div>
                         </div>
                         <div className="md:w-1/2">
-                          <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                          <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                             Deskripsi
                           </label>
                           <textarea
-                            className={`w-full px-3 py-2 border ${errors.description ? "border-red-500" : "border-gray-400"
+                            className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.description ? "border-red-500" : "border-gray-400"
                               } focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md min-h-[200px]`}
                             placeholder="Jelaskan produk anda dengan rinci..."
                             value={description}
@@ -883,13 +877,13 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                             }}
                           ></textarea>
                           {errors.description && (
-                            <p className="text-red-500 text-sm mt-1">
+                            <p className="text-red-500 text-xs sm:text-sm mt-1">
                               {errors.description}
                             </p>
                           )}
-                          <p className={`text-sm mt-1 ${description.length >= 800 ? "text-red-500" : "text-gray-500"}`}>
+                          <p className={`text-xs sm:text-sm mt-1 ${description.length >= 800 ? "text-red-500" : "text-gray-500"}`}>
                             {description.length}/800 karakter
-                            <span className="text-xs ml-1">(minimum 50)</span>
+                            <span className="text-[10px] sm:text-xs ml-1">(minimum 50)</span>
                           </p>
                         </div>
                       </div>
@@ -898,11 +892,11 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 )}
 
                 {step === 4 && (
-                  <div className="px-8 py-4">
-                    <h3 className="text-center font-Archivo text-[32px]">
+                  <div className="px-4 sm:px-8 py-4">
+                    <h3 className="text-center font-Archivo text-2xl sm:text-3xl">
                       Price and structure
                     </h3>
-                    <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
+                    <p className="text-center font-Archivo text-sm sm:text-base text-[#636363] mb-4">
                       Tambahkan harga dan struktur paket product kamu
                     </p>
                     <div className="border border-gray-300 rounded-md overflow-auto"
@@ -911,20 +905,20 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                         scrollbarWidth: 'none'
                       }}
                     >
-                      <div className="flex flex-row h-120">
-                        <div className="flex flex-col w-1/2">
-                          <h3 className="text-center bg-[#1E617A] font-Archivo text-[24px] text-white flex items-center justify-center w-[115px] h-[39px] mx-auto rounded-b-[14px]">
+                      <div className="flex flex-col md:flex-row">
+                        <div className="flex flex-col w-full md:w-1/2 border-b md:border-b-0 md:border-r border-gray-300">
+                          <h3 className="text-center bg-[#1E617A] font-Archivo text-xl sm:text-2xl text-white flex items-center justify-center w-28 sm:w-[115px] h-9 sm:h-[39px] mx-auto rounded-b-lg sm:rounded-b-[14px]">
                             {PACKAGE_TYPES.BASIC}
                           </h3>
-                          <div className="px-4 pt-4 pb-2">
+                          <div className="p-4">
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.KONSEP}:
                               </label>
                               <input
                                 type="number"
                                 min={0}
-                                className={`w-full px-3 py-2 border ${errors.basicKonsep ? "border-red-500" : "border-gray-300"
+                                className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.basicKonsep ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder="Klik disini"
                                 value={basicPackage.konsep}
@@ -944,19 +938,19 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.basicKonsep && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.basicKonsep}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.REVISI}:
                               </label>
                               <input
                                 type="number"
                                 min={0}
-                                className={`w-full px-3 py-2 border ${errors.basicRevisi ? "border-red-500" : "border-gray-300"
+                                className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.basicRevisi ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder="Klik disini"
                                 value={basicPackage.revisi}
@@ -976,19 +970,19 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.basicRevisi && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.basicRevisi}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.WAKTU}:
                               </label>
                               <input
                                 type="number"
                                 min={0}
-                                className={`w-full px-3 py-2 border ${errors.basicWaktu ? "border-red-500" : "border-gray-300"
+                                className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.basicWaktu ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder="Klik disini"
                                 value={basicPackage.waktu}
@@ -1008,17 +1002,17 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.basicWaktu && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.basicWaktu}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.SOURCE}:
                               </label>
                               <select
-                                className={`w-full px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500
+                                className={`w-full px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base
                                   ${errors.basicSourceFile ? "border-red-500" : "border-gray-300"} 
                                   ${basicPackage.sourceFile === null ? "text-gray-400" : "text-black"}`
                                 }
@@ -1035,19 +1029,19 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 <option value="false">Tidak</option>
                               </select>
                               {errors.basicSourceFile && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.basicSourceFile}
                                 </p>
                               )}
                             </div>
                             <div className="">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.HARGA}
                               </label>
                               <div className="relative">
                                 <input
                                   type="text"
-                                  className={`w-48 px-3 py-2 border ${errors.basicHarga ? "border-red-500" : "border-gray-300"
+                                  className={`w-full sm:w-48 px-3 py-2 border text-sm sm:text-base ${errors.basicHarga ? "border-red-500" : "border-gray-300"
                                     } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                   placeholder="Klik disini"
                                   value={basicPackage.harga}
@@ -1068,25 +1062,25 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 />
                               </div>
                               {errors.basicHarga && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.basicHarga}
                                 </p>
                               )}
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col w-1/2">
-                          <h3 className="text-center bg-[#1E617A] font-Archivo text-[24px] text-white flex items-center justify-center w-[115px] h-[39px] mx-auto rounded-b-[14px]">
+                        <div className="flex flex-col w-full md:w-1/2">
+                          <h3 className="text-center bg-[#1E617A] font-Archivo text-xl sm:text-2xl text-white flex items-center justify-center w-28 sm:w-[115px] h-9 sm:h-[39px] mx-auto rounded-b-lg sm:rounded-b-[14px]">
                             {PACKAGE_TYPES.ADVANCE}
                           </h3>
-                          <div className="px-4 pt-4 pb-2">
+                          <div className="p-4">
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.KONSEP}:
                               </label>
                               <input
                                 type="text"
-                                className={`w-full px-3 py-2 border ${errors.advanceKonsep ? "border-red-500" : "border-gray-300"
+                                className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.advanceKonsep ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder="Klik disini"
                                 value={advancePackage.konsep}
@@ -1106,18 +1100,18 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.advanceKonsep && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.advanceKonsep}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.REVISI}:
                               </label>
                               <input
                                 type="text"
-                                className={`w-full px-3 py-2 border ${errors.advanceRevisi ? "border-red-500" : "border-gray-300"
+                                className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.advanceRevisi ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder="Klik disini"
                                 value={advancePackage.revisi}
@@ -1137,18 +1131,18 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.advanceRevisi && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.advanceRevisi}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.WAKTU}:
                               </label>
                               <input
                                 type="text"
-                                className={`w-full px-3 py-2 border ${errors.advanceWaktu ? "border-red-500" : "border-gray-300"
+                                className={`w-full px-3 py-2 border text-sm sm:text-base ${errors.advanceWaktu ? "border-red-500" : "border-gray-300"
                                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                 placeholder="Klik disini"
                                 value={advancePackage.waktu}
@@ -1168,17 +1162,17 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 }}
                               />
                               {errors.advanceWaktu && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.advanceWaktu}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.SOURCE}:
                               </label>
                               <select
-                                className={`w-full px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500
+                                className={`w-full px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base
                                   ${errors.advanceSourceFile ? "border-red-500" : "border-gray-300"} 
                                   ${advancePackage.sourceFile === null ? "text-gray-400" : "text-black"}`
                                 }
@@ -1195,19 +1189,19 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 <option value="false">Tidak</option>
                               </select>
                               {errors.advanceSourceFile && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.advanceSourceFile}
                                 </p>
                               )}
                             </div>
                             <div className="mb-3">
-                              <label className="block font-inter text-[16px] text-[#424956] mb-1">
+                              <label className="block font-inter text-sm sm:text-base text-[#424956] mb-1">
                                 {PRICE_STEP_LABELS.HARGA}
                               </label>
                               <div className="relative">
                                 <input
                                   type="text"
-                                  className={`w-48 px-3 py-2 border ${errors.advanceHarga ? "border-red-500" : "border-gray-300"
+                                  className={`w-full sm:w-48 px-3 py-2 border text-sm sm:text-base ${errors.advanceHarga ? "border-red-500" : "border-gray-300"
                                     } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                   placeholder="Klik disini"
                                   value={advancePackage.harga}
@@ -1228,7 +1222,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                                 />
                               </div>
                               {errors.advanceHarga && (
-                                <p className="text-red-500 text-sm mt-0.5">
+                                <p className="text-red-500 text-xs sm:text-sm mt-0.5">
                                   {errors.advanceHarga}
                                 </p>
                               )}
@@ -1241,19 +1235,19 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 )}
 
                 {step === 5 && (
-                  <div className="px-8 py-4">
-                    <h3 className="text-center font-Archivo text-[32px]">Review the product</h3>
-                    <p className="text-center font-Archivo text-[16px] text-[#636363] mb-4">
+                  <div className="px-4 sm:px-8 py-4">
+                    <h3 className="text-center font-Archivo text-2xl sm:text-3xl">Review the product</h3>
+                    <p className="text-center font-Archivo text-sm sm:text-base text-[#636363] mb-4">
                       Mari periksa semua data yg telah kamu isi sebelumnya
                     </p>
                     <div className="flex justify-center items-center mt-8 px-4 py-4 border border-gray-300 rounded-md">
                       <div className="text-center">
-                        <p className="mb-3 font-medium text-gray-800">Klik tombol <strong>Preview</strong> untuk<br />cek produk milikmu</p>
-                        <div className="flex space-x-4 mt-3">
+                        <p className="mb-3 font-medium text-gray-800 text-sm sm:text-base">Klik tombol <strong>Preview</strong> untuk<br />cek produk milikmu</p>
+                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-3">
                           <button
                             onClick={handlePreview}
                             disabled={loadingSave}
-                            className="px-6 py-2 border border-gray-300 bg-white text-gray-800 font-medium rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                            className="px-6 py-2 border border-gray-300 bg-white text-gray-800 font-medium rounded-md hover:bg-gray-50 transition-colors cursor-pointer text-sm sm:text-base"
                           >
                             Preview
                           </button>
@@ -1263,11 +1257,11 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                               handleSave();
                             }}
                             disabled={loadingSave}
-                            className="px-6 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center cursor-pointer"
+                            className="px-6 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center cursor-pointer text-sm sm:text-base"
                           >
                             <img src={SaveIcon} alt="Save" className="h-5 w-5 mr-2" />
                             {loadingSave ?
-                              <CircularProgress size={30} color="white"/>
+                              <CircularProgress size={24} color="inherit"/>
                               :
                               "Save"
                             }
@@ -1279,10 +1273,10 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                 )}
 
                 {step === 6 && (
-                  <div className="relative px-8 py-18 my-10 overflow-hidden">
-                    <div className="relative z-10 text-center py-12 -translate-y-32">
-                      <h3 className="text-3xl font-bold text-gray-800 mb-2">Welcome Aboard!!</h3>
-                      <p className="text-gray-600 text-lg mb-10">
+                  <div className="relative px-4 sm:px-8 py-10 sm:py-18 my-5 sm:my-10 overflow-hidden">
+                    <div className="relative z-10 text-center py-6 sm:py-12 md:-translate-y-16 lg:-translate-y-32">
+                      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Aboard!!</h3>
+                      <p className="text-gray-600 text-base sm:text-lg mb-10">
                         Selamat! kamu telah berhasil menambahkan productmu!
                       </p>
                     </div>
@@ -1290,16 +1284,16 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                       onClick={onCloseAfterSave}
                       src={FinishBg}
                       alt="Background"
-                      className="absolute inset-0 w-full h-full mt-4 z-0 opacity-80"
+                      className="absolute inset-0 w-full h-full mt-4 z-0 opacity-80 object-cover"
                     />
                   </div>
                 )}
                 {step !== 6 && (
-                  <div className={`flex items-center px-8 pt-2 pb-6 ${step > 1 ? 'justify-between' : 'justify-end'}`}>
+                  <div className={`flex items-center px-4 sm:px-8 pt-2 pb-6 ${step > 1 ? 'justify-between' : 'justify-end'}`}>
                     {step > 1 && (
                       <button
                         onClick={goBack}
-                        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 shadow-md cursor-pointer"
+                        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 shadow-md cursor-pointer text-sm sm:text-base"
                         disabled={loadingSave}
                       >
                         Back
@@ -1308,7 +1302,7 @@ const AddService = ({ isOpen, onClose, onCloseAfterSave }) => {
                     {step !== 5 && (
                       <button
                         onClick={goNext}
-                        className="px-4 py-2 border border-gray-300 rounded-md text-white shadow-md cursor-pointer"
+                        className="px-4 py-2 border border-gray-300 rounded-md text-white shadow-md cursor-pointer text-sm sm:text-base"
                         style={{ backgroundColor: "#4DA1A9" }}
                         disabled={loadingSave}
                       >

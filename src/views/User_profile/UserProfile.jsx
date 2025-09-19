@@ -697,13 +697,13 @@ const UserProfile = () => {
     const statusInfo = useMemo(() => getStatusInfo(item), [item, getStatusInfo]);
 
     return (
-      <div className="group relative bg-gradient-to-br from-white to-gray-50/30 rounded-2xl border border-gray-200/50 hover:border-blue-300/50 transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01] backdrop-blur-sm">
+      <div className="group relative bg-gradient-to-br from-white to-gray-50/30 rounded-xl sm:rounded-2xl border border-gray-200/50 hover:border-blue-300/50 transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01] backdrop-blur-sm">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-        
-        <div className="relative z-10 flex flex-col lg:flex-row">
-          {/* Enhanced Image Section - Made smaller */}
-          <div className="flex-shrink-0 w-full lg:w-64 h-48 lg:h-44 relative overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
+
+        <div className="relative z-10 flex flex-col sm:flex-row">
+          {/* Responsive Image Section */}
+          <div className="flex-shrink-0 w-full sm:w-48 md:w-64 h-40 sm:h-44 md:h-48 relative overflow-hidden rounded-t-xl sm:rounded-l-2xl sm:rounded-tr-none">
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
             <img
               src={item.image}
@@ -734,9 +734,9 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Content Section - Made smaller */}
-          <div className="flex-1 p-5 relative">
-            <div className="flex justify-between items-start h-full">
+          {/* Responsive Content Section */}
+          <div className="flex-1 p-4 sm:p-5 relative">
+            <div className="flex flex-col sm:flex-row justify-between items-start h-full gap-4">
               <div className="flex-1 space-y-3">
                 {/* Category Tags */}
                 <div className="flex flex-wrap gap-1.5">
@@ -767,7 +767,7 @@ const UserProfile = () => {
                 </p>
 
                 {/* Seller Info */}
-                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-300 ring-2 ring-white">
                       <span className="text-white text-xs font-bold">
@@ -793,7 +793,7 @@ const UserProfile = () => {
                 </div>
 
                 {/* Order Details */}
-                <div className="flex flex-col gap-1.5 text-xs">
+                  <div className="flex flex-col gap-1 text-xs">
                   <div className="flex items-center gap-2 text-gray-600">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -820,15 +820,15 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              {/* Enhanced Action Section - Made smaller */}
-              <div className="flex flex-col items-end gap-3 ml-6">
-                <div className="text-right">
-                  <div className="text-xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
+              {/* Responsive Action Section */}
+              <div className="flex flex-col sm:items-end gap-2 sm:gap-3 sm:ml-6 mt-4 sm:mt-0">
+                <div className="text-left sm:text-right">
+                  <div className="text-lg sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
                     {item.price || 'Rp 0'}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 w-full sm:w-auto">
                   {/* Show Manage Order button for orders with valid order numbers */}
                   {statusInfo.showManageOrder && (
                     <button
@@ -894,13 +894,13 @@ const UserProfile = () => {
 
   // Enhanced Review Card with smaller design
   const ReviewCard = React.memo(({ review }) => (
-    <div className="group relative bg-gradient-to-br from-white to-green-50/30 rounded-2xl border border-gray-200/50 hover:border-green-300/50 transition-all duration-500 hover:shadow-xl hover:shadow-green-500/10 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01] backdrop-blur-sm">
+    <div className="group relative bg-gradient-to-br from-white to-green-50/30 rounded-xl sm:rounded-2xl border border-gray-200/50 hover:border-green-300/50 transition-all duration-500 hover:shadow-xl hover:shadow-green-500/10 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01] backdrop-blur-sm">
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-      
-      <div className="relative z-10 flex flex-col lg:flex-row">
-        {/* Enhanced Image Section - Made smaller */}
-        <div className="flex-shrink-0 w-full lg:w-64 h-48 lg:h-44 relative overflow-hidden rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
+
+      <div className="relative z-10 flex flex-col sm:flex-row">
+        {/* Responsive Image Section */}
+        <div className="flex-shrink-0 w-full sm:w-48 md:w-64 h-40 sm:h-44 md:h-48 relative overflow-hidden rounded-t-xl sm:rounded-l-2xl sm:rounded-tr-none">
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
           <img
             src={review.image}
@@ -930,9 +930,9 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Enhanced Content Section - Made smaller */}
-        <div className="flex-1 p-5 relative">
-          <div className="flex justify-between items-start h-full">
+        {/* Responsive Content Section */}
+        <div className="flex-1 p-4 sm:p-5 relative">
+          <div className="flex flex-col sm:flex-row justify-between items-start h-full gap-4">
             <div className="flex-1 space-y-3">
               {/* Category and Status Tags */}
               <div className="flex flex-wrap gap-1.5">
@@ -962,8 +962,8 @@ const UserProfile = () => {
                 {review.description || 'Professional service provided'}
               </p>
 
-              {/* Seller Info */}
-              <div className="flex items-center gap-3">
+        {/* Seller Info */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-300 ring-2 ring-white">
                     <span className="text-white text-xs font-bold">
@@ -988,8 +988,8 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              {/* Order Details */}
-              <div className="flex flex-col gap-1.5 text-xs">
+        {/* Order Details */}
+          <div className="flex flex-col gap-1 text-xs">
                 <div className="flex items-center gap-2 text-gray-600">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -1011,15 +1011,15 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Enhanced Action Section - Made smaller */}
-            <div className="flex flex-col items-end gap-3 ml-6">
-              <div className="text-right">
-                <div className="text-xl font-bold bg-gradient-to-r from-gray-900 to-green-600 bg-clip-text text-transparent">
+            {/* Responsive Action Section */}
+            <div className="flex flex-col sm:items-end gap-2 sm:gap-3 sm:ml-6 mt-4 sm:mt-0">
+              <div className="text-left sm:text-right">
+                <div className="text-lg sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-green-600 bg-clip-text text-transparent">
                   {review.servicePrice || 'Rp 0'}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => handleBuyAgain({
                     serviceId: review.serviceId,
@@ -1203,13 +1203,12 @@ const UserProfile = () => {
 
       <div className="w-full px-4 lg:px-6 xl:px-8 2xl:px-12 relative z-10 pt-8">
         <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-gray-500/20 overflow-hidden border border-white/50">
-          {/* Enhanced Header - Made smaller */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 p-6 text-white">
-            
-            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+          {/* Enhanced Header - Made smaller and more responsive */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 p-4 sm:p-6 text-white">
+            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+              <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
                 <div className="group relative">
-                  <div className="w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white/30 transition-all duration-700 group-hover:scale-110 overflow-hidden shadow-xl ring-2 ring-white/20">
+                  <div className="w-24 h-24 sm:w-20 sm:h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white/30 transition-all duration-700 group-hover:scale-110 overflow-hidden shadow-xl ring-2 ring-white/20">
                     <img
                       className="w-full h-full object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110"
                       src={auth?.data?.auth?.picture === "temp"
@@ -1224,21 +1223,23 @@ const UserProfile = () => {
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white shadow-md animate-pulse"></div>
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold mb-2 tracking-tight text-white filter drop-shadow-lg bg-gradient-to-r from-white to-blue-100 bg-clip-text">
+                <div className="text-center sm:text-left mt-3 sm:mt-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 tracking-tight text-white filter drop-shadow-lg bg-gradient-to-r from-white to-blue-100 bg-clip-text">
                     {auth?.data?.auth?.name || "User"}
                   </h1>
-                  <p className="text-base opacity-90 font-medium filter drop-shadow-sm">{auth?.data?.auth?.email}</p>
+                  <p className="text-sm sm:text-base opacity-90 font-medium filter drop-shadow-sm break-all sm:break-normal">
+                    {auth?.data?.auth?.email}
+                  </p>
                 </div>
               </div>
 
               <button
                 onClick={handleSettingsClick}
-                className="group bg-white/15 backdrop-blur-sm border-2 border-white/30 cursor-pointer rounded-2xl p-3 text-white hover:bg-white/25 hover:border-white/50 transition-all duration-500 hover:scale-125 shadow-lg hover:shadow-xl ring-2 ring-white/10 hover:ring-white/20"
+                className="group bg-white/15 backdrop-blur-sm border-2 border-white/30 cursor-pointer rounded-2xl p-2 sm:p-3 text-white hover:bg-white/25 hover:border-white/50 transition-all duration-500 hover:scale-110 sm:hover:scale-125 shadow-lg hover:shadow-xl ring-2 ring-white/10 hover:ring-white/20 mt-2 sm:mt-0"
               >
                 <svg
-                  width="20"
-                  height="20"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -1253,79 +1254,79 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Enhanced Stats Section - Made smaller */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 backdrop-blur-sm">
-            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
+          {/* Enhanced Stats Section - Made responsive */}
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 backdrop-blur-sm">
+            <div className="group relative flex flex-col items-center p-3 sm:p-4 bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/60 hover:border-blue-300/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] sm:hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-2xl mb-2">📅</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Member Since</span>
-              <span className="relative z-10 text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-all duration-300">{userStats.memberSince || "-"}</span>
+              <div className="relative z-10 text-xl sm:text-2xl mb-1.5 sm:mb-2">📅</div>
+              <span className="relative z-10 text-[10px] sm:text-xs text-gray-600 mb-1.5 sm:mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Member Since</span>
+              <span className="relative z-10 text-base sm:text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-all duration-300">{userStats.memberSince || "-"}</span>
             </div>
 
-            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-green-300/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
+            <div className="group relative flex flex-col items-center p-3 sm:p-4 bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/60 hover:border-green-300/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] sm:hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-2xl mb-2">📋</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Profile</span>
-              <span className="relative z-10 text-lg font-bold text-green-600 transition-all duration-300">{userStats.profileCompletion || "0%"}</span>
+              <div className="relative z-10 text-xl sm:text-2xl mb-1.5 sm:mb-2">📋</div>
+              <span className="relative z-10 text-[10px] sm:text-xs text-gray-600 mb-1.5 sm:mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Profile</span>
+              <span className="relative z-10 text-base sm:text-lg font-bold text-green-600 transition-all duration-300">{userStats.profileCompletion || "0%"}</span>
             </div>
 
-            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-purple-300/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
+            <div className="group relative flex flex-col items-center p-3 sm:p-4 bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/60 hover:border-purple-300/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] sm:hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-2xl mb-2">🎫</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Vouchers</span>
-              <span className="relative z-10 text-lg font-bold text-purple-600 transition-all duration-300">{userStats.activeVouchers || "0"}</span>
+              <div className="relative z-10 text-xl sm:text-2xl mb-1.5 sm:mb-2">🎫</div>
+              <span className="relative z-10 text-[10px] sm:text-xs text-gray-600 mb-1.5 sm:mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Vouchers</span>
+              <span className="relative z-10 text-base sm:text-lg font-bold text-purple-600 transition-all duration-300">{userStats.activeVouchers || "0"}</span>
             </div>
 
-            <div className="group relative flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 hover:border-orange-300/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-105 overflow-hidden">
+            <div className="group relative flex flex-col items-center p-3 sm:p-4 bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/60 hover:border-orange-300/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] sm:hover:scale-105 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 text-2xl mb-2">📦</div>
-              <span className="relative z-10 text-xs text-gray-600 mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Orders</span>
-              <span className="relative z-10 text-lg font-bold text-orange-600 transition-all duration-300">{userStats.totalOrders || "0"}</span>
+              <div className="relative z-10 text-xl sm:text-2xl mb-1.5 sm:mb-2">📦</div>
+              <span className="relative z-10 text-[10px] sm:text-xs text-gray-600 mb-1.5 sm:mb-2 font-bold tracking-wider uppercase text-center group-hover:text-gray-800 transition-colors duration-300">Orders</span>
+              <span className="relative z-10 text-base sm:text-lg font-bold text-orange-600 transition-all duration-300">{userStats.totalOrders || "0"}</span>
             </div>
           </div>
 
-          {/* Enhanced Tab Navigation with loading indicator */}
-          <div className="px-6 pt-6 bg-white/80 backdrop-blur-sm">
-            <div className="flex justify-between items-center">
-              <div className="inline-flex bg-white/80 backdrop-blur-sm rounded-2xl p-1.5 border border-white/60 gap-1.5">
+          {/* Enhanced Tab Navigation with loading indicator - Made responsive */}
+          <div className="px-4 sm:px-6 pt-4 sm:pt-6 bg-white/80 backdrop-blur-sm">
+            <div className="flex flex-col xs:flex-row justify-between items-stretch xs:items-center">
+              <div className="flex flex-col xs:flex-row bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-1 sm:p-1.5 border border-white/60 gap-1">
                 <button
-                  className={`px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer transition-all duration-500 relative overflow-hidden whitespace-nowrap ${
+                  className={`px-4 sm:px-6 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg sm:rounded-xl cursor-pointer transition-all duration-500 relative overflow-hidden ${
                     activeTab === "purchase"
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md shadow-blue-500/25 z-10 scale-105"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-105"
-                  }`}
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md shadow-blue-500/25 z-10 scale-[1.02] sm:scale-105"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-[1.01] sm:hover:scale-105"
+                  } ${tabLoading ? 'opacity-75' : ''}`}
                   onClick={() => handleTabChange("purchase")}
                   disabled={tabLoading}
                 >
-                  <span className="relative z-10 flex items-center gap-2">
+                  <span className="relative z-10 flex items-center justify-center xs:justify-start gap-1.5 sm:gap-2">
                     {tabLoading && activeTab === "purchase" ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                       </svg>
                     )}
-                    Purchase History
+                    <span className="whitespace-nowrap">Purchase History</span>
                   </span>
                 </button>
                 <button
-                  className={`px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer transition-all duration-500 relative overflow-hidden whitespace-nowrap ${
+                  className={`px-4 sm:px-6 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg sm:rounded-xl cursor-pointer transition-all duration-500 relative overflow-hidden ${
                     activeTab === "reviews"
-                      ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-md shadow-green-500/25 z-10 scale-105"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-105"
-                  }`}
+                      ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-md shadow-green-500/25 z-10 scale-[1.02] sm:scale-105"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80 hover:shadow-sm z-0 hover:scale-[1.01] sm:hover:scale-105"
+                  } ${tabLoading ? 'opacity-75' : ''}`}
                   onClick={() => handleTabChange("reviews")}
                   disabled={tabLoading}
                 >
-                  <span className="relative z-10 flex items-center gap-2">
+                  <span className="relative z-10 flex items-center justify-center xs:justify-start gap-1.5 sm:gap-2">
                     {tabLoading && activeTab === "reviews" ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
                     )}
-                    My Reviews
+                    <span className="whitespace-nowrap">My Reviews</span>
                   </span>
                 </button>
               </div>

@@ -442,14 +442,14 @@ const Profile = () => {
         return (
           <div className="">
             <h1 className="font-Archivo font-semibold text-[24px] mb-2">Personal data</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Kelola detail pribadi Anda agar sesuai dengan profil terbaru.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
             <div className="">
-              <h2 className="font-Archivo font-semibold text-[20px] mb-4">Personal Data</h2>
-              <div className="relative flex items-center mb-6">
-                <div className="bg-[#9095A0] rounded-[20px] mr-4">
+              <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4">Personal Data</h2>
+              <div className="relative flex flex-col md:flex-row items-start md:items-center mb-6 gap-4">
+                <div className="bg-[#9095A0] rounded-[20px]">
                   <img
                     src={
                       imagePreview !== null
@@ -459,7 +459,7 @@ const Profile = () => {
                           : `${imageShow}${auth?.data?.auth.picture}`
                     }
                     alt="Profile Picture"
-                    className="w-[100px] h-[100px] object-cover rounded-[16px]"
+                    className="w-20 h-20 md:w-[100px] md:h-[100px] object-cover rounded-[16px]"
                     onError={(e) => {
                       console.error("Error loading image", e);
                       e.target.src = Picture;
@@ -467,18 +467,18 @@ const Profile = () => {
                   />
                 </div>
                 <div className="flex-col gap-3">
-                  <p className="text-[20px] font-Archivo mb-3">Profile Picture</p>
-                  <p className="text-[12px] font-Archivo text-[#565E6D] mb-1">PNG, JPEG under 15MB</p>
+                  <p className="text-base md:text-lg font-Archivo mb-3">Profile Picture</p>
+                  <p className="text-xs md:text-sm font-Archivo text-[#565E6D] mb-1">PNG, JPEG under 15MB</p>
                 </div>
-                <div className="absolute right-0 flex">
+                <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0 md:absolute right-0">
                   <button
-                    className="bg-[#565E6D] text-[#FFFFFF] text-[14px] font-inter px-6 py-2 mr-2 cursor-pointer"
+                    className="bg-[#565E6D] text-[#FFFFFF] text-sm font-inter px-4 py-2 cursor-pointer"
                     onClick={handleUploadPicture}
                   >
                     Upload new picture
                   </button>
                   <button
-                    className={`${isPendingImageDelete ? 'bg-red-500' : 'bg-[#565E6D]'} text-[#FFFFFF] text-[14px] font-inter px-4 py-2 cursor-pointer`}
+                    className={`${isPendingImageDelete ? 'bg-red-500' : 'bg-[#565E6D]'} text-[#FFFFFF] text-sm font-inter px-4 py-2 cursor-pointer`}
                     onClick={() => {
                       setIsPendingImageDelete(!isPendingImageDelete);
                       setImagePreview(null);
@@ -491,9 +491,9 @@ const Profile = () => {
               {imageUploadError && (
                 <p className="text-red-500 text-sm mb-3">{imageUploadError}</p>
               )}
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-[16px] font-semibold text-[#424956] mb-1">
+                  <label className="block text-sm md:text-base font-semibold text-[#424956] mb-1">
                     First name
                   </label>
                   <input
@@ -501,11 +501,11 @@ const Profile = () => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="First name"
-                    className="w-full h-[50px] border border-[#ACACAC] px-3 py-2 text-sm"
+                    className="w-full h-12 border border-[#ACACAC] px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-[16px] font-semibold text-[#424956] mb-1">
+                  <label className="block text-sm md:text-base font-semibold text-[#424956] mb-1">
                     Last name
                   </label>
                   <input
@@ -513,32 +513,32 @@ const Profile = () => {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Last name"
-                    className="w-full h-[50px] border border-[#ACACAC] px-3 py-2 text-sm"
+                    className="w-full h-12 border border-[#ACACAC] px-3 py-2 text-sm"
                   />
                 </div>
               </div>
               <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-              <div className="mb-6 mr-4">
-                <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+              <div className="mb-6">
+                <label className="block text-lg md:text-xl font-Archivo font-normal text-[#171A1F] mb-2">
                   Contact email
                 </label>
                 <p className="text-sm text-[#565E6D] mb-2">
                   Digunakan untuk identifikasi akun dan keperluan komunikasi.
                 </p>
-                <p className="text-[#424956] font-semibold text-[16px] mb-1">Email</p>
+                <p className="text-[#424956] font-semibold text-sm md:text-base mb-1">Email</p>
                 <input
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="example@email.com"
-                  className={`w-1/2 h-[50px] border ${formErrors.email ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
+                  className={`w-full md:w-1/2 h-12 border ${formErrors.email ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
                 />
                 {formErrors.email && (
                   <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
                 )}
               </div>
-              <div className="mb-6 mr-4">
-                <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+              <div className="mb-6">
+                <label className="block text-lg md:text-xl font-Archivo font-normal text-[#171A1F] mb-2">
                   Phone number
                 </label>
                 <p className="text-sm text-[#565E6D] mb-2">
@@ -549,7 +549,7 @@ const Profile = () => {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+628XXXXXXXXXX"
-                  className={`w-1/2 h-[50px] border ${formErrors.phoneNumber ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
+                  className={`w-full md:w-1/2 h-12 border ${formErrors.phoneNumber ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
                 />
                 {formErrors.phoneNumber && (
                   <p className="text-red-500 text-sm mt-1">{formErrors.phoneNumber}</p>
@@ -557,8 +557,8 @@ const Profile = () => {
               </div>
               {isFreelancer &&
                 <>
-                  <div className="mb-6 mr-4">
-                    <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+                  <div className="mb-6">
+                    <label className="block text-lg md:text-xl font-Archivo font-normal text-[#171A1F] mb-2">
                       About
                     </label>
                     <p className="text-sm text-[#565E6D] mb-2">
@@ -568,11 +568,11 @@ const Profile = () => {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Deskripsi..."
-                      className={`w-1/2 h-40 border border-[#ACACAC] px-3 py-2 text-sm resize-none rounded`}
+                      className={`w-full md:w-1/2 h-40 border border-[#ACACAC] px-3 py-2 text-sm resize-none rounded`}
                     />
                   </div>
-                  <div className="mb-6 mr-4">
-                    <label className="block text-[20px] font-Archivo font-normal text-[#171A1F] mb-2">
+                  <div className="mb-6">
+                    <label className="block text-lg md:text-xl font-Archivo font-normal text-[#171A1F] mb-2">
                       Portofolio URL
                     </label>
                     <input
@@ -580,13 +580,13 @@ const Profile = () => {
                       value={portoLink}
                       onChange={(e) => setPortoLink(e.target.value)}
                       placeholder=""
-                      className={`w-1/2 h-[50px] border border-[#ACACAC] px-3 py-2 text-sm`}
+                      className={`w-full md:w-1/2 h-12 border border-[#ACACAC] px-3 py-2 text-sm`}
                     />
                   </div>
                 </>
               }
               <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer flex text-center justify-center"
+                className="bg-[#565E6D] w-full md:w-[190px] text-white text-base px-6 py-2 cursor-pointer flex text-center justify-center"
                 onClick={handleSavePersonalData}
                 disabled={saveLoad}
               >
@@ -606,16 +606,16 @@ const Profile = () => {
       case "paymentAccount":
         return (
           <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Payment Account</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <h1 className="font-Archivo font-semibold text-xl md:text-2xl mb-2">Payment Account</h1>
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Cantumkan nomor telepon akun penerima bayaran kontrak.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-            <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
+            <div className="mb-6">
+              <label className="block text-xl md:text-2xl font-Archivo font-normal text-[#171A1F] mb-2">
                 Status Akun
               </label>
-              <p className="text-[#424956] font-semibold text-[16px] mb-1">
+              <p className="text-[#424956] font-semibold text-sm md:text-base mb-1">
                 Terhubung dengan nomor :
               </p>
               <input
@@ -623,7 +623,7 @@ const Profile = () => {
                 value={paymentPhoneNumber}
                 onChange={(e) => setPaymentPhoneNumber(e.target.value)}
                 placeholder="+628XXXXXXXXXX"
-                className={`w-1/2 h-[50px] border ${paymentNumberError ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
+                className={`w-full md:w-1/2 h-12 border ${paymentNumberError ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm`}
               />
               {paymentNumberError && (
                 <p className="text-red-500 text-sm mt-1">{paymentNumberError}</p>
@@ -631,7 +631,7 @@ const Profile = () => {
             </div>
             <div className="">
               <button
-                className="bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 mr-10 cursor-pointer"
+                className="bg-[#565E6D] w-full md:w-[190px] text-white text-base px-6 py-2 cursor-pointer"
                 onClick={handleChangePaymentNumber}
                 disabled={isPaymentUpdating}
               >
@@ -643,51 +643,51 @@ const Profile = () => {
       case "accountSecurity":
         return (
           <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Account Security</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <h1 className="font-Archivo font-semibold text-xl md:text-2xl mb-2">Account Security</h1>
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Pastikan akun Anda tetap aman dengan mengatur kata sandi akun di sini.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
-            <div className="mb-6 mr-4">
-              <label className="block text-[24px] font-Archivo font-normal text-[#171A1F] mb-2">
+            <div className="mb-6">
+              <label className="block text-xl md:text-2xl font-Archivo font-normal text-[#171A1F] mb-2">
                 Change Password
               </label>
-              <p className="text-[#424956] font-semibold text-[16px] mb-1">Current Password :</p>
+              <p className="text-[#424956] font-semibold text-sm md:text-base mb-1">Current Password :</p>
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Current Password"
-                className={`w-1/2 h-[50px] border ${passwordErrors.currentPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
+                className={`w-full md:w-1/2 h-12 border ${passwordErrors.currentPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
               />
               {passwordErrors.currentPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.currentPassword}</p>
               )}
-              <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">New Password :</p>
+              <p className="text-[#424956] font-semibold text-sm md:text-base mb-1 mt-2">New Password :</p>
               <input
                 type="password"
                 value={newPassword}
                 onChange={handleNewPasswordChange}
                 placeholder="New Password"
-                className={`w-1/2 h-[50px] border ${passwordErrors.newPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
+                className={`w-full md:w-1/2 h-12 border ${passwordErrors.newPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
               />
               {passwordErrors.newPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.newPassword}</p>
               )}
-              <p className="text-[#424956] font-semibold text-[16px] mb-1 mt-2">Confirm Password :</p>
+              <p className="text-[#424956] font-semibold text-sm md:text-base mb-1 mt-2">Confirm Password :</p>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
                 placeholder="Confirm Password"
-                className={`w-1/2 h-[50px] border ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
+                className={`w-full md:w-1/2 h-12 border ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-[#ACACAC]'} px-3 py-2 text-sm mb-1`}
               />
               {passwordErrors.confirmPassword && (
                 <p className="text-red-500 text-sm mb-3">{passwordErrors.confirmPassword}</p>
               )}
               <div className="mt-4">
                 <button
-                  className={`bg-[#565E6D] w-[190px] text-white text-[16px] px-6 py-2 cursor-pointer ${isChangingPassword ? 'opacity-70' : ''}`}
+                  className={`bg-[#565E6D] w-full md:w-[190px] text-white text-base px-6 py-2 cursor-pointer ${isChangingPassword ? 'opacity-70' : ''}`}
                   onClick={handleChangePassword}
                   disabled={isChangingPassword}
                 >
@@ -700,19 +700,19 @@ const Profile = () => {
       case "helpCenter":
         return (
           <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Help Center</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <h1 className="font-Archivo font-semibold text-xl md:text-2xl mb-2">Help Center</h1>
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Butuh bantuan? Lihat FAQ atau hubungi tim dukungan kami.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-2"></div>
-            <div className="mt-2 w-2/3">
+            <div className="mt-2 w-full lg:w-2/3">
               {FAQ_ITEMS.map((item, index) => (
                 <div key={index} className="border-b border-black">
                   <div
                     className="flex items-center justify-between py-4 cursor-pointer"
                     onClick={() => toggleItem(index)}
                   >
-                    <h3 className="font-Archivo font-semibold text-[18px]">{item.question}</h3>
+                    <h3 className="font-Archivo font-semibold text-base md:text-lg">{item.question}</h3>
                     <img
                       src={downArrow}
                       alt="Expand"
@@ -724,7 +724,7 @@ const Profile = () => {
                     className={`overflow-hidden transition-all duration-300 ${expandedItem === index ? "max-h-96 opacity-100 pb-4" : "max-h-0 opacity-0"
                       }`}
                   >
-                    <p className="text-[16px] text-[#171A1F]">{item.answer}</p>
+                    <p className="text-sm md:text-base text-[#171A1F]">{item.answer}</p>
                   </div>
                 </div>
               ))}
@@ -734,16 +734,16 @@ const Profile = () => {
       case "privacyPolicy":
         return (
           <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Privacy Policy</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <h1 className="font-Archivo font-semibold text-xl md:text-2xl mb-2">Privacy Policy</h1>
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Kebijakan privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
 
             <div className="space-y-6">
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">1. Informasi yang Kami Kumpulkan</h2>
-                <div className="space-y-3 text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">1. Informasi yang Kami Kumpulkan</h2>
+                <div className="space-y-3 text-sm md:text-base text-[#424956]">
                   <p><strong className="text-[#171A1F]">Informasi Pribadi:</strong> Ketika Anda mendaftar atau menggunakan B-Connect, kami dapat mengumpulkan informasi pribadi seperti nama, alamat email, nomor telepon, lokasi, informasi keterampilan/jasa yang Anda tawarkan, dan informasi pembayaran.</p>
                   <p><strong className="text-[#171A1F]">Data Profil Jasa:</strong> Untuk penyedia jasa, kami mengumpulkan informasi tentang layanan yang ditawarkan, portofolio, tarif, dan ulasan dari klien.</p>
                   <p><strong className="text-[#171A1F]">Data Transaksi:</strong> Informasi tentang pemesanan jasa, komunikasi antara penyedia dan penerima jasa, pembayaran, dan riwayat transaksi.</p>
@@ -752,8 +752,8 @@ const Profile = () => {
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">2. Cara Kami Menggunakan Informasi Anda</h2>
-                <div className="space-y-3 text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">2. Cara Kami Menggunakan Informasi Anda</h2>
+                <div className="space-y-3 text-sm md:text-base text-[#424956]">
                   <p>Kami menggunakan informasi yang dikumpulkan untuk:</p>
                   <div className="ml-4 space-y-2">
                     <p>• Menyediakan dan memelihara platform B-Connect</p>
@@ -769,8 +769,8 @@ const Profile = () => {
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">3. Berbagi Informasi</h2>
-                <div className="space-y-3 text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">3. Berbagi Informasi</h2>
+                <div className="space-y-3 text-sm md:text-base text-[#424956]">
                   <p>Kami tidak menjual informasi pribadi Anda kepada pihak ketiga. Namun, kami dapat membagikan informasi dalam situasi berikut:</p>
                   <div className="ml-4 space-y-2">
                     <p><strong className="text-[#171A1F]">Antar Pengguna B-Connect:</strong> Profile dan informasi layanan penyedia jasa akan ditampilkan kepada calon klien di platform</p>
@@ -784,13 +784,13 @@ const Profile = () => {
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">4. Keamanan Data</h2>
-                <p className="text-[16px] text-[#424956]">Kami menerapkan langkah-langkah keamanan yang tepat untuk melindungi informasi pribadi Anda dari akses, perubahan, pengungkapan, atau penghancuran yang tidak sah. Ini termasuk enkripsi data, autentikasi berlapis, dan monitoring keamanan. Namun, tidak ada metode transmisi melalui internet yang 100% aman, dan kami tidak dapat menjamin keamanan absolut.</p>
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">4. Keamanan Data</h2>
+                <p className="text-sm md:text-base text-[#424956]">Kami menerapkan langkah-langkah keamanan yang tepat untuk melindungi informasi pribadi Anda dari akses, perubahan, pengungkapan, atau penghancuran yang tidak sah. Ini termasuk enkripsi data, autentikasi berlapis, dan monitoring keamanan. Namun, tidak ada metode transmisi melalui internet yang 100% aman, dan kami tidak dapat menjamin keamanan absolut.</p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">5. Hak Anda</h2>
-                <div className="space-y-3 text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">5. Hak Anda</h2>
+                <div className="space-y-3 text-sm md:text-base text-[#424956]">
                   <p>Sebagai pengguna B-Connect, Anda memiliki hak untuk:</p>
                   <div className="ml-4 space-y-2">
                     <p>• Mengakses dan memperbarui profil dan informasi pribadi Anda</p>
@@ -803,28 +803,28 @@ const Profile = () => {
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">6. Cookie dan Pelacakan</h2>
-                <p className="text-[16px] text-[#424956]">Kami menggunakan cookie dan teknologi pelacakan serupa untuk meningkatkan pengalaman Anda di B-Connect, termasuk mengingat preferensi pencarian, menyimpan sesi login, dan menganalisis penggunaan platform. Anda dapat mengontrol pengaturan cookie melalui preferensi browser Anda.</p>
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">6. Cookie dan Pelacakan</h2>
+                <p className="text-sm md:text-base text-[#424956]">Kami menggunakan cookie dan teknologi pelacakan serupa untuk meningkatkan pengalaman Anda di B-Connect, termasuk mengingat preferensi pencarian, menyimpan sesi login, dan menganalisis penggunaan platform. Anda dapat mengontrol pengaturan cookie melalui preferensi browser Anda.</p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">7. Privasi Anak</h2>
-                <p className="text-[16px] text-[#424956]">B-Connect tidak ditujukan untuk anak-anak di bawah usia 17 tahun. Kami tidak secara sengaja mengumpulkan informasi pribadi dari anak-anak di bawah 17 tahun. Jika Anda mengetahui bahwa anak di bawah umur telah memberikan informasi pribadi kepada kami, silakan hubungi kami untuk menghapus informasi tersebut.</p>
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">7. Privasi Anak</h2>
+                <p className="text-sm md:text-base text-[#424956]">B-Connect tidak ditujukan untuk anak-anak di bawah usia 17 tahun. Kami tidak secara sengaja mengumpulkan informasi pribadi dari anak-anak di bawah 17 tahun. Jika Anda mengetahui bahwa anak di bawah umur telah memberikan informasi pribadi kepada kami, silakan hubungi kami untuk menghapus informasi tersebut.</p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">8. Pengguna Internasional</h2>
-                <p className="text-[16px] text-[#424956]">Jika Anda mengakses layanan kami dari luar Indonesia, harap dicatat bahwa informasi Anda dapat ditransfer dan diproses di Indonesia, tempat server kami berada.</p>
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">8. Pengguna Internasional</h2>
+                <p className="text-sm md:text-base text-[#424956]">Jika Anda mengakses layanan kami dari luar Indonesia, harap dicatat bahwa informasi Anda dapat ditransfer dan diproses di Indonesia, tempat server kami berada.</p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">9. Perubahan Kebijakan</h2>
-                <p className="text-[16px] text-[#424956]">Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu Anda tentang perubahan apa pun dengan memposting Kebijakan Privasi baru di halaman ini dan memperbarui tanggal "Terakhir Diperbarui".</p>
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">9. Perubahan Kebijakan</h2>
+                <p className="text-sm md:text-base text-[#424956]">Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu Anda tentang perubahan apa pun dengan memposting Kebijakan Privasi baru di halaman ini dan memperbarui tanggal "Terakhir Diperbarui".</p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">10. Hubungi Kami</h2>
-                <div className="space-y-3 text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">10. Hubungi Kami</h2>
+                <div className="space-y-3 text-sm md:text-base text-[#424956]">
                   <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, silakan hubungi kami di:</p>
                   <div className="bg-[#F5F5F5] p-4 rounded-lg mt-3">
                     <p className="mb-1"><strong className="text-[#171A1F]">Email:</strong> bconnect404@gmail.com</p>
@@ -835,7 +835,7 @@ const Profile = () => {
               </section>
 
               <div className="border-t border-[#ACACAC] w-full pt-4 mt-6">
-                <p className="text-[14px] text-[#565E6D]">
+                <p className="text-xs md:text-sm text-[#565E6D]">
                   <strong>Terakhir Diperbarui:</strong> Juni 2025
                 </p>
               </div>
@@ -845,13 +845,13 @@ const Profile = () => {
       case "aboutApp":
         return (
           <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">About App</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <h1 className="font-Archivo font-semibold text-xl md:text-2xl mb-2">About App</h1>
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Semua informasi penting tentang aplikasi ini tersedia di sini.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-1"></div>
             <div className="mt-2">
-              <p className="text-[18px] leading-relaxed text-[#171A1F]">
+              <p className="text-base md:text-lg leading-relaxed text-[#171A1F]">
                 B-Connect adalah platform digital yang dirancang untuk menghubungkan para freelancer
                 profesional dengan klien secara cepat dan efisien. Aplikasi ini membantu
                 mempertemukan talenta terbaik dengan proyek-proyek yang sesuai, baik dalam bidang
@@ -864,44 +864,44 @@ const Profile = () => {
       case "termsConditions":
         return (
           <div>
-            <h1 className="font-Archivo font-semibold text-[24px] mb-2">Terms and Conditions</h1>
-            <p className="font-inter text-[16px] text-[#565E6D] mb-6">
+            <h1 className="font-Archivo font-semibold text-xl md:text-2xl mb-2">Terms and Conditions</h1>
+            <p className="font-inter text-sm md:text-base text-[#565E6D] mb-6">
               Syarat dan Ketentuan ini mengatur penggunaan Anda atas platform kami.
             </p>
             <div className="border-t border-[#ACACAC] w-full mb-6"></div>
 
             <div className="space-y-6">
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">1. Penggunaan Layanan</h2>
-                <p className="text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">1. Penggunaan Layanan</h2>
+                <p className="text-sm md:text-base text-[#424956]">
                   Dengan menggunakan platform ini, Anda menyetujui untuk mematuhi semua peraturan dan ketentuan yang berlaku. Anda tidak diperbolehkan menggunakan layanan untuk kegiatan yang melanggar hukum atau merugikan pihak lain.
                 </p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">2. Hak Kekayaan Intelektual</h2>
-                <p className="text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">2. Hak Kekayaan Intelektual</h2>
+                <p className="text-sm md:text-base text-[#424956]">
                   Seluruh konten dalam platform ini termasuk namun tidak terbatas pada teks, grafik, logo, ikon, dan perangkat lunak adalah milik kami dan dilindungi oleh undang-undang hak cipta.
                 </p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">3. Tanggung Jawab Pengguna</h2>
-                <p className="text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">3. Tanggung Jawab Pengguna</h2>
+                <p className="text-sm md:text-base text-[#424956]">
                   Pengguna bertanggung jawab atas keamanan akun mereka sendiri serta aktivitas yang dilakukan melalui akun tersebut. Harap menjaga kerahasiaan informasi login Anda.
                 </p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">4. Pembaruan Ketentuan</h2>
-                <p className="text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">4. Pembaruan Ketentuan</h2>
+                <p className="text-sm md:text-base text-[#424956]">
                   Kami dapat memperbarui Syarat dan Ketentuan ini sewaktu-waktu. Perubahan akan diberlakukan segera setelah dipublikasikan di halaman ini.
                 </p>
               </section>
 
               <section>
-                <h2 className="font-Archivo font-semibold text-[20px] mb-4 text-[#171A1F]">5. Kontak</h2>
-                <p className="text-[16px] text-[#424956]">
+                <h2 className="font-Archivo font-semibold text-lg md:text-xl mb-4 text-[#171A1F]">5. Kontak</h2>
+                <p className="text-sm md:text-base text-[#424956]">
                   Jika Anda memiliki pertanyaan terkait Syarat dan Ketentuan ini, silakan hubungi tim dukungan kami.
                 </p>
               </section>
@@ -914,134 +914,131 @@ const Profile = () => {
   };
 
   return (
-    <div>
-      <div className="flex bg-[#eeeeee]" ref={scrollUp}>
-        <Navbar />
-        <div className="flex flex-col mt-35 mb-[50px] ml-[60px] mr-[60px] w-fit font-inter">
-          <div className="sticky top-35 z-10">
-            <div className="bg-[#FFFFFF] w-[276px] h-fit mb-5">
-              <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
-                Personal Info
-              </h3>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "personalData" ? "bg-[#DFDFDF]" : ""
+    <div ref={scrollUp}>
+      <Navbar />
+      <div className="flex flex-col lg:flex-row bg-[#eeeeee] pt-28 lg:pt-0">
+        <div className="w-full lg:w-[276px] lg:sticky top-28 h-full px-4 lg:px-0 lg:ml-[60px] mt-8 lg:mt-35">
+          <div className="bg-[#FFFFFF] w-full h-fit mb-5 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
+              Personal Info
+            </h3>
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 rounded-b-lg ${activeContent === "personalData" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("personalData")}
+            >
+              <img src={PersonalData} alt="Personal Data" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "personalData"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
-                onClick={() => setActiveContent("personalData")}
               >
-                <img src={PersonalData} alt="Personal Data" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "personalData"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Personal Data
-                </span>
-              </div>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "paymentAccount" ? "bg-[#DFDFDF]" : ""
-                  }`}
-                onClick={() => setActiveContent("paymentAccount")}
-              >
-                <img src={PaymentAcc} alt="Payment Account" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "paymentAccount"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Payment Account
-                </span>
-              </div>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "accountSecurity" ? "bg-[#DFDFDF]" : ""
-                  }`}
-                onClick={() => setActiveContent("accountSecurity")}
-              >
-                <img src={AccSecurity} alt="Account Security" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "accountSecurity"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Account Security
-                </span>
-              </div>
+                Personal Data
+              </span>
             </div>
-            <div className="bg-[#FFFFFF] w-[276px] h-fit">
-              <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
-                General
-              </h3>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "helpCenter" ? "bg-[#DFDFDF]" : ""
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "paymentAccount" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("paymentAccount")}
+            >
+              <img src={PaymentAcc} alt="Payment Account" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "paymentAccount"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
-                onClick={() => setActiveContent("helpCenter")}
               >
-                <img src={HelpCenter} alt="Help Center" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "helpCenter"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Help Center
-                </span>
-              </div>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "privacyPolicy" ? "bg-[#DFDFDF]" : ""
+                Payment Account
+              </span>
+            </div>
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "accountSecurity" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("accountSecurity")}
+            >
+              <img src={AccSecurity} alt="Account Security" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "accountSecurity"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
-                onClick={() => setActiveContent("privacyPolicy")}
               >
-                <img src={PrivacyPolicy} alt="Privacy Policy" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "privacyPolicy"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Privacy Policy
-                </span>
-              </div>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "aboutApp" ? "bg-[#DFDFDF]" : ""
+                Account Security
+              </span>
+            </div>
+          </div>
+          <div className="bg-[#FFFFFF] w-full h-fit rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
+              General
+            </h3>
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "helpCenter" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("helpCenter")}
+            >
+              <img src={HelpCenter} alt="Help Center" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "helpCenter"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
-                onClick={() => setActiveContent("aboutApp")}
               >
-                <img src={aboutApp} alt="About App" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "aboutApp"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  About App
-                </span>
-              </div>
-              <div
-                className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "termsConditions" ? "bg-[#DFDFDF]" : ""
+                Help Center
+              </span>
+            </div>
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "privacyPolicy" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("privacyPolicy")}
+            >
+              <img src={PrivacyPolicy} alt="Privacy Policy" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "privacyPolicy"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
                   }`}
-                onClick={() => setActiveContent("termsConditions")}
               >
-                <img src={TermsCondition} alt="Terms & Conditions" className="w-5 h-5 mr-3" />
-                <span
-                  className={`text-[12px] ${activeContent === "termsConditions"
-                    ? "font-semibold text-[#171A1F]"
-                    : "font-normal text-[#565E6D]"
-                    }`}
-                >
-                  Terms & Conditions
-                </span>
-              </div>
+                Privacy Policy
+              </span>
+            </div>
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 ${activeContent === "aboutApp" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("aboutApp")}
+            >
+              <img src={aboutApp} alt="About App" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "aboutApp"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
+                  }`}
+              >
+                About App
+              </span>
+            </div>
+            <div
+              className={`flex items-center py-2 px-3 cursor-pointer hover:bg-gray-200 rounded-b-lg ${activeContent === "termsConditions" ? "bg-[#DFDFDF]" : ""
+                }`}
+              onClick={() => setActiveContent("termsConditions")}
+            >
+              <img src={TermsCondition} alt="Terms & Conditions" className="w-5 h-5 mr-3" />
+              <span
+                className={`text-[12px] ${activeContent === "termsConditions"
+                  ? "font-semibold text-[#171A1F]"
+                  : "font-normal text-[#565E6D]"
+                  }`}
+              >
+                Terms & Conditions
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col mt-35 mb-[50px] ml-[80px] mr-[200px] w-fit h-fit font-inter">
+        <div className="flex-1 flex flex-col mt-8 lg:mt-35 mb-[50px] px-4 lg:px-0 lg:ml-[80px] lg:mr-[60px] w-full lg:w-fit h-fit font-inter">
           {renderContent()}
         </div>
       </div>
-
       <Footer />
     </div>
   );

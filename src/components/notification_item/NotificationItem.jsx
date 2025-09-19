@@ -45,7 +45,7 @@ const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {
   return (
     <motion.div
       whileHover="hover"
-      className={`border-b border-gray-400 cursor-pointer bg-white pl-2 pr-4 py-2`}
+      className={`border-b border-gray-400 cursor-pointer bg-white pl-3 pr-4 sm:pl-4 sm:pr-6 py-3`}
       onClick={() => {
         socket.emit("view_notification", notification);
         setRead(true);
@@ -56,13 +56,13 @@ const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {
         setUnreadCount(unreadCount - 1);
       }}
     >
-      <div className="flex text-black min-h-20 gap-2">
+      <div className="flex text-black min-h-20 gap-3 sm:gap-4">
         {!read && !localRead && (
           <div className="w-1 rounded-full bg-green-600 h-15 self-center"></div>
         )}
 
         <div className="flex flex-row gap-4 w-full">
-          <div className="relative w-12 h-12 min-w-12 self-center">
+          <div className="relative w-12 h-12 min-w-12 md:w-14 md:h-14 md:min-w-14 self-center">
             <img
               className={`w-full h-full rounded-full object-cover`}
               src={
@@ -79,12 +79,12 @@ const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {
               }}
             />
           </div>
-          <div className="flex flex-col w-full h-full">
-            <div className="flex flex-row justify-between gap-3">
-              <p className="text-base font-semibold self-start">{notification.sender.name}</p>
-              <p className="text-sm text-gray-600">{getRelativeTimeLabel(notification.message.time)}</p>
+          <div className="flex flex-col w-full h-full justify-center">
+            <div className="flex flex-row justify-between gap-3 sm:gap-4">
+              <p className="text-sm sm:text-base font-semibold self-start truncate max-w-[150px] sm:max-w-[200px]">{notification.sender.name}</p>
+              <p className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">{getRelativeTimeLabel(notification.message.time)}</p>
             </div>
-            <p className="text-sm">{notification.message.content}</p>
+            <p className="text-sm text-gray-700">{notification.message.content}</p>
           </div>
         </div>
       </div>

@@ -98,53 +98,53 @@ const Review = ({ isOpen, onClose, orderData, onSubmit }) => {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4"
+                    className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
                     variants={backdropVariants}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
                 >
                     <motion.div
-                        className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-400"
+                        className="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden border border-gray-300"
                         variants={modalVariants}
                         initial="hidden"
                         animate="visible"
                         exit="exit"
                     >
                         {/* Header */}
-                        <nav className="flex flex-row items-center justify-between px-8 h-[68px] bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)] flex-shrink-0">
-                            <h2 className="text-white text-[24px] md:text-[28px] lg:text-[32px] font-Archivo">
+                        <nav className="flex flex-row items-center justify-between px-4 sm:px-6 h-[60px] sm:h-[68px] bg-[linear-gradient(116deg,_#2E5077_2.68%,_#4DA1A9_102.1%)] flex-shrink-0">
+                            <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-Archivo">
                                 Review
                             </h2>
                             <motion.img
                                 onClick={handleClose}
                                 src={CancelIcon}
                                 whileHover={{ scale: 1.1 }}
-                                className="w-9 h-9 cursor-pointer"
+                                className="w-7 h-7 sm:w-9 sm:h-9 cursor-pointer"
                                 alt="Close"
                             />
                         </nav>
 
                         {/* Content */}
-                        <div className="p-8">
+                        <div className="p-4 sm:p-6 md:p-8">
                             {/* Title */}
-                            <div className="text-center mb-8">
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                            <div className="text-center mb-6">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
                                     Review Your Experience
                                 </h1>
-                                <p className="text-gray-600">
-                                    Help us improve our service by rating your recent order and sharing your feedback
+                                <p className="text-sm sm:text-base text-gray-600">
+                                    Help us improve our service by rating your recent order.
                                 </p>
                             </div>
 
                             {/* Order Information */}
-                            <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                            <div className="bg-gray-50 rounded-lg p-4 mb-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h3 className="font-semibold text-gray-800">
+                                        <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
                                             Order #{orderData?.orderNumber || "#001"}
                                         </h3>
-                                        <p className="text-gray-600">
+                                        <p className="text-gray-600 text-xs sm:text-sm">
                                             {orderData?.serviceName || "UI/UX Design for Mobile App"}
                                         </p>
                                     </div>
@@ -153,7 +153,7 @@ const Review = ({ isOpen, onClose, orderData, onSubmit }) => {
 
                             {/* Rating Stars */}
                             <div className="mb-6">
-                                <div className="flex justify-center space-x-2 mb-4">
+                                <div className="flex justify-center space-x-1 sm:space-x-2 mb-4">
                                     {[...Array(5)].map((_, index) => (
                                         <motion.button
                                             key={index}
@@ -163,7 +163,7 @@ const Review = ({ isOpen, onClose, orderData, onSubmit }) => {
                                             whileTap={{ scale: 0.9 }}
                                         >
                                             <svg
-                                                className={`w-10 h-10 ${
+                                                className={`w-8 h-8 sm:w-10 sm:h-10 ${
                                                     index < rating 
                                                         ? "text-yellow-400 fill-current" 
                                                         : "text-gray-300"
@@ -190,10 +190,10 @@ const Review = ({ isOpen, onClose, orderData, onSubmit }) => {
                             {/* Feedback Text Area */}
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    share your feedback (optional)
+                                    Share your feedback (optional)
                                 </label>
                                 <textarea
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm sm:text-base"
                                     rows="4"
                                     placeholder="Tell us about your experience..."
                                     value={feedback}
@@ -205,12 +205,12 @@ const Review = ({ isOpen, onClose, orderData, onSubmit }) => {
                             <div className="flex justify-end">
                                 <motion.button
                                     onClick={handleSubmit}
-                                    className="bg-[#4DA1A9] hover:bg-[#3d8a92] text-white font-medium py-3 px-8 rounded-lg flex items-center justify-center space-x-2"
+                                    className="bg-[#4DA1A9] hover:bg-[#3d8a92] text-white font-medium py-2 px-6 sm:py-3 sm:px-8 rounded-lg flex items-center justify-center space-x-2 text-sm sm:text-base"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     disabled={rating === 0}
                                 >
-                                    <span>Click to submit</span>
+                                    <span>Submit Review</span>
                                     <svg
                                         className="w-5 h-5"
                                         fill="none"
