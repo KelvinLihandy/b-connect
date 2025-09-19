@@ -30,7 +30,7 @@ import PrivacyPolicy from "./views/privacy_policy/PrivacyPolicy";
 // });
 
 // export const socket = io("http://localhost:5000");
-export const socket = io("http://localhost:5000");
+export const socket = io("");
 const App = () => {
   const { auth, getAuth } = useContext(AuthContext);
   const { isFreelancer } = useContext(UserTypeContext);
