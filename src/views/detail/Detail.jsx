@@ -205,15 +205,15 @@ const Detail = () => {
       <Navbar alt />
 
       {/* Main content area */}
-      <div className="container mx-auto px-4 py-8 mt-27">
+      <div className="container mx-auto px-2 sm:px-4 py-8 mt-20 sm:mt-27">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left column - takes 8/12 of the grid on large screens */}
           <div className="lg:col-span-8">
             {/* Title and Rating */}
-            <h1 className="text-4xl font-bold text-gray-800">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
               {gigDetail?.name}
             </h1>
-            <div className="flex items-center mt-2 mb-6 text-lg font-bold">
+            <div className="flex items-center flex-wrap mt-2 mb-6 text-lg font-bold">
               <span className="font-bold text-gray-700 mr-2">
                 {Array.isArray(gigDetail?.categories) ? (
                   gigDetail.categories.map((cat, index) => (
@@ -228,8 +228,8 @@ const Detail = () => {
                   </span>
                 )}
               </span>
-              <span className="px-2">|</span>
-              <div className="flex text-yellow-400">
+              <span className="px-2 hidden sm:inline">|</span>
+              <div className="flex text-yellow-400 w-full sm:w-auto">
                 <DynamicStars number={gigDetail?.rating} type={"service"} />
               </div>
               <span className="text-yellow-500 ml-1">
@@ -240,7 +240,7 @@ const Detail = () => {
               </span>
             </div>
             <div
-              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-150 shadow-lg"
+              className="relative mb-6 rounded-lg overflow-hidden bg-gray-100 h-64 sm:h-96 lg:h-150 shadow-lg"
               onMouseEnter={() => {
                 handleMouseEnter();
               }}
@@ -277,7 +277,7 @@ const Detail = () => {
 
               {/* Navigation buttons with hover effects */}
               <motion.button
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 hover:scale-110 transition-all z-10"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 hover:scale-110 transition-all z-10"
                 onClick={prevImage}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -285,7 +285,7 @@ const Detail = () => {
                 <ChevronLeft size={24} />
               </motion.button>
               <motion.button
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 hover:scale-110 transition-all z-10"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md opacity-80 hover:opacity-100 hover:scale-110 transition-all z-10"
                 onClick={nextImage}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -300,7 +300,7 @@ const Detail = () => {
               {images?.map((thumb, index) => (
                 <motion.div
                   key={index}
-                  className={`border-2 rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${index === currentImage
+                  className={`border-2 rounded-md overflow-hidden cursor-pointer transition-all duration-300 flex-shrink-0 ${index === currentImage
                     ? 'border-blue-500 shadow-md'
                     : 'border-gray-200 hover:border-blue-300'
                     }`}
@@ -314,7 +314,7 @@ const Detail = () => {
                   <img
                     src={`${imageShow}${thumb}`}
                     alt={`Thumbnail ${index + 1}`}
-                    className={`w-24 h-16 object-cover ${index !== currentImage ? 'opacity-70 hover:opacity-100' : ''
+                    className={`w-20 h-14 sm:w-24 sm:h-16 object-cover ${index !== currentImage ? 'opacity-70 hover:opacity-100' : ''
                       } transition-opacity`}
                     onError={(e) => {
                       e.target.onerror = null;
@@ -340,12 +340,12 @@ const Detail = () => {
                 ))}
               </div>
             </div>
-            <div className="border-t my-6 h-40">
+            <div className="border-t my-6 py-4">
               <h2 className="text-xl font-bold my-2">Freelancer Profile</h2>
-              <div className="flex gap-3 h-26"
+              <div className="flex flex-col sm:flex-row gap-3"
                 onClick={() => { navigate(`/freelancer-profile/${freelancer?._id}`) }}
               >
-                <div className="w-20 h-full flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto sm:mx-0 flex-shrink-0 flex items-center justify-center">
                   <img
                     className="w-20 h-20 rounded-full object-cover"
                     src={
@@ -362,7 +362,7 @@ const Detail = () => {
                     }}
                   />
                 </div>
-                <div className="flex flex-col justify-center gap-1 py-3">
+                <div className="flex flex-col justify-center items-center sm:items-start gap-1 py-3">
                   <h3 className="text-xl font-bold flex items-center gap-2">
                     <img src={profile_square} alt="profile" className="w-6 h-6" />
                     {freelancer?.name}
@@ -407,7 +407,7 @@ const Detail = () => {
                       >
                         <div className="flex justify-between mb-2">
                           <div className="flex items-center">
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3 font-semibold border">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center mr-3 font-semibold border flex-shrink-0">
                               <img
                                 className="w-full h-full rounded-full object-cover"
                                 src={
@@ -442,7 +442,7 @@ const Detail = () => {
                             </div>
                           </div>
                         </div>
-                        <p className="text-lg text-gray-700 mt-2">{review.reviewMessage}</p>
+                        <p className="text-base sm:text-lg text-gray-700 mt-2">{review.reviewMessage}</p>
                       </div>
                     ))}
                   </div>
@@ -452,14 +452,14 @@ const Detail = () => {
 
           {/* Right column - takes 4/12 of the grid on large screens */}
           <div className="lg:col-span-4">
-            <div className="sticky top-35">
+            <div className="sticky top-20 lg:top-35">
               {/* Pricing Tabs & Card */}
               <div className="border rounded-lg shadow-sm overflow-hidden">
                 {/* Tab Navigation */}
                 <div className="flex">
                   {gigDetail?.packages.map((pkg, index) => (
                     <motion.button
-                      className={`flex-1 py-3 text-center font-medium transition-colors duration-300 ${activePackage == index
+                      className={`flex-1 py-3 text-center font-medium transition-colors duration-300 text-sm sm:text-base ${activePackage == index
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-600 hover:text-blue-500"
                         }`}
@@ -472,7 +472,7 @@ const Detail = () => {
                 </div>
 
                 {/* Pricing Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activePackage._id}
@@ -482,7 +482,7 @@ const Detail = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex flex-row justify-between">
-                        <h3 className="text-3xl font-bold font-inter">Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold font-inter">Rp. {formattedPrice(gigDetail?.packages[activePackage]?.price)}</h3>
                       </div>
                       <div className="text-gray-600 text-sm mt-3 border-t">
                         <div className="flex items-start gap-2 mt-4">

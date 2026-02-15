@@ -86,8 +86,8 @@ const SignUp = () => {
 
 			<div className='py-5 flex flex-col justify-center items-center'>
 				<div className='font-poppins flex flex-col gap-4 items-center'>
-					<div className='flex flex-col gap-2 items-center mb-5'>
-						<p className='text-4xl font-semibold'>
+					<div className='flex flex-col gap-2 items-center mb-5 px-4 md:px-0'>
+						<p className='text-2xl md:text-4xl font-semibold text-center'>
 							Create an Account
 						</p>
 						<p className='text-base'>
@@ -104,7 +104,7 @@ const SignUp = () => {
 						</Link>
 					</div>
 
-					<div className='flex flex-col gap-10 min-w-180 max-w-200'>
+					<div className='flex flex-col gap-10 w-full px-4 md:px-0 md:min-w-180 md:max-w-200'>
 						<div className='flex flex-col gap-2'>
 							<label className='text-[#666666] text-lg'>
 								What should we call you?
@@ -160,7 +160,7 @@ const SignUp = () => {
 					</div>
 				</div>
 
-				<div className='font-poppins flex flex-col justify-start min-w-180 max-w-200 gap-3 mb-8'>
+				<div className='font-poppins flex flex-col justify-start w-full px-4 md:px-0 md:min-w-180 md:max-w-200 gap-3 mb-8'>
 					<label className="text-base">
 						By creating an account, you agree to the
 						<span> </span>
@@ -173,7 +173,7 @@ const SignUp = () => {
 							Privacy Policy
 						</a>.
 					</label>
-					<button className='text-lg bg-[#111111]/25 text-white font-bold rounded-full h-18 transition cursor-pointer hover:text-black hover:opacity-90'
+					<button className='text-base md:text-lg bg-[#111111]/25 text-white font-bold rounded-full h-14 md:h-18 transition cursor-pointer hover:text-black hover:opacity-90'
 						onClick={() => {
 							setIsLoading(true);
 							register()

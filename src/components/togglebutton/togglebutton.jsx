@@ -36,21 +36,20 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer, setShowFreelancerReg
   };
 
   return (
-    <div className="flex justify-center items-center p-4">
+    <div className="flex justify-center items-center p-2 sm:p-4">
       <div
         ref={containerRef}
         onClick={handleClick}
-        className={`relative cursor-pointer px-3 py-3 flex items-center ${isFreelancer}`}
-        style={{
-          minWidth: "170px",
-        }}
+        className={`relative cursor-pointer px-2 py-2 sm:px-3 sm:py-3 flex items-center rounded-full transition-all duration-300 ${
+          isFreelancer ? 'bg-blue-600' : 'bg-green-600'
+        } min-w-[140px] sm:min-w-[170px] shadow-md`}
       >
         {/* Icon on the left */}
         <div className="mr-2">
           {isFreelancer ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-white transition-opacity duration-300"
+              className="h-4 w-4 sm:h-5 sm:w-5 text-white transition-opacity duration-300"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -65,7 +64,7 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer, setShowFreelancerReg
           ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-white transition-opacity duration-300"
+              className="h-4 w-4 sm:h-5 sm:w-5 text-white transition-opacity duration-300"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -81,18 +80,18 @@ const MorphToggleButton = ({ isFreelancer, setIsFreelancer, setShowFreelancerReg
         </div>
 
         {/* Labels with sliding animation */}
-        <div className="flex-grow relative h-6 overflow-hidden">
+        <div className="flex-grow relative h-5 sm:h-6 overflow-hidden">
           <div
             className={`absolute w-full transition-transform duration-300 ease-in-out ${isFreelancer ? "translate-y-0" : "-translate-y-full"
               }`}
           >
-            <span className="text-white font-medium">FREELANCER</span>
+            <span className="text-white font-medium text-sm sm:text-base">FREELANCER</span>
           </div>
           <div
             className={`absolute w-full transition-transform duration-300 ease-in-out ${isFreelancer ? "translate-y-full" : "translate-y-0"
               }`}
           >
-            <span className="text-white font-medium">USER</span>
+            <span className="text-white font-medium text-sm sm:text-base">USER</span>
           </div>
         </div>
       </div>

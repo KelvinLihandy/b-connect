@@ -58,7 +58,7 @@ const staggerContainer = {
 
 const FeatureCard = ({ image, title, description }) => (
   <motion.div
-    className='w-[300px] flex flex-col items-center gap-3 bg-white/5 backdrop-blur-sm p-6 rounded-xl hover:shadow-lg hover:shadow-blue-400/20 transition-all duration-300'
+    className='w-full md:w-[300px] flex flex-col items-center gap-3 bg-white/5 backdrop-blur-sm p-4 md:p-6 rounded-xl hover:shadow-lg hover:shadow-blue-400/20 transition-all duration-300'
     whileHover={{ y: -10 }}
   >
     <motion.img
@@ -209,7 +209,7 @@ const Home = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className='bg-gradient-to-br from-[#2E5077] to-[#1d3f63] min-h-[950px] text-white flex flex-wrap px-10 relative justify-center pt-[100px]'>
+      <section className='bg-gradient-to-br from-[#2E5077] to-[#1d3f63] min-h-[950px] text-white flex flex-wrap px-4 md:px-10 relative justify-center pt-[100px]'>
         <motion.img
           className='absolute left-0 top-25 blur-sm animate-pulse'
           src={circle}
@@ -228,25 +228,25 @@ const Home = () => {
         <img className='absolute right-0 bottom-0 opacity-80' src={bg_spike_right} alt="bg spike" />
 
         <motion.div
-          className='flex flex-col gap-7 font-poppins self-center w-[800px] px-20'
+          className='flex flex-col gap-7 font-poppins self-center w-full md:w-[800px] px-4 md:px-20'
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
         >
           <motion.p
-            className='text-8xl font-bold bg-gradient-to-r from-white to-blue-300 bg-clip-text text-transparent'
+            className='text-5xl md:text-8xl font-bold bg-gradient-to-r from-white to-blue-300 bg-clip-text text-transparent'
             variants={fadeIn}
           >
             B-Connect
           </motion.p>
           <motion.p
-            className='text-5xl font-medium'
+            className='text-3xl md:text-5xl font-medium'
             variants={fadeIn}
           >
             FREELANCING MADE EASY !
           </motion.p>
           <motion.p
-            className='text-[#D5D5D5] text-3xl font-medium'
+            className='text-[#D5D5D5] text-xl md:text-3xl font-medium'
             variants={fadeIn}
           >
             Hire a Person To Help Your Problem.
@@ -307,7 +307,7 @@ const Home = () => {
         </motion.div>
 
         {/* Images */}
-        <div className='relative w-[800px] h-[950px]'>
+        <div className='relative w-full md:w-[800px] h-[600px] md:h-[950px] hidden md:block'>
           <motion.img
             className='absolute right-1 top-40'
             src={bg_image_right}
@@ -401,14 +401,14 @@ const Home = () => {
 
       {/* Trending Partners Section */}
       <motion.section
-        className='min-h-[500px] flex flex-col gap-10 p-8 font-Archivo py-20 scroll-animate'
+        className='min-h-[500px] flex flex-col gap-10 p-4 md:p-8 font-Archivo py-10 md:py-20 scroll-animate'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <motion.p
-          className='font-poppins text-5xl font-semibold mb-3'
+          className='font-poppins text-3xl md:text-5xl font-semibold mb-3 text-center md:text-left'
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -426,7 +426,7 @@ const Home = () => {
 
       {/* Why Use B-Connect Section */}
       <motion.section
-        className='min-h-[600px] relative p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] py-20 overflow-hidden'
+        className='min-h-[600px] relative p-4 md:p-8 font-Archivo text-white bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] py-10 md:py-20 overflow-hidden'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -459,7 +459,7 @@ const Home = () => {
         </motion.p>
 
         <motion.div
-          className='flex flex-row justify-center mt-7 gap-20 flex-wrap'
+          className='flex flex-row justify-center mt-7 gap-6 md:gap-20 flex-wrap'
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
@@ -493,7 +493,7 @@ const Home = () => {
 
       {/* Explore Services Section */}
       <motion.section ref={servicesSection}
-        className='p-10 flex flex-col items-center gap-20 py-24 scroll-animate'
+        className='p-4 md:p-10 flex flex-col items-center gap-10 md:gap-20 py-12 md:py-24 scroll-animate'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -510,7 +510,7 @@ const Home = () => {
         </motion.p>
 
         <motion.div
-          className='flex flex-row gap-15 font-inter text-2xl'
+          className='flex flex-row gap-4 md:gap-15 font-inter text-lg md:text-2xl overflow-x-auto pb-4 w-full justify-start md:justify-center px-4'
           initial={{ y: 20, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -529,7 +529,7 @@ const Home = () => {
         </motion.div>
 
         <motion.div
-          className={`grid grid-cols-4 gap-6 justify-center`}
+          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-center w-full px-4`}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
