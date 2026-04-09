@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import ScrollToBottom from 'react-scroll-to-bottom';
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import EmojiPicker from 'emoji-picker-react';
-import { socket } from '../../App';
+import { socket } from '../../socket';
 import upload from "../../assets/chat_upload.svg"
 import emote from "../../assets/chat_emote.svg"
 import send from "../../assets/chat_send.svg"
 import sendfrom from "../../assets/chat_uploadFromComp.svg"
 import default_avatar from "../../assets/default-avatar.png"
-import Footer from '../../components/footer/Footer'
-import Navbar from '../../components/navbar/Navbar'
+import PageShell from "../../components/layout/PageShell";
 import logo from '../../assets/logo_in_chat.png'
 import { authAPI, chatAPI } from "../../constants/APIRoutes"
 import axios from 'axios'
 import { AuthContext } from '../../contexts/AuthContext';
 import { imageShow } from '../../constants/DriveLinkPrefixes';
 import Message from '../../components/message/Message';
+
+const EMPTY_CHAT_ROOM_ID = "def";
 
 const Chat = () => {
   const { roomId } = useParams();
@@ -69,21 +70,24 @@ const Chat = () => {
   const [currentRoomMessageList, setCurrentRoomMessageList] = useState([]);
   const [disableMessaging, setDisableMessaging] = useState(false);
   const chatScrollUp = useRef(null)
+  const hasActiveRoom = Boolean(roomId && roomId !== EMPTY_CHAT_ROOM_ID);
 
   const handleSendMessage = async () => {
-    if (messageInput.trim() === "" || disableMessaging) return;
+    if (!hasActiveRoom || messageInput.trim() === "" || disableMessaging) return;
     const newMessage = {
       roomId: roomId,
       senderId: auth?.data?.auth?.id,
       content: messageInput,
       type: "text",
     };
-    console.log("text message", newMessage);
+    console.log("Sending text message:", newMessage);
     socket.emit("send_message", newMessage);
     setMessageInput("");
   };
 
   const handleSendFile = async (file) => {
+    if (!hasActiveRoom) return;
+
     const isImage = file.type.startsWith("image/");
     const detectedType = isImage ? "image" : "file";
     const newMessage = new FormData();
@@ -113,44 +117,57 @@ const Chat = () => {
 
   const joinRoom = (index) => {
     if (auth?.data?.auth?.id && availableRooms[index]) {
-      socket.emit("join_room", availableRooms[index]._id);
       const handleSwitchRoom = (url) => {
         navigate(url);
-        socket.off("switch_room", handleSwitchRoom);
       };
 
-      socket.on("switch_room", handleSwitchRoom);
+      socket.off("switch_room", handleSwitchRoom);
+      socket.once("switch_room", handleSwitchRoom);
+      socket.emit("join_room", availableRooms[index]._id);
     }
   };
 
   useEffect(() => {
-    socket.emit("get_rooms", auth?.data?.auth?.id);
-    const handleReceiveRooms = ({ roomList, userList }) => {
-      setAvailableRooms(roomList);
-      setAvailableUsers(userList);
-      const index = roomList.findIndex(room => room._id === roomId);
-      setRoomIndex(index);
-    };
-    socket.on("receive_rooms", handleReceiveRooms);
+    if (auth?.data?.auth?.id) {
+      socket.emit("get_rooms", auth.data.auth.id);
+      const handleReceiveRooms = ({ roomList, userList }) => {
+        console.log("Received rooms:", roomList);
+        setAvailableRooms(roomList);
+        setAvailableUsers(userList);
+        if (!hasActiveRoom) {
+          setRoomIndex(null);
+          return;
+        }
 
-    return () => {
-      socket.off("receive_rooms", handleReceiveRooms);
-    };
-  }, []);
+        const index = roomList.findIndex(room => room._id === roomId);
+        setRoomIndex(index >= 0 ? index : null);
+      };
+      socket.on("receive_rooms", handleReceiveRooms);
+
+      return () => {
+        socket.off("receive_rooms", handleReceiveRooms);
+      };
+    }
+  }, [auth?.data?.auth?.id, hasActiveRoom, roomId]);
 
   useEffect(() => {
-    if (roomId) {
+    if (hasActiveRoom && auth?.data?.auth?.id) {
       console.log("Emitting message for roomId:", roomId);
       socket.emit("get_room_message", roomId);
+      return;
     }
-  }, [roomId]);
+
+    setCurrentRoomMessageList([]);
+    setDisableMessaging(false);
+    setMessageInput("");
+  }, [auth?.data?.auth?.id, hasActiveRoom, roomId]);
 
   console.log("available rooms", availableRooms)
   console.log("index", roomIndex);
 
   useEffect(() => {
     const handleReceiveMessage = (messageList) => {
-      console.log("receiving message");
+      console.log("Receiving message:", messageList);
       setCurrentRoomMessageList(messageList);
       setDisableMessaging(false);
       setMessageInput("");
@@ -207,15 +224,16 @@ const Chat = () => {
   let lastRenderedDate = null;
 
   return (
-    <div
-      ref={chatScrollUp}
-      className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50"
+    <PageShell
+      scrollRef={chatScrollUp}
+      className="bg-gradient-to-br from-slate-50 to-blue-50"
+      withFooter
+      footerProps={{ refScrollUp: chatScrollUp }}
     >
-      <Navbar />
-
-      <div className='flex flex-col lg:flex-row gap-6 px-2 sm:px-6'>
+      <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <div className='flex flex-col lg:flex-row gap-6'>
         {/* Sidebar - Users List */}
-        <div className='hidden lg:block mt-[150px] mb-[50px] h-[800px] w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+        <div className='hidden lg:block h-[800px] w-80 font-inter bg-white rounded-[var(--radius-card)] shadow-[var(--shadow-soft)] border border-slate-200/70 overflow-hidden'>
           <div className="h-full flex flex-col">
             <div className="bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-6">
               <h2 className="font-bold text-white text-2xl font-Archivo">Messages</h2>
@@ -271,7 +289,7 @@ const Chat = () => {
         </div>
 
         {/* Main Chat Area */}
-        <div className='flex-1 flex flex-col mt-20 lg:mt-[150px] mb-[50px] h-[calc(100vh-120px)] lg:h-[800px] font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+        <div className='flex-1 flex flex-col h-[calc(100vh-220px)] lg:h-[800px] font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
           {/* Chat Header */}
           <div className="flex items-center bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] p-4 sm:p-6 text-white">
             {availableUsers[roomIndex] ? (
@@ -315,8 +333,8 @@ const Chat = () => {
               backgroundImage: `url(${logo})`,
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              backgroundSize: "contain",
-              opacity: 0.05,
+              backgroundSize: "480px",
+              backgroundBlendMode: "soft-light",
               maxHeight: "calc(100% - 160px)",
             }}
           >
@@ -427,7 +445,7 @@ const Chat = () => {
                       name="message_file"
                       className="hidden"
                       onChange={(e) => {
-                        if (e.target.files.length > 0) {
+                        if (e.target.files.length > 0 && hasActiveRoom) {
                           setDisableMessaging(true);
                           handleSendFile(e.target.files[0]);
                         }
@@ -441,7 +459,7 @@ const Chat = () => {
         </div>
 
         {/* User Info Panel */}
-        <div className='hidden lg:block mt-[150px] mb-[50px] h-fit w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+        <div className='hidden lg:block h-fit w-80 font-inter bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
           {availableUsers[roomIndex] && (
             <div className="p-6">
               <div className="bg-gradient-to-b from-[#2D4F76] via-[#217A9D] via-70% to-[#21789B] -m-6 mb-6 p-6">
@@ -476,9 +494,9 @@ const Chat = () => {
             </div>
           )}
         </div>
+        </div>
       </div>
-      <Footer refScrollUp={chatScrollUp} />
-    </div>
+    </PageShell>
   );
 };
 

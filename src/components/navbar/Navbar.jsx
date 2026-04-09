@@ -1,10 +1,10 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from 'gsap';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
-import { socket } from "../../App";
+import { disconnectSocket, socket } from "../../socket";
 
 // Import assets
 import message from "../../assets/message_icon.svg";
@@ -13,7 +13,6 @@ import searchBtn from "../../assets/search_btn.svg";
 import default_avatar from "../../assets/default-avatar.png";
 import logo from "../../assets/logo.svg";
 import login_logo from '../../assets/login_logo.svg';
-import dropdown_tri from '../../assets/dropdown_tri.svg';
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import MorphToggleButton from "../../components/togglebutton/togglebutton";
 import { NotificationContext } from "../../contexts/NotificationContext";
@@ -23,18 +22,16 @@ import axios from "axios";
 import { authAPI, orderAPI } from "../../constants/APIRoutes";
 import FreelancerReg from "../FreelancerRegister/FreelancerReg";
 import { RequestedContext } from "../../contexts/RequestedContext";
-import { get, set } from "lodash";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
-const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
+const Navbar = ({ search = false, setSearchQuery = null }) => {
   const { isFreelancer, setIsFreelancer } = useContext(UserTypeContext);
   const { auth, setAuth } = useContext(AuthContext);
   const { notificationList } = useContext(NotificationContext);
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showFreelancerRegister, setShowFreelancerRegister] = useState(false);
   const { checkRequestStatus } = useContext(RequestedContext);
@@ -106,11 +103,12 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
   }
   useEffect(() => {
     const load = async () => {
+      if (!isFreelancer || !auth?.data?.auth?.id) return;
       await getOrders();
     }
 
     load();
-  }, []);
+  }, [isFreelancer, auth?.data?.auth?.id]);
 
   useEffect(() => {
     if (showOrderDropdown && isFreelancer) {
@@ -123,7 +121,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showNotificationDropdown, showUserDropdown]);
+  }, [showNotificationDropdown, showUserDropdown, showOrderDropdown]);
 
   const getRelativeDateLabel = (time) => {
     const messageDate = new Date(time);
@@ -155,17 +153,9 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
 
   return (
     <>
-      {(auth || alt) && (
-        <div
-          className="fixed top-0 left-0 w-full h-[100px] z-30"
-          style={{ backgroundColor: "#2f5379" }}
-        />
-      )}
-
       {auth ? (
         <motion.nav
-          className="fixed top-0 left-0 w-full z-40 flex flex-col md:flex-row items-center justify-between text-white p-4 shadow-md h-auto md:h-[100px]"
-          style={{ backgroundColor: "#2f5379" }}
+          className="fixed top-0 left-0 w-full z-40 flex flex-col md:flex-row items-center justify-between text-white p-4 shadow-md h-auto md:h-[100px] bg-[#2f5379]/85 backdrop-blur-md border-b border-white/10"
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 100 }}
@@ -190,7 +180,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
           {/* Desktop / expanded layout (kept) */}
           <div className="hidden md:flex md:items-center md:justify-between md:w-full">
             <div
-              className="flex items-center ml-4 md:ml-15 cursor-pointer w-full md:w-1/10"
+              className="flex items-center ml-4 md:ml-15 cursor-pointer w-full md:w-[10%]"
               onClick={() => {
                 if (isFreelancer) navigate(`/freelancer-profile/${auth?.data?.auth?.id}`);
                 else navigate("/home")
@@ -199,16 +189,16 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               <motion.img
                 src={logo}
                 alt="Logo"
-                className="w-25 h-15"
+                className="h-12 w-auto"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300 }}
               />
             </div>
 
-            <div className="w-full md:w-6/10 mt-4 md:mt-0">
+            <div className="w-full md:w-[60%] mt-4 md:mt-0">
               {search && !isFreelancer && (
-                <div className="relative flex items-center w-full md:w-130 h-14 bg-white rounded-[14px] overflow-visible">
+                <div className="relative flex items-center w-full md:max-w-[520px] h-14 bg-white rounded-[14px] overflow-visible">
                   <input
                     type="text"
                     placeholder="Search For Our Services"
@@ -275,7 +265,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                                 : `${imageShow}${order.gig.images[0]}`
                                             }
                                             alt="profile"
-                                            onLoad={() => setImageLoading(false)}
                                             onError={(e) => {
                                               e.target.onerror = null;
                                               e.target.src = default_avatar;
@@ -340,7 +329,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
               )}
             </div>
 
-            <div className={`w-full md:w-3/10 flex justify-center md:justify-end mt-4 md:mt-0 ${isMobileMenuOpen ? 'block' : ''}`}>
+            <div className={`w-full md:w-[30%] flex justify-center md:justify-end mt-4 md:mt-0 ${isMobileMenuOpen ? 'block' : ''}`}>
               <motion.div className="flex items-center gap-3 md:gap-6 text-white">
                 <div className="cursor-pointer w-12">
                   <motion.img
@@ -480,7 +469,6 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                       ? default_avatar
                       : `${imageShow}${auth?.data?.auth.picture}`}
                     alt="profile"
-                    onLoad={() => setImageLoading(false)}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = default_avatar;
@@ -561,6 +549,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                                 {},
                                 { withCredentials: true }
                               )
+                              disconnectSocket();
                               setAuth(null);
                               setIsFreelancer(false);
                               navigate('/home');
@@ -650,6 +639,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
                         <button className="w-full text-left px-4 py-2 text-red-600" onClick={async () => {
                           localStorage.clear(); sessionStorage.clear();
                           await axios.post(`${authAPI}/clear-cookie`, {}, { withCredentials: true });
+                          disconnectSocket();
                           setAuth(null); setIsFreelancer(false); navigate('/home'); setIsMobileMenuOpen(false);
                         }}>Sign Out</button>
                       </div>
@@ -664,8 +654,7 @@ const Navbar = ({ search = false, alt = false, setSearchQuery = null }) => {
         </motion.nav>
       ) : (
         <motion.header
-          className={`fixed top-0 left-0 w-full z-50 p-4 flex flex-col md:flex-row justify-between px-4 md:px-25 h-auto md:h-[100px] shadow-sm ${alt ? "text-white" : "bg-white/10 backdrop-blur-md text-white"}`}
-          style={alt ? { backgroundColor: "#2f5379" } : {}}
+          className="fixed top-0 left-0 w-full z-50 p-4 flex flex-col md:flex-row justify-between px-4 md:px-25 h-auto md:h-[100px] shadow-sm text-white bg-[#2f5379]/85 backdrop-blur-md border-b border-white/10"
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 100 }}

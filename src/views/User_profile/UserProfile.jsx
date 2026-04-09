@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
+import PageShell from "../../components/layout/PageShell";
 import { AuthContext } from "../../contexts/AuthContext";
 import { userAPI } from "../../constants/APIRoutes";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import default_avatar from "../../assets/default-avatar.png";
-import { socket } from "../../App";
+import { socket } from "../../socket";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -1154,55 +1153,48 @@ const UserProfile = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-        <Navbar />
-        <div className="h-24"></div>
+      <PageShell withFooter className="bg-gradient-to-br from-gray-50 to-blue-50/30">
         <div className="w-full px-4 lg:px-6 xl:px-8 2xl:px-12">
-          <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-gray-500/20 overflow-hidden border border-white/50">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-6 relative overflow-hidden">
-              <div className="relative z-10 animate-pulse">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-white/20 rounded-2xl animate-pulse"></div>
-                  <div>
-                    <div className="w-48 h-8 bg-white/20 rounded-lg mb-2 animate-pulse"></div>
-                    <div className="w-64 h-5 bg-white/20 rounded mb-1 animate-pulse"></div>
-                    <div className="w-32 h-4 bg-white/20 rounded animate-pulse"></div>
+          <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-[var(--radius-card)] shadow-[var(--shadow-soft)] overflow-hidden border border-white/60">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-6 relative overflow-hidden">
+                <div className="relative z-10 animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 bg-white/20 rounded-2xl animate-pulse"></div>
+                    <div>
+                      <div className="w-48 h-8 bg-white/20 rounded-lg mb-2 animate-pulse"></div>
+                      <div className="w-64 h-5 bg-white/20 rounded mb-1 animate-pulse"></div>
+                      <div className="w-32 h-4 bg-white/20 rounded animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl h-24"></div>
-                  </div>
-                ))}
+              <div className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl h-24"></div>
+                    </div>
+                  ))}
+                </div>
+                <LoadingSpinner />
               </div>
-              <LoadingSpinner />
-            </div>
           </div>
         </div>
-        <div className="h-24"></div>
-        <Footer />
-      </div>
+      </PageShell>
     );
   }
 
  return (
-  <>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 relative overflow-hidden">
+    <PageShell withFooter className="bg-gradient-to-br from-gray-50 to-blue-50/30" contentClassName="relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-64 h-64 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-br from-green-400/20 to-blue-600/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Navbar />
-      <div className="h-32"></div>
-
-      <div className="w-full px-4 lg:px-6 xl:px-8 2xl:px-12 relative z-10 pt-8">
-        <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-gray-500/20 overflow-hidden border border-white/50">
+      <div className="relative z-10">
+      <div className="w-full px-4 lg:px-6 xl:px-8 2xl:px-12">
+        <div className="max-w-none bg-white/80 backdrop-blur-sm rounded-[var(--radius-card)] shadow-[var(--shadow-soft)] overflow-hidden border border-white/60">
           {/* Enhanced Header - Made smaller and more responsive */}
           <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 p-4 sm:p-6 text-white">
             <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
@@ -1430,11 +1422,9 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
+      </div>
 
-      <div className="h-24"></div>
-      <Footer />
-    </div>
-  </>
+    </PageShell>
   );
 };
 

@@ -1,7 +1,7 @@
-import React, { useState, createContext, useEffect, useContext } from 'react'
-import { authAPI, userAPI } from '../constants/APIRoutes';
+import React, { useEffect, useState, createContext } from 'react'
+import { authAPI } from '../constants/APIRoutes';
 import axios from 'axios';
-import { socket } from '../App';
+import { connectSocket, disconnectSocket, socket } from '../socket';
 
 export const AuthContext = createContext();
 
@@ -10,13 +10,13 @@ const AuthProvider = ({ children }) => {
 
   const getAuth = async () => {
     try {
-      console.log("called get auth")
       const authResponse = await axios.post(`${authAPI}/auth`, {}, { withCredentials: true });
+      connectSocket();
       socket.emit("login", authResponse.data.auth.id);
-      console.log("emit login");
       setAuth(authResponse);
     } catch (err) {
       console.log("error", err);
+      disconnectSocket();
     }
   }
   
@@ -33,12 +33,18 @@ const AuthProvider = ({ children }) => {
     
   // }
   
-  if (auth) {
-    // if(auth?.data.auth.access === false) checkRequestStatus();
-    console.log("auth", auth);
-    console.log("retrieving notif");
-    socket.emit("retrieve_notifications", auth.data.auth.id)
-  }
+  useEffect(() => {
+    if (!auth?.data?.auth?.id) {
+      disconnectSocket();
+    }
+  }, [auth?.data?.auth?.id]);
+
+  useEffect(() => {
+    if (!auth?.data?.auth?.id) return;
+
+    connectSocket();
+    socket.emit("retrieve_notifications", auth.data.auth.id);
+  }, [auth?.data?.auth?.id]);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth, getAuth }}>

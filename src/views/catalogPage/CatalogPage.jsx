@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext, useRef } from "react";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
+import PageShell from "../../components/layout/PageShell";
 import {
   ChevronLeft,
   ChevronRight,
@@ -170,20 +169,16 @@ const CatalogPage = () => {
   };
 
   const getGig = async (name, category, minPrice, maxPrice, rating) => {
-    console.log({
-      name,
-      category,
-      minPrice,
-      maxPrice: maxPrice * 1000,
-      rating,
-    });
     try {
+      const payload = {
+        name: name ?? "",
+        category: category ?? "",
+        minPrice: minPrice ?? 0,
+        maxPrice: (maxPrice ?? 2000) * 1000,
+        rating: rating ?? 0,
+      };
       const response = await axios.post(`${gigAPI}/get-gig`, {
-        name,
-        category,
-        minPrice,
-        maxPrice: maxPrice * 1000,
-        rating,
+        ...payload,
       });
       const res = response.data.filteredGigs;
       setGigs(res);
@@ -207,34 +202,44 @@ const CatalogPage = () => {
   useEffect(() => {
     const fetchGigs = async () => {
       if (!searchQuery.length && !appliedFilter) {
-        await getGig("");
-      } else if (!appliedFilter) {
-        debouncedSearch(searchQuery);
-      } else {
-        debouncedSearch(searchQuery, selectedCategory, minPrice, maxPrice, selectedRating);
+        await getGig("", "", 0, 2000, 0);
+        return;
       }
+
+      if (appliedFilter) {
+        debouncedSearch(searchQuery, selectedCategory, minPrice, maxPrice, selectedRating);
+        return;
+      }
+
+      debouncedSearch(searchQuery);
     };
 
     fetchGigs();
-  }, [searchQuery, debouncedSearch, appliedFilter]);
+  }, [searchQuery, debouncedSearch, appliedFilter, selectedCategory, minPrice, maxPrice, selectedRating]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100" ref={catalogScrollUp}>
-      <Navbar search alt setSearchQuery={setSearchQuery} />
+    <PageShell
+      scrollRef={catalogScrollUp}
+      className="bg-gradient-to-br from-gray-50 via-white to-gray-100"
+      paddingClassName="pt-0 pb-0"
+      withFooter
+      footerProps={{ refScrollUp: catalogScrollUp }}
+      navbarProps={{ search: true, setSearchQuery }}
+    >
 
       {/* Enhanced Hero Section with Improved Animations */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="w-full py-20 relative overflow-hidden mt-20"
+        className="w-full relative overflow-hidden pt-28 md:pt-32 pb-16"
         style={{
           background: "linear-gradient(135deg, #2D4F76 0%, #217A9D 40%, #1E9CB7 80%, #17B8CC 100%)",
         }}
       >
         {/* Enhanced animated particle effects with floating animation */}
         <motion.img
-          className="absolute right-0 top-0 p-3"
+          className="absolute right-0 top-0 p-3 pointer-events-none select-none h-auto"
           src={particle}
           variants={floatingVariants}
           animate="animate"
@@ -243,7 +248,7 @@ const CatalogPage = () => {
           transition={{ delay: 0.5, duration: 1 }}
         />
         <motion.img
-          className="absolute -left-5 bottom-0 p-2"
+          className="absolute -left-5 bottom-0 p-2 pointer-events-none select-none h-auto"
           src={particle}
           variants={pulseVariants}
           animate="animate"
@@ -315,7 +320,7 @@ const CatalogPage = () => {
           <div className="flex flex-col md:flex-row items-center">
             {/* Enhanced left side with better text animations */}
             <motion.div
-              className="flex flex-col gap-3 font-poppin self-center w-full md:w-[800px] px-4 md:px-20 text-center mb-12 md:mb-0"
+              className="flex flex-col gap-3 font-poppins self-center w-full md:w-[800px] px-4 md:px-20 text-center mb-12 md:mb-0"
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -875,8 +880,7 @@ const CatalogPage = () => {
         </div>
       </div>
 
-      <Footer refScrollUp={catalogScrollUp} />
-    </div>
+    </PageShell>
   );
 };
 

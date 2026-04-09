@@ -1,16 +1,14 @@
 import React, { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Footer from "../../components/footer/Footer";
 import downarrow from "../../assets/down_arrow.svg";
 import diagram from "../../assets/diagram.png";
 import about_us_image from "../../assets/about_us_img.svg";
 import cantfind from "../../assets/yuppies_managing.svg";
-import Navbar from "../../components/navbar/Navbar";
+import PageShell from "../../components/layout/PageShell";
+import { Button } from "../../components/ui/button";
 
 const AboutUs = () => {
   const [expandedItems, setExpandedItems] = useState([]);
   const aboutScrollUp = useRef(null);
-  const navigate = useNavigate();
 
   const toggleExpand = (index) => {
     if (expandedItems.includes(index)) {
@@ -21,47 +19,53 @@ const AboutUs = () => {
   };
 
   return (
-    <div ref={aboutScrollUp}>
-      <Navbar alt={true} />
-
-      <div className="block font-Archivo text-[#171A1F] mx-6 md:mx-12 lg:mx-20 my-20 md:my-30 lg:my-40">
-        <div className="flex flex-col lg:flex-row gap-10">
-          <div className="lg:w-1/2">
-            <h1 className="text-[40px] md:text-[52px] lg:text-[64px] font-bold mb-8">About Us</h1>
-          </div>
-
-          <div className="lg:block lg:w-[2000px]">
-            <div className="relative">
-              <img
-                src={about_us_image}
-                alt="About Us"
-                className="w-full h-auto rounded-xl mb-4"
-              />
-            </div>
-
-            <div className="text-lg md:text-xl lg:text-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
-              <p className="leading-relaxed">
-                Kami menyediakan platform yang menghubungkan pelaku bisnis dan startup teknologi
-                dengan freelancer berkualitas. Melalui B-Connect, Anda dapat menemukan talenta
-                terbaik untuk menyelesaikan proyek Anda secara efisien dan terpercaya.
-              </p>
-              <p className="leading-relaxed">
-                Kami percaya bahwa kolaborasi yang tepat dapat mempercepat pertumbuhan bisnis.
-                Dengan dukungan sistem yang aman dan tim yang berpengalaman, kami hadir untuk
-                membantu Anda mencapai tujuan dengan lebih cepat.
+    <PageShell
+      scrollRef={aboutScrollUp}
+      withFooter
+      footerProps={{ refScrollUp: aboutScrollUp }}
+      contentClassName="font-Archivo"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-10">
+            <div className="lg:w-1/2">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">About Us</h1>
+              <p className="text-base sm:text-lg text-slate-600 max-w-prose">
+                B-Connect menghubungkan pelaku bisnis dan startup teknologi dengan freelancer berkualitas untuk
+                menyelesaikan proyek secara efisien, aman, dan terpercaya.
               </p>
             </div>
-          </div>
-        </div>
 
-        <div className="relative bg-[#F3F3F3] w-full h-auto rounded-[12px] my-10 md:my-15">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-6 md:p-10 h-full justify-center items-center">
+            <div className="lg:w-1/2">
+              <div className="relative">
+                <img
+                  src={about_us_image}
+                  alt="About Us"
+                  className="w-full h-auto rounded-[var(--radius-card)] mb-6 shadow-[var(--shadow-soft)]"
+                />
+              </div>
+
+              <div className="text-base sm:text-lg lg:text-xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                <p className="leading-relaxed">
+                  Kami menyediakan platform yang menghubungkan pelaku bisnis dan startup teknologi dengan freelancer
+                  berkualitas. Melalui B-Connect, Anda dapat menemukan talenta terbaik untuk menyelesaikan proyek Anda
+                  secara efisien dan terpercaya.
+                </p>
+                <p className="leading-relaxed">
+                  Kami percaya bahwa kolaborasi yang tepat dapat mempercepat pertumbuhan bisnis. Dengan dukungan sistem
+                  yang aman dan tim yang berpengalaman, kami hadir untuk membantu Anda mencapai tujuan dengan lebih cepat.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative bg-white w-full h-auto rounded-[var(--radius-card)] my-10 border border-slate-200/70 shadow-[var(--shadow-soft)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-6 md:p-10 h-full justify-center items-center">
             <div>
               <img src={diagram} alt="diagram" className="w-full h-auto" />
             </div>
             <div>
-              <h1 className="text-[40px] md:text-[52px] lg:text-[64px] font-normal pb-2">Our Values</h1>
-              <p className="text-xl md:text-2xl lg:text-[30px] font-normal">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold pb-2">Our Values</h2>
+              <p className="text-base sm:text-lg lg:text-xl text-slate-700">
                 Bersama B-Connect, Anda mendapatkan lebih dari sekadar platform — Anda mendapatkan
                 mitra terpercaya dalam menyelesaikan pekerjaan dan membangun koneksi yang bermakna.
               </p>
@@ -69,25 +73,25 @@ const AboutUs = () => {
           </div>
         </div>
 
-        <div className="flex relative flex-col md:flex-row gap-10 py-10 h-full">
-          <div className="w-full md:w-[550px]">
-            <h1 className="text-[40px] md:text-[52px] lg:text-[64px] font-bold pb-2">Why Us?</h1>
-            <p className="text-xl md:text-2xl lg:text-[30px]">
+          <div className="flex relative flex-col md:flex-row gap-10 py-10 h-full">
+            <div className="w-full md:w-[550px]">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold pb-2">Why Us?</h2>
+              <p className="text-base sm:text-lg lg:text-xl text-slate-700">
               kami membangun B-Connect sebagai solusi nyata untuk menghubungkan kebutuhan dan
               keahlian. Kami tahu betapa berharganya waktu, kualitas, dan kepercayaan
             </p>
-            <p className="text-xl md:text-2xl lg:text-[30px]">—</p>
-            <p className="text-xl md:text-2xl lg:text-[30px]">dan kami hadir untuk menjawabnya.</p>
-          </div>
+              <p className="text-base sm:text-lg lg:text-xl text-slate-700">—</p>
+              <p className="text-base sm:text-lg lg:text-xl text-slate-700">dan kami hadir untuk menjawabnya.</p>
+            </div>
 
-          <div className="relative w-full flex flex-col gap-2 md:top-10 lg:top-20 p-3 md:p-5">
+            <div className="relative w-full flex flex-col gap-2 md:top-10 lg:top-20 p-3 md:p-5">
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(1)}>
-              <p className="text-xl md:text-2xl lg:text-[35px] font-semibold">Apa itu B-Connect?</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-semibold">Apa itu B-Connect?</p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
+                  className={`absolute right-0 top-1.5 w-5 h-5 transition-transform duration-500 ${
                     expandedItems.includes(1) ? "-rotate-180" : "rotate-0"
                   }`}
                 />
@@ -114,14 +118,14 @@ const AboutUs = () => {
             ></div>
 
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(2)}>
-              <p className="text-lg md:text-xl lg:text-[30px] font-semibold">
+              <p className="text-base sm:text-lg lg:text-xl font-semibold">
                 Bagaimana cara mencari freelancer di B-Connect?
               </p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
+                  className={`absolute right-0 top-1.5 w-5 h-5 transition-transform duration-500 ${
                     expandedItems.includes(2) ? "-rotate-180" : "rotate-0"
                   }`}
                 />
@@ -147,14 +151,14 @@ const AboutUs = () => {
             ></div>
 
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(3)}>
-              <p className="text-lg md:text-xl lg:text-[30px] font-semibold">
+              <p className="text-base sm:text-lg lg:text-xl font-semibold">
                 Apakah sistem pembayaran di B-Connect aman?
               </p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
+                  className={`absolute right-0 top-1.5 w-5 h-5 transition-transform duration-500 ${
                     expandedItems.includes(3) ? "-rotate-180" : "rotate-0"
                   }`}
                 />
@@ -181,14 +185,14 @@ const AboutUs = () => {
             ></div>
 
             <div className="flex relative cursor-pointer" onClick={() => toggleExpand(4)}>
-              <p className="text-lg md:text-xl lg:text-[30px] font-semibold">
+              <p className="text-base sm:text-lg lg:text-xl font-semibold">
                 Bagaimana B-Connect menjamin kualitas hasil kerja?
               </p>
               <div className="ml-auto">
                 <img
                   src={downarrow}
                   alt="Expand"
-                  className={`absolute right-0 transition-transform duration-500 ${
+                  className={`absolute right-0 top-1.5 w-5 h-5 transition-transform duration-500 ${
                     expandedItems.includes(4) ? "-rotate-180" : "rotate-0"
                   }`}
                 />
@@ -216,36 +220,38 @@ const AboutUs = () => {
           </div>
         </div>
 
-        {expandedItems.length === 4 && (
-          <div className="relative bg-[#F3F3F3] max-w-fit mx-auto h-auto my-20 md:my-30 px-6 md:px-10 py-6 rounded-lg">
-            <div className="flex flex-col md:flex-row gap-6 md:gap-10 justify-center items-center">
-              <div>
-                <p className="text-2xl md:text-3xl lg:text-[40px] font-semibold">Can't find your answer?</p>
-                <p className="text-lg md:text-xl lg:text-[30px] w-full md:w-[450px]">
-                  Tenang, tim B-Connect siap membantu kamu! Hubungi kami langsung jika kamu tidak
-                  menemukan jawaban yang kamu cari.
-                </p>
-                <button
-                  className="relative flex bg-[#565E6D] text-[#FFFFFF] text-base md:text-lg lg:text-[20px] max-w-fit h-auto px-4 py-3 mt-4 justify-center items-center text-center cursor-pointer rounded-lg"
-                  onClick={() => {
-                    const email = "bconnect404@gmail.com";
-                    const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`;
-                    window.open(gmailURL, "_blank");
-                  }}
-                >
-                  Contact Us
-                </button>
-              </div>
-              <div>
-                <img src={cantfind} alt="cant_find_img?" className="mx-auto max-w-[300px] md:max-w-[400px] lg:max-w-[500px]" />
+          {expandedItems.length === 4 && (
+            <div className="relative bg-white mx-auto h-auto my-16 px-6 md:px-10 py-8 rounded-[var(--radius-card)] border border-slate-200/70 shadow-[var(--shadow-soft)]">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-10 justify-center items-center">
+                <div>
+                  <p className="text-2xl md:text-3xl font-semibold">Can't find your answer?</p>
+                  <p className="text-base sm:text-lg text-slate-700 w-full md:w-[450px]">
+                    Tenang, tim B-Connect siap membantu kamu! Hubungi kami langsung jika kamu tidak menemukan jawaban
+                    yang kamu cari.
+                  </p>
+                  <Button
+                    className="mt-4"
+                    onClick={() => {
+                      const email = "bconnect404@gmail.com";
+                      const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`;
+                      window.open(gmailURL, "_blank");
+                    }}
+                  >
+                    Contact Us
+                  </Button>
+                </div>
+                <div>
+                  <img
+                    src={cantfind}
+                    alt="cant_find_img?"
+                    className="mx-auto w-full max-w-[300px] md:max-w-[360px] lg:max-w-[420px] h-auto"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
-
-      <Footer refScrollUp={aboutScrollUp} />
-    </div>
+    </PageShell>
   );
 };
 

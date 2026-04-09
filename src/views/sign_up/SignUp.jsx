@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import "./SignUp.css"
 import password_hide from "../../assets/eye_off.svg"
 import password_show from "../../assets/eye_on.svg"
 // import facebook from "../../assets/facebook_logo.svg"
-import google from "../../assets/google_logo.svg"
+// import google from "../../assets/google_logo.svg"
 // import apple from "../../assets/apple_logo.svg"
 import bg_left from "../../assets/bg_image_left.svg"
 import bg_right from "../../assets/bg_image_right.svg"
@@ -64,134 +64,124 @@ const SignUp = () => {
 	}
 
 	return (
-		<div className='flex flex-col justify-center items-center min-h-screen'>
-			<div className='absolute -z-[100] w-screen'>
+		<div className='min-h-screen bg-white flex items-center justify-center relative px-4 py-10'>
+			<div className='absolute inset-0 -z-10 pointer-events-none select-none'>
 				<img
-					className='fixed opacity-70 w-[300px] h-[200px] top-[250px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%]'
+					className='fixed w-12 h-auto sm:w-[68px] sm:h-[50.216px] top-6 left-6 sm:top-[42.7px] sm:left-[47.4px]'
+					src={bg_dots}
+					alt="decorative"
+				/>
+				<img
+					className='fixed w-12 h-auto sm:w-[68px] sm:h-[50.216px] bottom-6 right-6 sm:bottom-[40.7px] sm:right-[50.216px]'
+					src={bg_dots}
+					alt="decorative"
+				/>
+				<img
+					className='hidden lg:block fixed bottom-[200px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%] w-80 h-auto opacity-70'
 					src={bg_left}
+					alt="decorative"
 				/>
 				<img
-					className='fixed opacity-70 w-[300px] h-[200px] top-[75px] right-0 sm:right-[25.%] md:right-[5%] lg:right-[10%]'
+					className='hidden lg:block fixed bottom-[200px] right-0 sm:right-[2.5%] md:right-[5%] lg:right-[10%] w-80 h-auto opacity-70'
 					src={bg_right}
-				/>
-				<img
-					className='fixed w-[68px] h-[50.216px] top-[42.7px] left-[47.4px]'
-					src={bg_dots}
-				/>
-				<img
-					className='fixed w-[68px] h-[50.216px] bot-[40.7px] bottom-[40.7px] right-[50.216px]'
-					src={bg_dots}
+					alt="decorative"
 				/>
 			</div>
 
-			<div className='py-5 flex flex-col justify-center items-center'>
-				<div className='font-poppins flex flex-col gap-4 items-center'>
-					<div className='flex flex-col gap-2 items-center mb-5 px-4 md:px-0'>
-						<p className='text-2xl md:text-4xl font-semibold text-center'>
-							Create an Account
-						</p>
-						<p className='text-base'>
-							Already have an account?
-							<span> </span>
-							<Link to="/sign-in" >
-								<span className='underline'>
-									Log in
-								</span>
-							</Link>
-						</p>
-						<Link to="/home" className='text-blue-500 text-base font-medium hover:text-blue-800 p-2'>
-							Back to Home
-						</Link>
-					</div>
-
-					<div className='flex flex-col gap-10 w-full px-4 md:px-0 md:min-w-180 md:max-w-200'>
-						<div className='flex flex-col gap-2'>
-							<label className='text-[#666666] text-lg'>
-								What should we call you?
-							</label>
-							<input className='border form-input text-base h-12 px-5'
-								type='text'
-								placeholder='Enter your profile name'
-								onChange={(event) => setName(event.target.value)}
-							/>
-						</div>
-
-						<div className='flex flex-col gap-2'>
-							<label className='text-[#666666] text-lg'>
-								What's your email?
-							</label>
-							<input className='form-input text-base h-12 px-5'
-								type='text'
-								placeholder='Enter your email address'
-								onChange={(event) => setEmail(event.target.value)}
-							/>
-							{!validateEmail(email) &&
-								<p className='text-red-400 text-base text-wrap'>
-									Format email tidak valid
-								</p>
-							}
-						</div>
-
-						<div className='flex flex-col gap-2 mb-8'>
-							<div className='flex flex-row justify-between'>
-								<label className='text-[#666666] text-lg'>
-									Create a password
-								</label>
-								<div className='flex flex-row gap-4 cursor-pointer select-none'
-									onClick={switchEye}>
-									<img className='h-5 self-center opacity-80'
-										src={showPass ? password_show : password_hide} />
-									<p className='text-[#666666] text-lg'>
-										Hide
-									</p>
-								</div>
-							</div>
-							<input className='form-input text-base h-12 px-5'
-								type={showPass ? "text" : "password"}
-								placeholder='Enter your password'
-								onChange={(event) => setPassword(event.target.value)}
-							/>
-							{!validatePassword(password) &&
-								<p className='text-red-400 text-base text-wrap'>
-									Use 8 or more characters with a mix of upper & lowercase letters, numbers & symbols (@ $ ! % * ? &)
-								</p>
-							}
-						</div>
-					</div>
+			<div className='w-full max-w-md md:max-w-xl bg-[#F3F3F3] rounded-2xl p-6 md:p-10 shadow-sm z-10'>
+				<div className='text-center mb-8'>
+					<h1 className='text-3xl md:text-4xl font-extrabold text-[#111111] font-Archivo'>Create an account</h1>
+					<p className='mt-2 text-[#666666] font-poppins text-sm md:text-base'>
+						Already have an account?{' '}
+						<Link to="/sign-in" className='underline hover:text-[#2E5077]'>Log in</Link>
+					</p>
+					<Link to="/home" className='inline-block mt-2 text-[#2E90EB] text-sm md:text-base font-medium hover:text-[#1d6fb8]'>
+						Back to Home
+					</Link>
 				</div>
 
-				<div className='font-poppins flex flex-col justify-start w-full px-4 md:px-0 md:min-w-180 md:max-w-200 gap-3 mb-8'>
-					<label className="text-base">
-						By creating an account, you agree to the
-						<span> </span>
+				<div className='font-poppins flex flex-col gap-5'>
+					<div className='flex flex-col gap-1'>
+						<label className='text-[#666666] text-base md:text-lg'>What should we call you?</label>
+						<input
+							className='form-input bg-white text-base h-12 w-full px-4'
+							type='text'
+							placeholder='Enter your profile name'
+							onChange={(event) => setName(event.target.value)}
+						/>
+					</div>
+
+					<div className='flex flex-col gap-1'>
+						<label className='text-[#666666] text-base md:text-lg'>What's your email?</label>
+						<input
+							className='form-input bg-white text-base h-12 w-full px-4'
+							type='email'
+							placeholder='Enter your email address'
+							onChange={(event) => setEmail(event.target.value)}
+						/>
+						{!!email && !validateEmail(email) && (
+							<p className='text-red-400 text-sm md:text-base'>Format email tidak valid</p>
+						)}
+					</div>
+
+					<div className='flex flex-col gap-1'>
+						<div className='flex flex-row justify-between items-center'>
+							<label className='text-[#666666] text-base md:text-lg'>Create a password</label>
+							<button
+								type="button"
+								className='flex flex-row gap-2 items-center cursor-pointer select-none text-[#666666]'
+								onClick={switchEye}
+							>
+								<img
+									className='h-5 w-auto opacity-80'
+									src={showPass ? password_show : password_hide}
+									alt="toggle password"
+								/>
+								<span className='text-base md:text-lg'>{showPass ? 'Hide' : 'Show'}</span>
+							</button>
+						</div>
+						<input
+							className='form-input bg-white text-base h-12 w-full px-4'
+							type={showPass ? 'text' : 'password'}
+							placeholder='Enter your password'
+							onChange={(event) => setPassword(event.target.value)}
+						/>
+						{!!password && !validatePassword(password) && (
+							<p className='text-red-400 text-sm md:text-base'>
+								Use 8+ characters with upper & lowercase, numbers & symbols (@ $ ! % * ? &)
+							</p>
+						)}
+					</div>
+
+					<label className="text-sm md:text-base text-[#333333]">
+						By creating an account, you agree to the{' '}
 						<a
 							href="/privacy-policy"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="underline"
+							className="underline hover:text-[#2E5077]"
 						>
 							Privacy Policy
 						</a>.
 					</label>
-					<button className='text-base md:text-lg bg-[#111111]/25 text-white font-bold rounded-full h-14 md:h-18 transition cursor-pointer hover:text-black hover:opacity-90'
+
+					<button
+						className='mt-1 bg-[#2E5077] text-base md:text-lg text-white font-semibold w-full rounded-full h-12 md:h-14 transition hover:bg-[#25425f] disabled:opacity-70'
+						disabled={isLoading || !name.trim() || !validateEmail(email) || !validatePassword(password)}
 						onClick={() => {
 							setIsLoading(true);
-							register()
-						}}>
-						{isLoading ?
-							<CircularProgress color='inherit' />
-							:
-							"Sign Up"
-						}
+							register();
+						}}
+					>
+						{isLoading ? <CircularProgress color='inherit' size={24} /> : 'Sign Up'}
 					</button>
-					{
-						<p className='text-red-400 text-base text-wrap text-center'>
-							{errorMessage}
-						</p>
-					}
+
+					{errorMessage && (
+						<p className='text-red-400 text-sm md:text-base text-center'>{errorMessage}</p>
+					)}
 				</div>
 			</div>
-		</div >
+		</div>
 	)
 }
 

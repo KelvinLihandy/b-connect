@@ -21,15 +21,14 @@ import {
   ChevronLeft,
   CircleCheckBig,
 } from "lucide-react";
-import { socket } from "../../App";
+import { socket } from "../../socket";
 
 // Import contexts
 import { AuthContext } from "../../contexts/AuthContext";
 import { UserTypeContext } from "../../contexts/UserTypeContext";
 
 // Import components
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
+import PageShell from "../../components/layout/PageShell";
 import AddService from "../../components/add_service/AddService";
 
 // Import service images (replace with your actual imports)
@@ -177,14 +176,11 @@ const FreelancerProfile = () => {
     .map(([rating, count]) => ({ rating, count }))
 
   return (
-    <>
-      <Navbar alt={true} />
-
-      <main className="flex flex-col min-h-screen bg-gray-50 pt-20">
-        <div className="container mx-auto px-3 sm:px-5 mt-6 sm:mt-8">
+    <PageShell withFooter contentClassName="flex flex-col">
+      <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             <div className="w-full lg:w-8/12">
-              <div className="bg-white rounded-md sm:rounded-lg shadow-sm border border-gray-100 p-3 sm:p-6">
+              <div className="bg-white rounded-[var(--radius-card)] shadow-[var(--shadow-soft)] border border-slate-200/70 p-3 sm:p-6">
                 <div className="flex flex-col md:flex-row">
                   <div className="w-full md:w-1/4 flex flex-col items-center mb-4 md:mb-0">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full bg-gray-200 overflow-hidden mb-3 sm:mb-4 flex items-center justify-center relative border">
@@ -211,9 +207,12 @@ const FreelancerProfile = () => {
                             return;
                           };
                           socket.emit("create_room", [auth?.data?.auth?.id, freelancerData._id]);
-                          socket.on("switch_room", (url) => {
-                            navigate(url);
-                          })
+                      const handleSwitchRoom = (url) => {
+                        navigate(url);
+                        socket.off("switch_room", handleSwitchRoom);
+                      };
+
+                      socket.on("switch_room", handleSwitchRoom);
                         }}
                         className="mt-3 sm:mt-4 w-full flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
@@ -713,9 +712,7 @@ const FreelancerProfile = () => {
               </div>
             </div>
           </div>
-        </div >
-      </main >
-      <Footer />
+      </div>
 
       <AddService
         isOpen={showAddServiceModal}
@@ -725,7 +722,7 @@ const FreelancerProfile = () => {
           setShowAddServiceModal(false);
         }}
       />
-    </>
+    </PageShell>
   );
 };
 

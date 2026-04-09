@@ -7,4 +7,90 @@
   --font-Archivo: "Archivo", sans-serif;
   --font-inter: "Inter", sans-serif;
   --font-arvo: "Arvo", sans-serif;
+
+  --color-brand: #2E5077;
+  --color-brand-50: #eef4fb;
+  --color-brand-100: #d8e7f6;
+  --color-brand-200: #b1d0ed;
+  --color-brand-300: #84b2e0;
+  --color-brand-400: #5691d2;
+  --color-brand-500: #2e71c2;
+  --color-brand-600: #2E5077;
+  --color-brand-700: #25425f;
+  --color-brand-800: #1d344a;
+  --color-brand-900: #132233;
+
+  --radius-card: 20px;
+  --shadow-soft: 0 16px 44px rgba(2, 6, 23, 0.10);
+  --shadow-soft-hover: 0 22px 60px rgba(2, 6, 23, 0.12);
+
+  /* Spacing tokens (4px base) to support existing classnames like mt-35, w-130, right-267, etc. */
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  --spacing-12: 3rem;
+  --spacing-13: 3.25rem;
+  --spacing-14: 3.5rem;
+  --spacing-15: 3.75rem;
+  --spacing-16: 4rem;
+  --spacing-18: 4.5rem;
+  --spacing-20: 5rem;
+  --spacing-23: 5.75rem;
+  --spacing-24: 6rem;
+  --spacing-25: 6.25rem;
+  --spacing-27: 6.75rem;
+  --spacing-28: 7rem;
+  --spacing-30: 7.5rem;
+  --spacing-32: 8rem;
+  --spacing-35: 8.75rem;
+  --spacing-36: 9rem;
+  --spacing-40: 10rem;
+  --spacing-42: 10.5rem;
+  --spacing-44: 11rem;
+  --spacing-45: 11.25rem;
+  --spacing-48: 12rem;
+  --spacing-50: 12.5rem;
+  --spacing-57: 14.25rem;
+  --spacing-58: 14.5rem;
+  --spacing-60: 15rem;
+  --spacing-64: 16rem;
+  --spacing-65: 16.25rem;
+  --spacing-68: 17rem;
+  --spacing-70: 17.5rem;
+  --spacing-75: 18.75rem;
+  --spacing-80: 20rem;
+  --spacing-96: 24rem;
+  --spacing-100: 25rem;
+  --spacing-105: 26.25rem;
+  --spacing-115: 28.75rem;
+  --spacing-120: 30rem;
+  --spacing-130: 32.5rem;
+  --spacing-140: 35rem;
+  --spacing-145: 36.25rem;
+  --spacing-150: 37.5rem;
+  --spacing-165: 41.25rem;
+  --spacing-170: 42.5rem;
+  --spacing-172: 43rem;
+  --spacing-180: 45rem;
+  --spacing-200: 50rem;
+  --spacing-201: 50.25rem;
+  --spacing-250: 62.5rem;
+  --spacing-257: 64.25rem;
+  --spacing-267: 66.75rem;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg {
+  max-width: 100%;
 }

@@ -15,14 +15,14 @@ import TermsCondition from "../../assets/profile_terms_condition.svg";
 import dropdownArrow from "../../assets/profile_dropdown_arrow.svg";
 import downArrow from "../../assets/profile_down_arrow_2.svg";
 
-import Footer from "../../components/footer/Footer";
-import Navbar from "../../components/navbar/Navbar";
+import PageShell from "../../components/layout/PageShell";
 import { authAPI, userAPI } from "../../constants/APIRoutes";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import axios from "axios";
 import { AuthContext } from "../../contexts/AuthContext";
 import { RememberContext } from "../../contexts/RememberContext";
 import { UserTypeContext } from "../../contexts/UserTypeContext";
+import { disconnectSocket } from "../../socket";
 
 
 // Constants for available languages
@@ -101,6 +101,7 @@ const Profile = () => {
       {},
       { withCredentials: true }
     )
+    disconnectSocket();
     setAuth(null);
     setIsFreelancer(false);
     navigate('/home');
@@ -914,11 +915,11 @@ const Profile = () => {
   };
 
   return (
-    <div ref={scrollUp}>
-      <Navbar />
-      <div className="flex flex-col lg:flex-row bg-[#eeeeee] pt-28 lg:pt-0">
-        <div className="w-full lg:w-[276px] lg:sticky top-28 h-full px-4 lg:px-0 lg:ml-[60px] mt-8 lg:mt-35">
-          <div className="bg-[#FFFFFF] w-full h-fit mb-5 rounded-lg shadow-sm">
+    <PageShell scrollRef={scrollUp} withFooter>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-[276px] lg:sticky top-28 self-start">
+          <div className="bg-white w-full h-fit mb-5 rounded-[var(--radius-card)] border border-slate-200/70 shadow-[var(--shadow-soft)] overflow-hidden">
             <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
               Personal Info
             </h3>
@@ -968,7 +969,7 @@ const Profile = () => {
               </span>
             </div>
           </div>
-          <div className="bg-[#FFFFFF] w-full h-fit rounded-lg shadow-sm">
+          <div className="bg-white w-full h-fit rounded-[var(--radius-card)] border border-slate-200/70 shadow-[var(--shadow-soft)] overflow-hidden">
             <h3 className="text-lg font-semibold text-[#171A1F] font-Archivo p-3">
               General
             </h3>
@@ -1035,12 +1036,12 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col mt-8 lg:mt-35 mb-[50px] px-4 lg:px-0 lg:ml-[80px] lg:mr-[60px] w-full lg:w-fit h-fit font-inter">
+        <div className="flex-1 flex flex-col w-full h-fit font-inter">
           {renderContent()}
         </div>
+        </div>
       </div>
-      <Footer />
-    </div>
+    </PageShell>
   );
 };
 
