@@ -9,20 +9,4 @@ export default defineConfig({
   esbuild: {
     drop: ["console", "debugger"],
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (id.includes("@mui")) return "mui";
-          if (id.includes("framer-motion")) return "motion";
-          if (id.includes("emoji-picker-react")) return "emoji";
-          if (id.includes("socket.io-client")) return "socketio";
-          if (id.includes("react-router")) return "router";
-          if (id.includes("axios")) return "axios";
-          return "vendor";
-        },
-      },
-    },
-  },
 })
