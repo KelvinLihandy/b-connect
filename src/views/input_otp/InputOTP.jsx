@@ -122,18 +122,22 @@ const InputOTP = () => {
       <img
         className='fixed w-[68px] h-[50.216px] top-[42.7px] left-[47.4px]'
         src={bg_dots}
+        alt="decorative"
       />
       <img
-        className='fixed w-[68px] h-[50.216px] bot-[40.7px] bottom-[40.7px] right-[50.216px]'
+        className='fixed w-[68px] h-[50.216px] bottom-[40.7px] right-[50.216px]'
         src={bg_dots}
+        alt="decorative"
       />
       <img
-        className='fixed bottom-[200px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%] size-80'
+        className='fixed bottom-[200px] left-0 sm:left-[2.5%] md:left-[5%] lg:left-[10%] w-80 h-auto'
         src={bg_left}
+        alt="decorative"
       />
       <img
-        className='fixed bottom-[200px] right-0 sm:right-[25.%] md:right-[5%] lg:right-[10%] size-80'
+        className='fixed bottom-[200px] right-0 sm:right-[2.5%] md:right-[5%] lg:right-[10%] w-80 h-auto'
         src={bg_right}
+        alt="decorative"
       />
 
       <div className='w-full mx-4 md:w-2xl max-h-3/4 p-4 md:p-8 bg-[#F3F3F3] rounded-lg flex flex-col gap-8 md:gap-15 justify-around z-10'>

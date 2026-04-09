@@ -210,7 +210,7 @@ const Preview = ({ serviceData, onClose }) => {
                         <img
                           src={images[currentImage].preview}
                           alt={`Preview ${currentImage + 1}`}
-                          className={`w-full h-full object-${imageMode} transition-all duration-300`}
+                          className={`w-full h-full ${imageMode === "contain" ? "object-contain" : "object-cover"} transition-all duration-300`}
                           style={{
                             backgroundColor: '#f9fafb',
                             objectPosition: 'center'

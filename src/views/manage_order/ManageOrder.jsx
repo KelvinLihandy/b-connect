@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import Navbar from '../../components/navbar/Navbar';
-import Footer from '../../components/footer/Footer';
+import PageShell from "../../components/layout/PageShell";
+import { Card } from "../../components/ui/card";
 import Review from '../../components/review/Review';
 import { UserTypeContext } from '../../contexts/UserTypeContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { socket } from '../../App';
+import { socket } from '../../socket';
 import { Clock, CircleX, CircleAlert, FileText, CircleCheck } from 'lucide-react';
 
 import check from '../../assets/mo_check.svg';
@@ -392,37 +392,37 @@ const ManageOrder = () => {
   // Show loading state
   if (loading) {
     return (
-      <div className="font-Archivo">
-        <Navbar alt />
-        <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15">
-          <div className="flex justify-center items-center py-20">
-            <p className="text-xl">Loading order details...</p>
-          </div>
+      <PageShell withFooter contentClassName="font-Archivo">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Card className="p-6 sm:p-10">
+            <div className="flex justify-center items-center py-20">
+              <p className="text-xl">Loading order details...</p>
+            </div>
+          </Card>
         </div>
-        <Footer />
-      </div>
+      </PageShell>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <div className="font-Archivo">
-        <Navbar alt />
-        <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-35 mb-15">
-          <div className="flex justify-center items-center py-20">
-            <p className="text-xl text-red-500">{error}</p>
-          </div>
+      <PageShell withFooter contentClassName="font-Archivo">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Card className="p-6 sm:p-10">
+            <div className="flex justify-center items-center py-20">
+              <p className="text-xl text-red-600">{error}</p>
+            </div>
+          </Card>
         </div>
-        <Footer />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="font-Archivo">
-      <Navbar alt />
-      <div className='container mx-auto bg-[#F8F8F8] rounded-lg shadow-md px-4 py-4 mt-28 lg:mt-35 mb-15'>
+    <PageShell withFooter contentClassName="font-Archivo">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Card className='px-4 sm:px-6 py-6'>
         {/* Order Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
           <h1 className="text-2xl lg:text-3xl font-semibold">Order #{orderDetails.ORDER_NUMBER}</h1>
@@ -564,7 +564,7 @@ const ManageOrder = () => {
               <img
                 src={image}
                 alt="Service"
-                className="w-20 h-20 lg:w-[80px] lg:h-[80px] rounded bg-gray-200"
+                className="w-24 h-24 lg:w-[120px] lg:h-[120px] rounded bg-gray-200 object-contain"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = randomDummy;
@@ -623,7 +623,7 @@ const ManageOrder = () => {
                 :
                 (
                   <>
-                    {currentStep === 2 && !(isFreelancer && auth?.data.auth.id === response.data.gigInfo?.creator?.id.toString()) && (
+                    {currentStep === 2 && (
                       <button
                         onClick={handleFinishOrder}
                         className="bg-blue-500 cursor-pointer text-white text-base lg:text-lg rounded px-4 py-2 flex items-center justify-center gap-2"
@@ -665,8 +665,8 @@ const ManageOrder = () => {
             </div>
           </div>
         </div>
+        </Card>
       </div>
-      <Footer />
 
       {!isFreelancer && (
         <Review
@@ -693,7 +693,7 @@ const ManageOrder = () => {
         }}
         proofImage={proofId}
       />
-    </div>
+    </PageShell>
   );
 };
 

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
+import PageShell from "../../components/layout/PageShell";
 import { ChevronLeft, ChevronRight, Clock, RefreshCw, Check, Maximize2, ZoomIn, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../../contexts/AuthContext";
-import { socket } from '../../App';
+import { socket } from '../../socket';
 
 import dummy1 from "../../assets/Gemini_Generated_Image_at3j5bat3j5bat3j.png";
 import dummy2 from "../../assets/Gemini_Generated_Image_at3j5fat3j5fat3j.png";
@@ -19,7 +18,6 @@ import { DynamicStars } from "../../components/dynamic_stars/DynamicStars";
 import { imageShow } from "../../constants/DriveLinkPrefixes";
 import Contract from "../../components/contract/Contract";
 import { DisabledGigsContext } from "../../contexts/DisabledGigsContext";
-import { set } from "lodash";
 
 const Detail = () => {
   const { auth } = useContext(AuthContext);
@@ -108,9 +106,11 @@ const Detail = () => {
       return;
     };
     socket.emit("create_room", [auth?.data?.auth?.id, gigDetail?.creator]);
-    socket.on("switch_room", (url) => {
+    const handleSwitchRoom = (url) => {
       navigate(url);
-    })
+      socket.off("switch_room", handleSwitchRoom);
+    };
+    socket.on("switch_room", handleSwitchRoom);
   }
 
   useEffect(() => {
@@ -122,32 +122,34 @@ const Detail = () => {
       getFreelancer();
     }
     if (gigDetail?.images) {
-      setImages(gigDetail?.images);
+      setImages((gigDetail?.images || []).filter((img) => img && img !== "temp"));
     }
   }, [gigDetail]);
 
   useEffect(() => {
     let interval;
-    if (isAutoplay) {
+    if (isAutoplay && images.length > 1) {
       interval = setInterval(() => {
         setDirection(1);
-        setCurrentImage((prev) => (prev + 1) % images?.length);
+        setCurrentImage((prev) => (prev + 1) % images.length);
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [isAutoplay, images?.length]);
+  }, [isAutoplay, images.length]);
 
   const handleMouseEnter = () => setIsAutoplay(false);
   const handleMouseLeave = () => setIsAutoplay(true);
 
   const nextImage = () => {
+    if (images.length <= 1) return;
     setDirection(1);
-    setCurrentImage((prev) => (prev + 1) % images?.length);
+    setCurrentImage((prev) => (prev + 1) % images.length);
   };
 
   const prevImage = () => {
+    if (images.length <= 1) return;
     setDirection(-1);
-    setCurrentImage((prev) => (prev === 0 ? images?.length - 1 : prev - 1));
+    setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const slideVariants = {
@@ -178,6 +180,7 @@ const Detail = () => {
   };
 
   const ProgressIndicator = ({ current, total }) => {
+    if (!total || total <= 1) return null;
     return (
       <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-10">
         {[...Array(total)].map((_, index) => (
@@ -198,14 +201,18 @@ const Detail = () => {
     );
   };
 
+  const currentSlide = images?.[currentImage];
+  const currentSlideSrc = currentSlide ? `${imageShow}${currentSlide}` : (randomDummy ?? dummyImages[0]);
+
   return (
-    <div
-      ref={detailScrollUp}
+    <PageShell
+      scrollRef={detailScrollUp}
+      withFooter
+      footerProps={{ refScrollUp: detailScrollUp }}
     >
-      <Navbar alt />
 
       {/* Main content area */}
-      <div className="container mx-auto px-2 sm:px-4 py-8 mt-20 sm:mt-27">
+      <div className="mx-auto max-w-7xl px-2 sm:px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left column - takes 8/12 of the grid on large screens */}
           <div className="lg:col-span-8">
@@ -260,9 +267,9 @@ const Detail = () => {
                   transition={transition}
                 >
                   <img
-                    src={`${imageShow}${images[currentImage]}`}
+                    src={currentSlideSrc}
                     alt={`Logo Design Preview ${currentImage + 1}`}
-                    className={`w-full h-full object-${imageMode} transition-all duration-300`}
+                    className={`w-full h-full ${imageMode === "contain" ? "object-contain" : "object-cover"} transition-all duration-300`}
                     style={{
                       backgroundColor: '#f9fafb',
                       objectPosition: 'center'
@@ -334,7 +341,7 @@ const Detail = () => {
               <h2 className="text-xl font-bold my-2">Workflow Overview</h2>
               <div className="flex flex-col gap-1">
                 {gigDetail?.workflow?.map((flows, index) => (
-                  <h3 className="font-bold text-lg">
+                  <h3 key={index} className="font-bold text-lg">
                     {index + 1}. {flows}
                   </h3>
                 ))}
@@ -459,6 +466,7 @@ const Detail = () => {
                 <div className="flex">
                   {gigDetail?.packages.map((pkg, index) => (
                     <motion.button
+                      key={pkg?._id ?? index}
                       className={`flex-1 py-3 text-center font-medium transition-colors duration-300 text-sm sm:text-base ${activePackage == index
                         ? "border-b-2 border-blue-600 text-blue-600"
                         : "text-gray-600 hover:text-blue-500"
@@ -475,7 +483,7 @@ const Detail = () => {
                 <div className="p-4 sm:p-6">
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={activePackage._id}
+                      key={activePackage}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
@@ -543,15 +551,13 @@ const Detail = () => {
         </div>
       </div>
 
-      <Footer refScrollUp={detailScrollUp} />
-
       <Contract
         isOpen={showContractModal}
         onClose={() => setShowContractModal(false)}
         gigId={gigId}
         packages={gigDetail?.packages}
       />
-    </div >
+    </PageShell>
   );
 };
 

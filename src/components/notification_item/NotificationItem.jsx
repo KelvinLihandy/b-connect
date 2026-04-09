@@ -4,7 +4,7 @@ import { imageShow } from "../../constants/DriveLinkPrefixes";
 import { CircularProgress } from '@mui/material'
 import { Notebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { socket } from "../../App";
+import { socket } from "../../socket";
 import default_avatar from '../../assets/default-avatar.png'
 
 const NotificationItem = ({ notification, unreadCount, setUnreadCount }) => {

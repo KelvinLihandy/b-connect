@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import Navbar from '../../components/navbar/Navbar';
 
 import bankTransfer from '../../assets/mo_bank_transfer.svg';
 import logo from '../../assets/invoice_logo.svg';
+import PageShell from "../../components/layout/PageShell";
+import { Card } from "../../components/ui/card";
 
 // Importing API routes
 import { orderAPI, gigAPI } from '../../constants/APIRoutes';
@@ -138,8 +139,8 @@ const Invoice = () => {
   // Show loading state
   if (loading) {
     return (
-      <div className="font-Archivo">
-        <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md p-10 mt-15 mb-15 max-w-4xl">
+      <div className="min-h-screen bg-slate-50 font-Archivo px-4 py-10">
+        <div className="mx-auto max-w-4xl bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10">
           <div className="flex justify-center items-center py-20">
             <p className="text-xl">Loading invoice...</p>
           </div>
@@ -151,71 +152,73 @@ const Invoice = () => {
   // Show error state
   if (error) {
     return (
-      <div className="font-Archivo">
-        <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md p-10 mt-15 mb-15 max-w-4xl">
+      <PageShell withFooter={false} contentClassName="font-Archivo" paddingClassName="pt-28 pb-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <Card className="p-6 sm:p-10">
           <div className="flex justify-center items-center py-20">
-            <p className="text-xl text-red-500">{error}</p>
+            <p className="text-xl text-red-600">{error}</p>
           </div>
+          </Card>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="font-Archivo">
-      {/* <Navbar alt />         */}
-      <div className="container mx-auto bg-[#F8F8F8] rounded-lg shadow-md p-4 sm:p-6 md:p-10 mt-8 mb-8 max-w-4xl">
+    <PageShell withFooter={false} contentClassName="font-Archivo" paddingClassName="pt-28 pb-16">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Card className="p-4 sm:p-6 md:p-10">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start mb-8 sm:mb-10">
           <div className="mb-6 sm:mb-0">
             <img src={logo} alt="B-Connect Logo" className="h-10 sm:h-12 mb-4" />
             <h2 className="text-lg font-bold">{invoiceData.COMPANY.NAME}</h2>
-            <p className="text-gray-600">{invoiceData.COMPANY.EMAIL}</p>
+            <p className="text-slate-600">{invoiceData.COMPANY.EMAIL}</p>
           </div>
           <div className="text-left sm:text-right">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">INVOICE</h1>
-            <p className="text-lg sm:text-xl text-gray-700">{invoiceData.INVOICE.NUMBER}</p>
+            <p className="text-lg sm:text-xl text-slate-700">{invoiceData.INVOICE.NUMBER}</p>
           </div>
         </div>
 
-        <hr className="border-t border-gray-300 mb-8" />
+        <hr className="border-t border-slate-200 mb-8" />
 
         {/* Client and Invoice Info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="text-sm font-bold text-gray-600 uppercase mb-2">BILLED TO</h3>
+            <h3 className="text-sm font-bold text-slate-600 uppercase mb-2">BILLED TO</h3>
             <p className="font-semibold">{invoiceData.CUSTOMER.NAME}</p>
-            <p className="text-gray-600">{invoiceData.CUSTOMER.EMAIL}</p>
+            <p className="text-slate-600">{invoiceData.CUSTOMER.EMAIL}</p>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-600 uppercase mb-2">INVOICE NUMBER</h3>
+            <h3 className="text-sm font-bold text-slate-600 uppercase mb-2">INVOICE NUMBER</h3>
             <p>{invoiceData.INVOICE.NUMBER}</p>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-600 uppercase mb-2">DATE OF ISSUE</h3>
+            <h3 className="text-sm font-bold text-slate-600 uppercase mb-2">DATE OF ISSUE</h3>
             <p>{invoiceData.INVOICE.DATE}</p>
           </div>
         </div>
 
         {/* Status */}
         <div className="mb-8">
-          <h3 className="text-sm font-bold text-gray-600 uppercase mb-2">STATUS</h3>
+          <h3 className="text-sm font-bold text-slate-600 uppercase mb-2">STATUS</h3>
           <span className={`px-3 py-1 ${invoiceData.INVOICE.STATUS === "PAID" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"} text-sm rounded-md`}>
             {invoiceData.INVOICE.STATUS}
           </span>
         </div>
         {/* Service Details */}
         <div className="mb-8">
-          <div className="hidden sm:grid grid-cols-5 text-sm font-bold text-gray-600 uppercase border-b pb-2">
+          <div className="hidden sm:grid grid-cols-5 text-sm font-bold text-slate-600 uppercase border-b border-slate-200 pb-2">
             <div className="col-span-4">DESCRIPTION</div>
             <div className="text-right">PRICE</div>
           </div>
-          <div className="py-4 border-b">
+          <div className="py-4 border-b border-slate-200">
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-y-2">
               <div className="col-span-1 sm:col-span-4">
                 <div>
                   <p className="font-semibold">{invoiceData.ORDER.SERVICE_NAME}</p>
-                  <p className="text-gray-600 mt-1">Order {invoiceData.ORDER.ORDER_NUMBER} · {invoiceData.ORDER.PACKAGE}</p>
+                  <p className="text-slate-600 mt-1">Order {invoiceData.ORDER.ORDER_NUMBER} · {invoiceData.ORDER.PACKAGE}</p>
                 </div>
               </div>
               <div className="text-left sm:text-right font-semibold">
@@ -248,14 +251,14 @@ const Invoice = () => {
         </div>
 
         {/* Payment Details */}
-        <div className="bg-gray-50 p-4 sm:p-6 rounded-lg mb-8">
+        <div className="bg-slate-50 p-4 sm:p-6 rounded-[var(--radius-card)] border border-slate-200/70 mb-8">
           <h3 className="font-bold mb-4">Payment Details</h3>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div className="flex items-center mb-2 sm:mb-0">
               <img src={bankTransfer} alt="Bank Transfer" className="h-6 mr-2" />
               <div className="flex flex-col sm:flex-row">
                 <span className="font-medium">{invoiceData.PAYMENT.METHOD}</span>
-                <span className="text-gray-600 sm:ml-2">(Transaction ID: {invoiceData.PAYMENT.TRANSACTION_ID})</span>
+                <span className="text-slate-600 sm:ml-2">(Transaction ID: {invoiceData.PAYMENT.TRANSACTION_ID})</span>
               </div>
             </div>
             <div className="text-left sm:text-right">
@@ -267,15 +270,16 @@ const Invoice = () => {
         {/* Notes */}
         <div className="mb-6">
           <h3 className="font-bold mb-2">Notes</h3>
-          <p className="text-gray-600">Thank you for your purchase! This invoice was automatically generated and is valid without a signature.</p>
+          <p className="text-slate-600">Thank you for your purchase! This invoice was automatically generated and is valid without a signature.</p>
         </div>
 
         {/* Terms */}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-slate-500">
           All services provided are subject to our Terms of Service. Payment is expected within the terms specified.
         </p>
+        </Card>
       </div>
-    </div>
+    </PageShell>
   );
 }
 

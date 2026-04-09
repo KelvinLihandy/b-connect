@@ -1,192 +1,101 @@
-import React, { useEffect } from 'react'
-import { motion } from 'framer-motion'
-import logo from '../../assets/logo.svg'
-import linkedin_ball from '../../assets/linkedin_ball.svg'
-import youtube_ball from '../../assets/youtube_ball.svg'
-import facebook_ball from '../../assets/facebook_ball.svg'
-import twitter_ball from '../../assets/twitter_ball.svg'
-import logo_gray from '../../assets/logo_gray.svg'
-import { Link, useNavigate } from 'react-router-dom'
-import { ChevronUp } from 'lucide-react'
+import React from "react";
+import { motion } from "framer-motion";
+import { ChevronUp } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import logo from "../../assets/logo.svg";
+import facebook_ball from "../../assets/facebook_ball.svg";
+import linkedin_ball from "../../assets/linkedin_ball.svg";
+import twitter_ball from "../../assets/twitter_ball.svg";
+import youtube_ball from "../../assets/youtube_ball.svg";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+};
 
 export const Footer = ({ refScrollUp = null, offset = 0 }) => {
-  const navigate = useNavigate();
-
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  };
-
-  const staggerChildren = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const socialIconHover = {
-    hover: { scale: 1.1, transition: { duration: 0.2 } }
-  };
-
   return (
-    <footer
-      className='bg-[#F8F9FA] min-h-[450px] flex flex-col md:flex-row pt-8 md:pt-13 font-jost relative justify-center overflow-hidden gap-8 md:gap-0 px-4 sm:px-6 lg:px-8'
-    >
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className='max-w-full md:max-w-[460px] w-full'
-      >
-        <motion.div variants={fadeInUp} className='flex flex-row items-center px-5 justify-between'>
-          <img src={logo} alt="Logo" className="w-24 md:w-auto"></img>
-          <p className='font-poppins text-[#404040] opacity-14 font-bold flex flex-row items-center text-2xl md:text-4xl'>
-            <span className='text-6xl md:text-9xl self-center'>
-              B
-            </span>
-            -Connect
-          </p>
-        </motion.div>
-        <motion.div variants={fadeInUp} className='flex flex-row items-center px-5 justify-center mt-2 mb-6'>
-          <p className='text-base md:text-lg text-[#92989F] font-bold self-center font-Archivo text-center'>bconnect404@gmail.com - 089728203230</p>
-        </motion.div>
-        <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
-        <motion.p
-          variants={fadeInUp}
-          className='text-lg md:text-3xl text-center p-2 text-wrap mt-6'
-        >
-          Find the perfect freelancer for your project—fast and easy.
-        </motion.p>
-      </motion.div>
+    <footer className="border-t border-slate-200 bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+            <div className="flex items-center gap-3">
+              <img src={logo} alt="B-Connect" className="h-10 w-auto" />
+              <div className="leading-tight">
+                <div className="font-poppins font-bold text-slate-900 text-xl">B-Connect</div>
+                <div className="text-sm text-slate-500">Freelancing made easy</div>
+              </div>
+            </div>
 
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerChildren}
-        className='flex flex-col min-w-full md:min-w-[360px] w-full md:w-auto'
-      >
-        <div className='flex flex-col p-5 text-lg md:text-2xl gap-5 text-center md:text-left'>
-          <motion.div variants={fadeInUp}>
-            <div
-              onClick={() => navigate("/sign-up")}
-              className="hover:text-blue-600 transition-colors duration-300 cursor-pointer"
-            >
-              Register
+            <p className="mt-4 text-slate-600">
+              Find the perfect freelancer for your project—fast, safe, and simple.
+            </p>
+
+            <div className="mt-4 text-sm text-slate-500">
+              <div>bconnect404@gmail.com</div>
+              <div>089728203230</div>
+            </div>
+
+            <div className="mt-6 flex items-center gap-3">
+              {[facebook_ball, linkedin_ball, twitter_ball, youtube_ball].map((icon, idx) => (
+                <a
+                  key={idx}
+                  href="#"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition"
+                  aria-label="Social link"
+                >
+                  <img src={icon} alt="" className="h-6 w-6" />
+                </a>
+              ))}
             </div>
           </motion.div>
-          <motion.div variants={fadeInUp}>
-            <div onClick={() => navigate("/sign-in")}
-              className="hover:text-blue-600 transition-colors duration-300 cursor-pointer"
-            >
-              Login
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+            <div className="font-Archivo font-bold text-slate-900 text-lg">Explore</div>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-slate-600">
+              <Link className="hover:text-[#2E5077]" to="/sign-up">Register</Link>
+              <Link className="hover:text-[#2E5077]" to="/sign-in">Login</Link>
+              <Link className="hover:text-[#2E5077]" to="/catalog">Gigs</Link>
+              <Link className="hover:text-[#2E5077]" to="/about-us">About Us</Link>
+              <Link className="hover:text-[#2E5077]" to="/privacy-policy">Privacy Policy</Link>
             </div>
+
+            <div className="mt-10 text-sm text-slate-500">© {new Date().getFullYear()} B-Connect</div>
           </motion.div>
-          <motion.div variants={fadeInUp}>
-            <div onClick={() => navigate("/about-us")}
-              className="hover:text-blue-600 transition-colors duration-300 cursor-pointer"
-            >
-              About Us
-            </div>
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <div onClick={() => navigate("/catalog")}
-              className="hover:text-blue-600 transition-colors duration-300 cursor-pointer"
-            >
-              Gigs
-            </div>
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <div onClick={() => navigate("/privacy-policy")}
-              className="hover:text-blue-600 transition-colors duration-300 cursor-pointer"
-            >
-              Privacy Policy
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm">
+              <div className="font-Archivo font-bold text-slate-900 text-lg">
+                Looking for the right freelancer?
+              </div>
+              <div className="mt-2 text-slate-600">Let’s find skilled professionals today.</div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/catalog"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#2E5077] px-5 py-3 text-white font-semibold hover:bg-[#25425f] transition"
+                >
+                  Browse services
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!refScrollUp?.current) return;
+                    window.scrollTo({ top: refScrollUp.current.offsetTop - offset, behavior: "smooth" });
+                  }}
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 hover:bg-slate-50 transition"
+                >
+                  <ChevronUp className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
-        <motion.div variants={fadeInUp} className='w-full h-[1px] bg-black' />
-        <motion.p
-          variants={fadeInUp}
-          className='px-5 py-6 md:py-10 text-base md:text-lg text-[#92989F] font-bold self-center'
-        >
-          © 2025 B-Connect
-        </motion.p>
-      </motion.div>
-
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className='md:h-full md:w-[1px] w-full h-[1px] bg-black my-4 md:my-0'
-      />
-
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={staggerChildren}
-        className='flex flex-col justify-between px-5 pb-10 w-full md:w-auto max-w-full md:max-w-[460px] items-center md:items-start'
-      >
-        <div className='flex flex-col gap-6 items-center md:items-start'>
-          <motion.div
-            variants={fadeInUp}
-            className='text-xl md:text-3xl font-bold flex flex-col gap-4 text-wrap text-center md:text-left'
-          >
-            <p>Looking for the right freelancer for your project?</p>
-            <p>Let's Find skilled professionals today!</p>
-          </motion.div>
-          <motion.button
-            variants={fadeInUp}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className='border rounded-md w-full max-w-[200px] text-xl md:text-2xl font-bold py-3 hover:bg-blue-600 hover:text-white transition-colors duration-300'
-            onClick={() => navigate("/catalog")}
-          >
-            Click Here 🛠️
-          </motion.button>
-        </div>
-        <motion.div
-          variants={fadeInUp}
-          className='flex flex-row justify-center md:justify-end mt-8 md:mt-0 w-full'
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, backgroundColor: '#333' }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              if (refScrollUp && refScrollUp.current) {
-                window.scrollTo({
-                  top: refScrollUp.current.offsetTop - offset,
-                  behavior: "smooth",
-                });
-              }
-            }}
-            className='bg-black rounded-full aspect-square flex items-center justify-center w-[45px] md:w-[55px] h-auto cursor-pointer z-30'
-          >
-            <ChevronUp
-              color='white'
-              size={40}
-            />
-          </motion.div>
-        </motion.div>
-      </motion.div>
-      <motion.img
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 0.7, transition: { delay: 0.5, duration: 0.8 } }}
-        viewport={{ once: true }}
-        className='absolute bottom-0 right-0 max-w-[50%] md:max-w-[30%] lg:max-w-full -z-10'
-        src={logo_gray}
-        alt=""
-      />
+      </div>
     </footer>
-  )
-}
+  );
+};
 
 export default Footer;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
-import { socket } from '../../App';
+import { socket } from '../../socket';
 import { AuthContext } from '../../contexts/AuthContext';
 import { fileDownload, imageShow } from '../../constants/DriveLinkPrefixes';
 import file from "../../assets/chat_file.png"

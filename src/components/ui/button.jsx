@@ -1,25 +1,38 @@
-export function Button({ children, className = "", onClick, size = 'default', variant = 'default' }) {
-    const sizeClasses = {
-      default: 'px-4 py-2 text-sm',
-      sm: 'px-3 py-1.5 text-xs',
-      lg: 'px-6 py-3 text-base'
-    };
-  
-    const variantClasses = {
-      default: 'bg-blue-600 hover:bg-blue-700 text-white',
-      destructive: 'bg-red-600 hover:bg-red-700 text-white',
-      outline: 'border border-gray-300 bg-transparent text-gray-800 hover:bg-gray-100',
-      secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-      ghost: 'bg-transparent hover:bg-gray-100 text-gray-800',
-      link: 'bg-transparent text-blue-600 hover:underline'
-    };
-  
-    return (
-      <button
-        className={`rounded-lg font-semibold transition-colors duration-200 ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
-        onClick={onClick}
-      >
-        {children}
-      </button>
-    );
-  }
+export function Button({
+  children,
+  className = "",
+  onClick,
+  type = "button",
+  disabled = false,
+  size = "default",
+  variant = "primary",
+}) {
+  const sizeClasses = {
+    sm: "h-9 px-4 text-sm",
+    default: "h-11 px-5 text-sm",
+    lg: "h-12 px-6 text-base",
+  };
+
+  const variantClasses = {
+    primary:
+      "bg-[#2E5077] text-white hover:bg-[#25425f] shadow-sm shadow-slate-900/10",
+    secondary:
+      "bg-white text-slate-900 border border-slate-200/80 hover:bg-slate-50",
+    ghost: "bg-transparent text-slate-900 hover:bg-slate-100/70",
+    destructive: "bg-red-600 text-white hover:bg-red-700",
+    link: "bg-transparent text-[#2E5077] hover:underline",
+  };
+
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={`inline-flex items-center justify-center rounded-[var(--radius-card)] font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E5077]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none ${
+        sizeClasses[size]
+      } ${variantClasses[variant]} ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
